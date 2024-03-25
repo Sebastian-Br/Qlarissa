@@ -1,0 +1,108 @@
+﻿{
+  "DefaultExcludedTimePeriods": {
+    "2008FinancialCrisisAndAftermath": {
+      "StartDate": null,
+      "EndDate": "2010-12-31"
+    },
+    "Covid": {
+      "StartDate": "2020-02-23",
+      "EndDate": "2022-05-27"
+    }
+  },
+  "SymbolsToBeAnalyzed": {
+    "ADBE": "Adobe",
+    "HON": "Honeywell",
+    "BTI": "British American Tobacco",
+    "VRSN": "VeriSign",
+    "CZMWF": "Carl Zeiss",
+    "UDR": "UDR",
+    "CME": "CME Group",
+    "D": "Dominion Energy",
+    "DPZ": "Domino's Pizza",
+    "DTE": "DTE Energy",
+    "AEP": "American Electric Power",
+    "AWK": "American Water Works",
+    "CSCO": "Cisco",
+    "CMCSA": "Comcast",
+    "ILMN": "Illumina",
+    "JKHY": "Jack Henry & Associates",
+    "MKC": "McCormick",
+    "MTD": "Mettler-Toledo",
+    "MAA": "Mid American Apartment",
+    "PEP": "PepsiCo",
+    "POOL": "Pool Corp",
+    "DGX": "Quest Diagnostics",
+    "RHI": "Robert Half International",
+    "ROK": "Rockwell Automation",
+    "SYY": "Sysco",
+    "TSN": "Tyson Foods",
+    "WEC Energy Group": "WEC Energy Group",
+    "ZBRA": "Zebra Technologies",
+    "ABT": "Abbott",
+    "BHTLF": "Bechtle",
+    "HUM": "Humana",
+    "CCK": "Crown Holdings",
+    "MKTX": "MarketAxess",
+    "HSY": "The Hershey Company",
+    "DEO": "Diageo",
+    "TREX": "Trex Company",
+    "FIS": "Fidelity National Information Services",
+    "EL": "Estee Lauder Companies",
+
+    "ETR:ADS": "Adidas",
+    "LVMUY": "Luis Vuitton / LVMH",
+    "EW": "Edwards Lifesciences",
+    "EADSY": "Airbus",
+    "ETR:BAYN": "BAYER",
+    "BLK": "BlackRock",
+    "KO": "Coca Cola",
+    "CCI": "Crown Castle International",
+    "DHR": "Danaher",
+    "DG": "Dollar General",
+    "JNJ": "Johnson & Johnson",
+    "ETR:MTX": "MTU Aero Engines",
+    "NIKE": "Nike",
+    "PFE": "Pfizer",
+    "PMMAF": "PUMA",
+    "O": "Realty Income",
+    "RMD": "ResMed",
+    "SARTF": "Sartorius",
+    "SBAC": "SBA Communications",
+    "SWK": "Stanley Black and Decker",
+    "SBUX": "Starbucks",
+    "SYIEF": "Symrise",
+    "SNPS": "Synopsys",
+    "UNP": "Union Pacific",
+    "CMS": "CMS Energy"
+  },
+  "AlternateOverviewSource": {
+    "CZMWF": {
+      "Symbol": "CZMWF",
+      "Name": "Carl Zeiss Meditec",
+      "Currency": "EUR_EURO",
+      "MarketCapitalization": 0,
+      "PEratio": 0
+    },
+    "BHTLF": {
+      "Symbol": "BHTLF",
+      "Name": "Bechtle",
+      "Currency": "EUR_EURO",
+      "MarketCapitalization": 0,
+      "PEratio": 0
+    },
+    "SARTF": {
+      "Symbol": "SARTF",
+      "Name": "Sartorius",
+      "Currency": "EUR_EURO",
+      "MarketCapitalization": 0,
+      "PEratio": 0
+    },
+    "SYIEF": {
+      "Symbol": "SYIEF",
+      "Name": "Symrise",
+      "Currency": "EUR_EURO",
+      "MarketCapitalization": 0,
+      "PEratio": 0
+    }
+  }
+}
