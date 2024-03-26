@@ -25,14 +25,7 @@ namespace Charty.Chart.ChartAnalysis
             foreach (var result in ExponentialRegressionResults)
             {
                 Console.Write("Rank " + rank + ": " + result.Overview.GetBasicInformation());
-                if (result.DividendAdjusted)
-                {
-                    Console.WriteLine("Expected 1 Year Performance (including dividends): " + result.OneYearGrowthEstimatePercentage + " %");
-                }
-                else
-                {
-                    Console.WriteLine("Expected 1 Year Performance (excluding dividends): " + result.OneYearGrowthEstimatePercentage + " %");
-                }
+                Console.WriteLine("Expected 1 Year Performance: " + result.OneYearGrowthEstimatePercentage + " %");
                 rank++;
             }
             Console.WriteLine("****************************************");
@@ -48,16 +41,8 @@ namespace Charty.Chart.ChartAnalysis
             foreach (var result in ExponentialRegressionResults)
             {
                 Console.Write("Rank " + rank + ": " + result.Overview.GetBasicInformation());
-                if (result.DividendAdjusted)
-                {
-                    Console.WriteLine("Expected 3 Year Performance (including dividends): " + result.ThreeYearGrowthEstimatePercentage 
+                Console.WriteLine("Expected 3 Year Performance: " + result.ThreeYearGrowthEstimatePercentage 
                         + " % (1 year equivalent: " + ConvertToOneYearEstimate(result.ThreeYearGrowthEstimatePercentage) + " %)");
-                }
-                else
-                {
-                    Console.WriteLine("Expected 3 Year Performance (excluding dividends): " + result.ThreeYearGrowthEstimatePercentage 
-                        + " % (1 year equivalent: " + ConvertToOneYearEstimate(result.ThreeYearGrowthEstimatePercentage) + " %)");
-                }
                 rank++;
             }
             Console.WriteLine("****************************************");

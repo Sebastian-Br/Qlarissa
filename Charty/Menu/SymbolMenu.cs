@@ -11,11 +11,11 @@ namespace Charty.Menu
     {
         public SymbolMenu(SymbolManager chartManager, string symbol)
         {
-            ChartManager = chartManager;
-            Chart = ChartManager.RetrieveSymbol(symbol);
+            SymbolManager = chartManager;
+            Chart = SymbolManager.RetrieveSymbol(symbol);
             PrintNameAndMenu();
         }
-        public SymbolManager ChartManager { get; set; }
+        public SymbolManager SymbolManager { get; set; }
 
         private Chart.Symbol Chart { get; set; }
 
@@ -77,7 +77,7 @@ namespace Charty.Menu
 
             if (string.Equals(text, "Exit", comparer))
             {
-                return new StartMenu(ChartManager);
+                return new StartMenu(SymbolManager);
             }
 
             if (string.Equals(text, "DbgPrintDataPoints", comparer))

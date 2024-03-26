@@ -1,4 +1,5 @@
 ﻿using Charty.Chart;
+using Charty.Chart.Api.ApiChart;
 using Charty.Menu;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,6 +17,10 @@ namespace Charty
             IHost host = CreateHostBuilder().Build();
             IConfiguration baseConfiguration = host.Services.GetRequiredService<IConfiguration>();
             CustomConfiguration.CustomConfiguration customConfiguration = BuildCustomConfiguration();
+            ApiManager apiManager = new(baseConfiguration);
+            // apiManager.GetApiSymbol("ETR:ADS").Wait(); WORKS
+
+            //customConfiguration.CheckSymbolsToBeAnalyzed().Wait(); checked all except ETR:s
 
             SymbolManager chartManager = new(baseConfiguration, customConfiguration);
 
@@ -33,8 +38,6 @@ namespace Charty
                     Console.WriteLine(ex);
                 }
             }
-
-            Console.WriteLine("Hello, World!");
         }
 
         static CustomConfiguration.CustomConfiguration BuildCustomConfiguration()

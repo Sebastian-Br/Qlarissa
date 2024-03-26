@@ -22,7 +22,7 @@ namespace Charty.Chart
 
         public double PEratio { get; set; }
 
-        public double DividentPerShare { get; set; }
+        public double DividendPerShareYearly { get; set; }
 
         public string GetBasicInformation()
         {

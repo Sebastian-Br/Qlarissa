@@ -36,7 +36,7 @@
     "ROK": "Rockwell Automation",
     "SYY": "Sysco",
     "TSN": "Tyson Foods",
-    "WEC Energy Group": "WEC Energy Group",
+    "WEC": "WEC Energy Group",
     "ZBRA": "Zebra Technologies",
     "ABT": "Abbott",
     "BHTLF": "Bechtle",
@@ -61,7 +61,7 @@
     "DG": "Dollar General",
     "JNJ": "Johnson & Johnson",
     "ETR:MTX": "MTU Aero Engines",
-    "NIKE": "Nike",
+    "NKE": "Nike",
     "PFE": "Pfizer",
     "PMMAF": "PUMA",
     "O": "Realty Income",
@@ -81,28 +81,56 @@
       "Name": "Carl Zeiss Meditec",
       "Currency": "EUR_EURO",
       "MarketCapitalization": 0,
-      "PEratio": 0
+      "PEratio": 0,
+      "DividendPerShareYearly": 1.08
     },
     "BHTLF": {
       "Symbol": "BHTLF",
       "Name": "Bechtle",
       "Currency": "EUR_EURO",
       "MarketCapitalization": 0,
-      "PEratio": 0
+      "PEratio": 0,
+      "DividendPerShareYearly": 0.68
     },
     "SARTF": {
       "Symbol": "SARTF",
       "Name": "Sartorius",
       "Currency": "EUR_EURO",
       "MarketCapitalization": 0,
-      "PEratio": 0
+      "PEratio": 0,
+      "DividendPerShareYearly": 0.72
     },
     "SYIEF": {
       "Symbol": "SYIEF",
       "Name": "Symrise",
       "Currency": "EUR_EURO",
       "MarketCapitalization": 0,
-      "PEratio": 0
+      "PEratio": 0,
+      "DividendPerShareYearly": 1.08
+    },
+    "ETR:ADS": {
+      "Symbol": "ETR:ADS",
+      "Name": "Adidas",
+      "Currency": "EUR_EURO",
+      "MarketCapitalization": 0,
+      "PEratio": 0,
+      "DividendPerShareYearly": 0.72
+    },
+    "ETR:BAYN": {
+      "Symbol": "ETR:BAYN",
+      "Name": "BAYER",
+      "Currency": "EUR_EURO",
+      "MarketCapitalization": 0,
+      "PEratio": 0,
+      "DividendPerShareYearly": 2.4
+    },
+    "ETR:MTX": {
+      "Symbol": "ETR:MTX",
+      "Name": "MTU Aero Engines",
+      "Currency": "EUR_EURO",
+      "MarketCapitalization": 0,
+      "PEratio": 0,
+      "DividendPerShareYearly": 2.0
     }
   }
 }

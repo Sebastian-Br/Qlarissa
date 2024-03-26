@@ -8,10 +8,10 @@ namespace Charty.Chart.Enums
 {
     public enum Currency
     {
-        USD_US_DOLLAR,
-        EUR_EURO,
-        GBP_POUND_STERLING,
-        AUD_AUSTRALIAN_DOLLAR,
-        CAD_CANADIAN_DOLLAR,
+        USD_US_DOLLAR = 1,
+        EUR_EURO = 2,
+        GBP_POUND_STERLING = 3,
+        AUD_AUSTRALIAN_DOLLAR = 4,
+        CAD_CANADIAN_DOLLAR = 5,
     }
 }

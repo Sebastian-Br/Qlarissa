@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static ScottPlot.Generate;
+using DateTime = System.DateTime;
 
 namespace Charty.Chart.ChartAnalysis
 {
@@ -20,18 +22,13 @@ namespace Charty.Chart.ChartAnalysis
             B = e.B;
             CurrentPrice = currentPrice;
             Overview = overview;
-            ExpectedDividendPercentage = 0;
-            DividendAdjusted = false;
+            DateCreated = DateOnly.FromDateTime(DateTime.Today);
             SetEstimates();
         }
 
         public double A { get; private set; }
 
         public double B { get; private set; }
-
-        public double ExpectedDividendPercentage { get; private set; }
-
-        public bool DividendAdjusted { get; private set; }
 
         public SymbolOverview Overview { get; private set; }
 
@@ -41,13 +38,7 @@ namespace Charty.Chart.ChartAnalysis
 
         public double ThreeYearGrowthEstimatePercentage { get; private set; }
 
-        public void SetAnnualDividendPercentage(double dividendPercentage)
-        {
-            ExpectedDividendPercentage = dividendPercentage;
-            DividendAdjusted = true;
-            // Recalculate estimates
-            SetEstimates();
-        }
+        public DateOnly DateCreated {  get; private set; }
 
         public double GetEstimate(DateOnly date)
         {
@@ -68,15 +59,15 @@ namespace Charty.Chart.ChartAnalysis
 
         private void SetEstimates()
         {
-            if(!DividendAdjusted)
-            {
-                OneYearGrowthEstimatePercentage = ((Get1YearEstimate() / CurrentPrice) - 1.0) * 100.0;
-                ThreeYearGrowthEstimatePercentage = ((Get3YearEstimate() / CurrentPrice) - 1.0) * 100.0;
-            }
-            else
-            {
+            OneYearGrowthEstimatePercentage = ((
+                (Get1YearEstimate() + AnnualizedDividendPerShare(Overview.DividendPerShareYearly))
+                / CurrentPrice)
+                - 1.0) * 100.0;
 
-            }
+            ThreeYearGrowthEstimatePercentage = ((
+                (Get3YearEstimate() + AnnualizedDividendPerShare(Overview.DividendPerShareYearly) + 2.0 * Overview.DividendPerShareYearly)
+                / CurrentPrice)
+                - 1.0) * 100.0;
         }
 
         private double ConvertDateToYearIndex(DateOnly date)
@@ -88,21 +79,14 @@ namespace Charty.Chart.ChartAnalysis
             return yearIndex;
         }
 
-        private double AnnualizedDividendPerShare(double dividendPerSharePerYear, int year)
+        private double AnnualizedDividendPerShare(double dividendPerSharePerYear)
         {
             DateTime currentDate = DateTime.Now;
-            if(year == currentDate.Year)
-            {
-                int daysPassed = currentDate.DayOfYear;
-                double percentageOfYearPassed = ((double)daysPassed / (DateTime.IsLeapYear(currentDate.Year) ? 366.0 : 365.0)) * 100.0;
+            int daysPassed = currentDate.DayOfYear;
+            double percentageOfYearPassed = ((double)daysPassed / (DateTime.IsLeapYear(currentDate.Year) ? 366.0 : 365.0)) * 100.0;
 
-                double annualizedDividend = dividendPerSharePerYear * (1 - percentageOfYearPassed / 100.0);
-                return annualizedDividend;
-            }
-            else
-            {
-                return dividendPerSharePerYear;
-            }
+            double annualizedDividend = dividendPerSharePerYear * (1 - percentageOfYearPassed / 100.0);
+            return annualizedDividend;
         }
     }
 }

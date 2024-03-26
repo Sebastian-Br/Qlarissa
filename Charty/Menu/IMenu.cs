@@ -17,6 +17,6 @@ namespace Charty.Menu
 
         public Task<IMenu> SendText(string text);
 
-        SymbolManager ChartManager { get; set; }
+        SymbolManager SymbolManager { get; set; }
     }
 }

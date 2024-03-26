@@ -1,11 +1,16 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using ScottPlot;
+using ScottPlot.Colormaps;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Charty.Chart.Api.ApiChart
 {
@@ -27,7 +32,7 @@ namespace Charty.Chart.Api.ApiChart
                 throw new ArgumentException(nameof(ApiKeys));
             }
 
-            foreach(string keys in ApiKeys)
+            foreach(string keys in ApiKeys) // using multiple ApiKeys might not actually work and their rate-detection might *only* be IP-based (detecting some proxies)
             {
                 if (string.IsNullOrEmpty(keys))
                 {
@@ -47,7 +52,11 @@ namespace Charty.Chart.Api.ApiChart
         private int ApiKeyIndex { get; set; }
 
         /// <summary>
+        /// Gets the AlphaVantage API representation of a symbol.
+        /// Calls DiscardEntriesBeforeDate() to discard all data points before 2009 to lower the load on the application and DB.
         /// This function would normally extract data points in descending order by date. This is unintentional.
+        /// The order in which keyValuePairs is reversed at the end to order them in ascending order by the key.
+        /// After exiting this function, .ToBusinessSymbol is called.
         /// </summary>
         /// <param name="symbol"></param>
         /// <returns></returns>
@@ -81,6 +90,7 @@ namespace Charty.Chart.Api.ApiChart
 
             //Console.WriteLine(jsonResponse);
             ApiSymbol apiChart = JsonConvert.DeserializeObject<ApiSymbol>(jsonResponse);
+            DiscardEntriesBeforeDate(apiChart, new DateOnly(year: 2009, month: 1, day: 1));
             apiChart.DataPoints = apiChart.DataPoints.Reverse().ToDictionary();
             return apiChart;
         }
@@ -120,6 +130,26 @@ namespace Charty.Chart.Api.ApiChart
             //Console.WriteLine(jsonResponse);
             ApiOverview apiOverview = JsonConvert.DeserializeObject<ApiOverview>(jsonResponse);
             return apiOverview;
+        }
+
+        private void DiscardEntriesBeforeDate(ApiSymbol apiSymbol, DateOnly cutoffDate)
+        {
+            List<DateOnly> keysToRemove = new List<DateOnly>();
+
+            foreach (var pair in apiSymbol.DataPoints)
+            {
+                // Check if the key is less than the cutoff date
+                if (pair.Key < cutoffDate)
+                {
+                    // If so, add the key to the list of keys to remove
+                    keysToRemove.Add(pair.Key);
+                }
+            }
+
+            foreach (var key in keysToRemove)
+            {
+                apiSymbol.DataPoints.Remove(key);
+            }
         }
     }
 }

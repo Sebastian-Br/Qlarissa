@@ -18,8 +18,24 @@ namespace Charty.Chart.Api.ApiChart
             chartOverview.Symbol = Symbol;
             chartOverview.Name = Name;
             chartOverview.MarketCapitalization = long.Parse(MarketCapitalization);
-            chartOverview.PEratio = double.Parse(PERatio);
-            chartOverview.DividentPerShare = double.Parse(DividendPerShare);
+
+            if (string.Equals(PERatio, "None", StringComparison.InvariantCultureIgnoreCase))
+            {
+                chartOverview.PEratio = 0.0;
+            }
+            else
+            {
+                chartOverview.PEratio = double.Parse(PERatio);
+            }
+
+            if (string.Equals(DividendPerShare, "None", StringComparison.InvariantCultureIgnoreCase))
+            {
+                chartOverview.DividendPerShareYearly = 0.0;
+            }
+            else
+            {
+                chartOverview.DividendPerShareYearly = double.Parse(DividendPerShare);
+            }
 
             if (Currency == "USD")
             {

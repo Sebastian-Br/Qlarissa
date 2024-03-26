@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Charty.Chart.ExcludedTimePeriods;
 using Charty.Chart.Api.ApiChart;
 using Charty.Chart.ChartAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace Charty.Chart
 {
@@ -17,6 +18,7 @@ namespace Charty.Chart
             ApiManager = new(configuration);
             DefaultExcludedTimePeriods = customConfiguration.DefaultExcludedTimePeriods ?? throw new ArgumentNullException("DefaultExcludedTimePeriods is null");
             AlternateOverviewSource = customConfiguration.AlternateOverviewSource ?? throw new ArgumentNullException(nameof(customConfiguration.AlternateOverviewSource));
+            ConfigurationSymbols = customConfiguration.SymbolsToBeAnalyzed;
 
             SymbolDictionary = new();
             RankByExpRegressionResult = new();
@@ -30,6 +32,8 @@ namespace Charty.Chart
         private RankByExpRegressionResult RankByExpRegressionResult { get; set; }
 
         private Dictionary<string, SymbolOverview> AlternateOverviewSource { get; set; }
+
+        private Dictionary<string,string> ConfigurationSymbols { get; set; }
 
         public async Task InitializeSymbol(string symbol)
         {
@@ -62,6 +66,14 @@ namespace Charty.Chart
 
             SymbolDictionary.Add(symbol, result);
             Console.WriteLine("Added '" + symbol + "'");
+        }
+
+        public async Task AddConfigurationSymbols()
+        {
+            foreach(string symbol in ConfigurationSymbols.Keys)
+            {
+                await InitializeSymbol(symbol);
+            }
         }
 
         public Symbol RetrieveSymbol(string symbol)

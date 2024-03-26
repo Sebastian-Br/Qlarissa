@@ -21,14 +21,14 @@ namespace Charty.Chart.Api.ApiChart
         [JsonProperty("Time Series (Daily)")]
         public Dictionary<DateOnly, ApiChartDataPoint> DataPoints { get; set; }
 
-        public Symbol ToBusinessChart(SymbolOverview chartOverview)
+        public Symbol ToBusinessChart(SymbolOverview overview)
         {
-            if(chartOverview is null)
+            if(overview is null)
             {
-                throw new ArgumentNullException(nameof(chartOverview));
+                throw new ArgumentNullException(nameof(overview));
             }
 
-            ChartDataPoint[] dataPoints = new ChartDataPoint[DataPoints.Count];
+            SymbolDataPoint[] dataPoints = new SymbolDataPoint[DataPoints.Count];
             for (int a = 0; a < DataPoints.Count; a++)
             {
                 dataPoints[a] = new();
@@ -44,15 +44,8 @@ namespace Charty.Chart.Api.ApiChart
                 i++;
             }
 
-            Symbol chart = new(dataPoints, chartOverview);
-            chart.ChartDataPoints[0].DayIndex = 1;
-
-            for (int c = 1; c < chart.ChartDataPoints.Count(); c++)
-            {
-                chart.ChartDataPoints[c].DayIndex = chart.ChartDataPoints[c].Date.DayNumber - chart.ChartDataPoints[0].Date.DayNumber;
-            }
-
-            return chart;
+            Symbol symbol = new(dataPoints, overview);
+            return symbol;
         }
     }
 }

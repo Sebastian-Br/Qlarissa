@@ -13,7 +13,7 @@ namespace Charty.Chart
 {
     public class Symbol
     {
-        public Symbol(ChartDataPoint[] chartDataPoints, SymbolOverview chartOverview)
+        public Symbol(SymbolDataPoint[] chartDataPoints, SymbolOverview chartOverview)
         {
             ChartDataPoints = chartDataPoints ?? throw new ArgumentNullException(nameof(chartDataPoints));
             if (ChartDataPoints.Length == 0)
@@ -27,7 +27,7 @@ namespace Charty.Chart
 
         public SymbolOverview SymbolOverview { get; private set; }
 
-        public ChartDataPoint[] ChartDataPoints {  get; private set; }
+        public SymbolDataPoint[] ChartDataPoints {  get; private set; }
 
         public ExponentialRegressionResult ExponentialRegressionModel { get; private set; }
 
@@ -61,7 +61,7 @@ namespace Charty.Chart
             return false;
         }
 
-        private bool IsDataPointInExcludedTimePeriods(ChartDataPoint dataPoint)
+        private bool IsDataPointInExcludedTimePeriods(SymbolDataPoint dataPoint)
         {
             foreach(ExcludedTimePeriod excludedTimePeriod in ExcludedTimePeriods.Values)
             {
@@ -137,9 +137,9 @@ namespace Charty.Chart
             return false;
         }
 
-        public ChartDataPoint[] GetChartDataPointsWithoutExcludedTimePeriods()
+        public SymbolDataPoint[] GetChartDataPointsWithoutExcludedTimePeriods()
         {
-            List<ChartDataPoint> result = new List<ChartDataPoint>();
+            List<SymbolDataPoint> result = new List<SymbolDataPoint>();
             for(int i = 0; i < ChartDataPoints.Length; i++)
             {
                 if (!IsDataPointInExcludedTimePeriods(ChartDataPoints[i]))
@@ -189,7 +189,7 @@ namespace Charty.Chart
 
         public void DbgPrintDataPoints()
         {
-            foreach(ChartDataPoint point in ChartDataPoints)
+            foreach(SymbolDataPoint point in ChartDataPoints)
             {
                 Console.WriteLine("Date:" + point.Date + " High:" + point.HighPrice + " Low:" + point.LowPrice + " Medium:" + point.MediumPrice);
             }

@@ -9,11 +9,11 @@ namespace Charty.Menu
 {
     public class StartMenu : IMenu
     {
-        public SymbolManager ChartManager { get; set; }
+        public SymbolManager SymbolManager { get; set; }
 
-        public StartMenu(SymbolManager chartManager)
+        public StartMenu(SymbolManager symbolManager)
         {
-            ChartManager = chartManager;
+            SymbolManager = symbolManager;
             PrintNameAndMenu();
         }
 
@@ -27,6 +27,7 @@ namespace Charty.Menu
         {
             return "R - Reload Menu Help\n" +
                 "Add SYMBOL - Adds the Symbol to the Chart Dictionary\n" +
+                "Add ConfigSymbols - Adds all Symbols in the customConfiguration\n" +
                 "Switch SYMBOL - Switch to the Symbol's Menu\n" +
                 "Remove SYMBOL - Removes the Symbol from the Chart Dictionary\n" +
                 "AnalyzeAll - Run analyses (Exponential Regression) on all Symbols\n" +
@@ -62,13 +63,20 @@ namespace Charty.Menu
                     return this;
                 }
 
-                if (ChartManager.ContainsSymbol(symbol))
+                if (SymbolManager.ContainsSymbol(symbol))
                 {
                     Console.WriteLine("'" + symbol + "' is already known");
                     return this;
                 }
 
-                await ChartManager.InitializeSymbol(symbol);
+                if(string.Equals(symbol, "ConfigSymbols", comparer))
+                {
+                    await SymbolManager.AddConfigurationSymbols();
+                    return this;
+                }
+
+                await SymbolManager.InitializeSymbol(symbol);
+                return this;
             }
 
             if (text.StartsWith("Switch ", comparer))
@@ -80,13 +88,13 @@ namespace Charty.Menu
                     return this;
                 }
 
-                if (!ChartManager.ContainsSymbol(symbol))
+                if (!SymbolManager.ContainsSymbol(symbol))
                 {
                     Console.WriteLine("'" + symbol + "' is unknown");
                     return this;
                 }
 
-                return new SymbolMenu(ChartManager, symbol);
+                return new SymbolMenu(SymbolManager, symbol);
             }
 
             if (text.StartsWith("Remove ", comparer))
@@ -98,7 +106,7 @@ namespace Charty.Menu
                     return this;
                 }
 
-                if (ChartManager.RemoveSymbol(symbol))
+                if (SymbolManager.RemoveSymbol(symbol))
                 {
                     Console.WriteLine("Removed '" + symbol + "'");
                 }
@@ -112,19 +120,19 @@ namespace Charty.Menu
 
             if (string.Equals(text, "AnalyzeAll", comparer))
             {
-                ChartManager.AnalyzeAll();
+                SymbolManager.AnalyzeAll();
                 return this;
             }
 
             if (string.Equals(text, "Rank1Year", comparer))
             {
-                ChartManager.RankExponentialRegressionResultsBy1YearForecast();
+                SymbolManager.RankExponentialRegressionResultsBy1YearForecast();
                 return this;
             }
 
             if (string.Equals(text, "Rank3Year", comparer))
             {
-                ChartManager.RankExponentialRegressionResultsBy3YearForecast();
+                SymbolManager.RankExponentialRegressionResultsBy3YearForecast();
                 return this;
             }
 

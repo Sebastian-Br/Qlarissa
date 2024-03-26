@@ -16,7 +16,7 @@ namespace Charty.Chart.ChartAnalysis
     /// </summary>
     public class ExponentialRegression
     {
-        public ExponentialRegression(ChartDataPoint[] chartDataPoints)
+        public ExponentialRegression(SymbolDataPoint[] chartDataPoints)
         {
             if (chartDataPoints == null || chartDataPoints.Length == 0)
                 throw new ArgumentException("No Data Points");
@@ -66,7 +66,7 @@ namespace Charty.Chart.ChartAnalysis
 
         public double B { get; private set; }
 
-        private double GetYearIndex(ChartDataPoint dataPoint)
+        private double GetYearIndex(SymbolDataPoint dataPoint)
         {
             return ConvertDateToYearIndex(dataPoint.Date);
         }
