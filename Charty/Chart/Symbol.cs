@@ -13,21 +13,22 @@ namespace Charty.Chart
 {
     public class Symbol
     {
-        public Symbol(SymbolDataPoint[] chartDataPoints, SymbolOverview chartOverview)
+        public Symbol(SymbolDataPoint[] dataPoints, SymbolOverview overview, ExponentialRegressionResult exponentialRegressionResult = null)
         {
-            ChartDataPoints = chartDataPoints ?? throw new ArgumentNullException(nameof(chartDataPoints));
-            if (ChartDataPoints.Length == 0)
+            DataPoints = dataPoints ?? throw new ArgumentNullException(nameof(dataPoints));
+            if (DataPoints.Length == 0)
             {
                 throw new ArgumentException("chartDataPoints does not contain any elements!");
             }
 
-            SymbolOverview = chartOverview ?? throw new ArgumentNullException(nameof(chartOverview));
+            Overview = overview ?? throw new ArgumentNullException(nameof(overview));
             ExcludedTimePeriods = new();
+            ExponentialRegressionModel = exponentialRegressionResult;
         }
 
-        public SymbolOverview SymbolOverview { get; private set; }
+        public SymbolOverview Overview { get; private set; }
 
-        public SymbolDataPoint[] ChartDataPoints {  get; private set; }
+        public SymbolDataPoint[] DataPoints {  get; private set; }
 
         public ExponentialRegressionResult ExponentialRegressionModel { get; private set; }
 
@@ -37,13 +38,13 @@ namespace Charty.Chart
         {
             if(ExponentialRegressionModel == null)
             {
-                ExponentialRegressionModel = new ExponentialRegressionResult(new ExponentialRegression(GetChartDataPointsWithoutExcludedTimePeriods()), ChartDataPoints.Last().MediumPrice, SymbolOverview);
+                ExponentialRegressionModel = new ExponentialRegressionResult(new ExponentialRegression(GetChartDataPointsWithoutExcludedTimePeriods()), DataPoints.Last().MediumPrice, Overview);
             }
         }
 
         public override string ToString()
         {
-            return SymbolOverview.Name + " (" + SymbolOverview.Symbol + ") - " + ChartDataPoints.Last().MediumPrice + " " + SymbolOverview.Currency.ToString();
+            return Overview.Name + " (" + Overview.Symbol + ") - " + DataPoints.Last().MediumPrice + " " + Overview.Currency.ToString();
         }
 
         public bool AddExcludedTimePeriod(string key, ExcludedTimePeriod excludedTimePeriod)
@@ -140,11 +141,11 @@ namespace Charty.Chart
         public SymbolDataPoint[] GetChartDataPointsWithoutExcludedTimePeriods()
         {
             List<SymbolDataPoint> result = new List<SymbolDataPoint>();
-            for(int i = 0; i < ChartDataPoints.Length; i++)
+            for(int i = 0; i < DataPoints.Length; i++)
             {
-                if (!IsDataPointInExcludedTimePeriods(ChartDataPoints[i]))
+                if (!IsDataPointInExcludedTimePeriods(DataPoints[i]))
                 {
-                    result.Add(ChartDataPoints[i]);
+                    result.Add(DataPoints[i]);
                 }
             }
 
@@ -155,15 +156,15 @@ namespace Charty.Chart
         {
             List<double> mediumPricesList = new();
 
-            for(int i = 0; i < ChartDataPoints.Count(); i++)
+            for(int i = 0; i < DataPoints.Count(); i++)
             {
-                if (ChartDataPoints[i].Date >= start && ChartDataPoints[i].Date <= end)
+                if (DataPoints[i].Date >= start && DataPoints[i].Date <= end)
                 {
-                    mediumPricesList.Add(ChartDataPoints[i].MediumPrice);
+                    mediumPricesList.Add(DataPoints[i].MediumPrice);
                 }
             }
 
-            double[] mediumPrices = ChartDataPoints.Select(point => point.MediumPrice).ToArray();
+            double[] mediumPrices = DataPoints.Select(point => point.MediumPrice).ToArray();
             int numberOfDataPoints = mediumPrices.Length;
 
             ScottPlot.Plot myPlot = new();
@@ -173,11 +174,11 @@ namespace Charty.Chart
 
         public bool WasStockBelowPrice(double price, DateOnly start, DateOnly end)
         {
-            for(int i = 0; i < ChartDataPoints.Length; i++)
+            for(int i = 0; i < DataPoints.Length; i++)
             {
-                if (ChartDataPoints[i].Date >= start && ChartDataPoints[i].Date <= end)
+                if (DataPoints[i].Date >= start && DataPoints[i].Date <= end)
                 {
-                    if (ChartDataPoints[i].LowPrice < price)
+                    if (DataPoints[i].LowPrice < price)
                     {
                         return true;
                     }
@@ -189,7 +190,7 @@ namespace Charty.Chart
 
         public void DbgPrintDataPoints()
         {
-            foreach(SymbolDataPoint point in ChartDataPoints)
+            foreach(SymbolDataPoint point in DataPoints)
             {
                 Console.WriteLine("Date:" + point.Date + " High:" + point.HighPrice + " Low:" + point.LowPrice + " Medium:" + point.MediumPrice);
             }

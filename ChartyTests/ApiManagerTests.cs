@@ -18,24 +18,23 @@ namespace ChartyTests
             apiOverview.MarketCapitalization = "123456789012";
             apiOverview.Currency = "USD";
 
-            Symbol chart = apiChart.ToBusinessChart(apiOverview);
+            Symbol chart = apiChart.ToBusinessChart(apiOverview.ToBusinessOverview());
 
             Symbol expectedChart = ApiChart_ExpectedChartTuple.Item2;
 
-            for(int i = 0; i < chart.ChartDataPoints.Length; i++)
+            for(int i = 0; i < chart.DataPoints.Length; i++)
             {
-                Assert.AreEqual(expectedChart.ChartDataPoints[i].Date, chart.ChartDataPoints[i].Date);
-                Assert.AreEqual(expectedChart.ChartDataPoints[i].HighPrice, chart.ChartDataPoints[i].HighPrice);
-                Assert.AreEqual(expectedChart.ChartDataPoints[i].LowPrice, chart.ChartDataPoints[i].LowPrice);
-                Assert.AreEqual(expectedChart.ChartDataPoints[i].MediumPrice, chart.ChartDataPoints[i].MediumPrice);
-                Assert.AreEqual(expectedChart.ChartDataPoints[i].DayIndex, chart.ChartDataPoints[i].DayIndex);
+                Assert.AreEqual(expectedChart.DataPoints[i].Date, chart.DataPoints[i].Date);
+                Assert.AreEqual(expectedChart.DataPoints[i].HighPrice, chart.DataPoints[i].HighPrice);
+                Assert.AreEqual(expectedChart.DataPoints[i].LowPrice, chart.DataPoints[i].LowPrice);
+                Assert.AreEqual(expectedChart.DataPoints[i].MediumPrice, chart.DataPoints[i].MediumPrice);
             }
 
-            Assert.AreEqual(expectedChart.SymbolOverview.Name, chart.SymbolOverview.Name);
-            Assert.AreEqual(expectedChart.SymbolOverview.Symbol, chart.SymbolOverview.Symbol);
-            Assert.AreEqual(expectedChart.SymbolOverview.PEratio, chart.SymbolOverview.PEratio);
-            Assert.AreEqual(expectedChart.SymbolOverview.MarketCapitalization, chart.SymbolOverview.MarketCapitalization);
-            Assert.AreEqual(expectedChart.SymbolOverview.Currency, chart.SymbolOverview.Currency);
+            Assert.AreEqual(expectedChart.Overview.Name, chart.Overview.Name);
+            Assert.AreEqual(expectedChart.Overview.Symbol, chart.Overview.Symbol);
+            Assert.AreEqual(expectedChart.Overview.PEratio, chart.Overview.PEratio);
+            Assert.AreEqual(expectedChart.Overview.MarketCapitalization, chart.Overview.MarketCapitalization);
+            Assert.AreEqual(expectedChart.Overview.Currency, chart.Overview.Currency);
         }
 
         public static IEnumerable<object[]> MockApiChart_AndExpectedBusinessChart_20PercentYoY
@@ -53,11 +52,11 @@ namespace ChartyTests
                 apiChart.DataPoints = apiChartDataPoints;
 
                 SymbolDataPoint[] expectedChartDataPoints = [
-                    new SymbolDataPoint(){ HighPrice = 101, LowPrice = 99, MediumPrice = 100, Date = new DateOnly ( 2020, 1, 1 ), DayIndex = 1},
-                    new SymbolDataPoint(){ HighPrice = 121, LowPrice = 119, MediumPrice = 120, Date = new DateOnly ( 2021, 1, 1 ), DayIndex = 366},
-                    new SymbolDataPoint(){ HighPrice = 145, LowPrice = 143, MediumPrice = 144, Date = new DateOnly ( 2022, 1, 1 ), DayIndex = 731},
-                    new SymbolDataPoint(){ HighPrice = 173, LowPrice = 172, MediumPrice = 172.5, Date = new DateOnly ( 2023, 1, 1 ), DayIndex = 1096},
-                    ]; // The DayIndex was calculated using https://www.timeanddate.com/date/durationresult.html?d1=1&m1=1&y1=2020&d2=1&m2=1&y2=2023
+                    new SymbolDataPoint(){ HighPrice = 101, LowPrice = 99, MediumPrice = 100, Date = new DateOnly ( 2020, 1, 1 )},
+                    new SymbolDataPoint(){ HighPrice = 121, LowPrice = 119, MediumPrice = 120, Date = new DateOnly ( 2021, 1, 1 )},
+                    new SymbolDataPoint(){ HighPrice = 145, LowPrice = 143, MediumPrice = 144, Date = new DateOnly ( 2022, 1, 1 )},
+                    new SymbolDataPoint(){ HighPrice = 173, LowPrice = 172, MediumPrice = 172.5, Date = new DateOnly ( 2023, 1, 1 )},
+                    ];
 
                 SymbolOverview overview = new SymbolOverview();
                 overview.Currency = Charty.Chart.Enums.Currency.USD_US_DOLLAR;

@@ -11,6 +11,28 @@ namespace Charty.Chart.ChartAnalysis
 {
     public class ExponentialRegressionResult
     {
+        /// <summary>
+        /// Used when importing data from the DB
+        /// </summary>
+        /// <param name="_A"></param>
+        /// <param name="_B"></param>
+        /// <param name="_Overview"></param>
+        /// <param name="_CurrentPrice"></param>
+        /// <param name="_OneYearGrowthEstimatePercentage"></param>
+        /// <param name="_ThreeYearGrowthEstimatePercentage"></param>
+        /// <param name="_DateCreated"></param>
+        public ExponentialRegressionResult(double _A, double _B, SymbolOverview _Overview, double _CurrentPrice, 
+            double _OneYearGrowthEstimatePercentage, double _ThreeYearGrowthEstimatePercentage, DateOnly _DateCreated)
+        {
+            A = _A; 
+            B = _B; 
+            Overview = _Overview;
+            CurrentPrice = _CurrentPrice;
+            OneYearGrowthEstimatePercentage = _OneYearGrowthEstimatePercentage;
+            ThreeYearGrowthEstimatePercentage= _ThreeYearGrowthEstimatePercentage;
+            DateCreated = _DateCreated;
+        }
+
         public ExponentialRegressionResult(ExponentialRegression e, double currentPrice, SymbolOverview overview)
         {
             if (currentPrice <= 0)

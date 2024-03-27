@@ -22,7 +22,12 @@ namespace Charty.Chart
 
             SymbolDictionary = new();
             RankByExpRegressionResult = new();
+            DataBase = new(configuration);
+            ImportSymbolDictionaryFromDataBase();
         }
+
+        private Database.DB DataBase { get; set; }
+
         private ApiManager ApiManager {  get; set; }
 
         private Dictionary <string, Symbol> SymbolDictionary { get; set; }
@@ -34,6 +39,16 @@ namespace Charty.Chart
         private Dictionary<string, SymbolOverview> AlternateOverviewSource { get; set; }
 
         private Dictionary<string,string> ConfigurationSymbols { get; set; }
+
+        private void ImportSymbolDictionaryFromDataBase()
+        {
+            Dictionary<string, Symbol> importedDictionary = DataBase.LoadSymbolDictionary();
+            foreach (var symbol in importedDictionary.Values)
+            {
+                Console.WriteLine("Added '" + symbol + "' from the DB.");
+                AddDefaultExcludedTimePeriodsToSymbol(symbol);
+            }
+        }
 
         public async Task InitializeSymbol(string symbol)
         {
@@ -59,13 +74,17 @@ namespace Charty.Chart
             }
 
             Symbol result = apiChart.ToBusinessChart(chartOverview);
-            foreach (KeyValuePair<string, ExcludedTimePeriod> entry in DefaultExcludedTimePeriods)
-            {
-                result.AddExcludedTimePeriod(entry.Key, entry.Value);
-            }
-
+            AddDefaultExcludedTimePeriodsToSymbol(result);
             SymbolDictionary.Add(symbol, result);
             Console.WriteLine("Added '" + symbol + "'");
+        }
+
+        private void AddDefaultExcludedTimePeriodsToSymbol(Symbol symbol)
+        {
+            foreach (KeyValuePair<string, ExcludedTimePeriod> entry in DefaultExcludedTimePeriods)
+            {
+                symbol.AddExcludedTimePeriod(entry.Key, entry.Value);
+            }
         }
 
         public async Task AddConfigurationSymbols()

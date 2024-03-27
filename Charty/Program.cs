@@ -1,5 +1,7 @@
 ﻿using Charty.Chart;
 using Charty.Chart.Api.ApiChart;
+using Charty.Chart.ChartAnalysis;
+using Charty.CustomConfiguration;
 using Charty.Menu;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,10 +23,9 @@ namespace Charty
             // apiManager.GetApiSymbol("ETR:ADS").Wait(); WORKS
 
             //customConfiguration.CheckSymbolsToBeAnalyzed().Wait(); checked all except ETR:s
+            SymbolManager symbolManager = new(baseConfiguration, customConfiguration);
 
-            SymbolManager chartManager = new(baseConfiguration, customConfiguration);
-
-            IMenu menu = new StartMenu(chartManager);
+            IMenu menu = new StartMenu(symbolManager);
             string input;
 
             while (true) {
@@ -38,6 +39,20 @@ namespace Charty
                     Console.WriteLine(ex);
                 }
             }
+        }
+
+        public void TestDBsave(IConfiguration baseConfiguration, CustomConfiguration.CustomConfiguration customConfiguration)
+        {
+
+            Database.DB db = new Database.DB(baseConfiguration);
+            SymbolDataPoint[] points = [ new SymbolDataPoint() { Date = new DateOnly(2023,1,1), HighPrice = 50, LowPrice = 40, MediumPrice = 45},
+            new SymbolDataPoint() { Date = new DateOnly(2023,1,2), HighPrice = 51, LowPrice = 41, MediumPrice = 46},
+            new SymbolDataPoint() { Date = new DateOnly(2023,1,3), HighPrice = 52, LowPrice = 42, MediumPrice = 47},
+            ];
+            SymbolOverview overview = new SymbolOverview() { Currency = Chart.Enums.Currency.USD_US_DOLLAR, DividendPerShareYearly = 1.2, MarketCapitalization = 0, Name = "TEST Inc.", Symbol = "TST", PEratio = 0 };
+            Symbol symbol = new(points, overview);
+            symbol.RunExponentialRegression();
+            db.InsertOrUpdateSymbolInformation(symbol);
         }
 
         static CustomConfiguration.CustomConfiguration BuildCustomConfiguration()
