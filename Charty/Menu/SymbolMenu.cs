@@ -1,9 +1,4 @@
 ﻿using Charty.Chart;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Charty.Menu
 {
@@ -12,12 +7,12 @@ namespace Charty.Menu
         public SymbolMenu(SymbolManager chartManager, string symbol)
         {
             SymbolManager = chartManager;
-            Chart = SymbolManager.RetrieveSymbol(symbol);
+            Symbol = SymbolManager.RetrieveSymbol(symbol);
             PrintNameAndMenu();
         }
         public SymbolManager SymbolManager { get; set; }
 
-        private Chart.Symbol Chart { get; set; }
+        private Chart.Symbol Symbol { get; set; }
 
         public string HelpMenu()
         {
@@ -25,6 +20,7 @@ namespace Charty.Menu
                 "Analyze - Run analyses (ExponentialRegression)\n" +
                 "Get1YearForecast - Gets the forecast (today's date + 1 year) based on the Exponential Regression Model\n" +
                 "Get3YearForecast - Gets the forecast (today's date + 3 years) based on the Exponential Regression Model\n" +
+                "Set CurrentPrice x - Sets the Current Price used in the Regression Model to x\n" +
                 "DbgPrintDataPoints - Prints the Data Points for Debugging Purposes\n" +
                 "Exit - Return to the Main Menu\n";
         }
@@ -38,7 +34,7 @@ namespace Charty.Menu
         {
             Console.WriteLine(StateName());
             Console.WriteLine(HelpMenu());
-            Console.WriteLine(Chart.ToString());
+            Console.WriteLine(Symbol.ToString());
         }
 
         public async Task<IMenu> SendText(string text)
@@ -57,21 +53,21 @@ namespace Charty.Menu
 
             if(string.Equals(text, "Analyze", comparer))
             {
-                Chart.RunExponentialRegression();
+                Symbol.RunExponentialRegression_IfNotExists();
                 return this;
             }
 
             if (string.Equals(text, "Get1YearForecast", comparer))
             {
-                Chart.RunExponentialRegression();
-                Console.WriteLine(Chart.ExponentialRegressionModel.OneYearGrowthEstimatePercentage + " %");
+                Symbol.RunExponentialRegression_IfNotExists();
+                Console.WriteLine(Symbol.ExponentialRegressionModel.GetExpectedOneYearPerformance_AsText());
                 return this;
             }
 
             if (string.Equals(text, "Get3YearForecast", comparer))
             {
-                Chart.RunExponentialRegression();
-                Console.WriteLine(Chart.ExponentialRegressionModel.ThreeYearGrowthEstimatePercentage + " %");
+                Symbol.RunExponentialRegression_IfNotExists();
+                Console.WriteLine(Symbol.ExponentialRegressionModel.GetExpectedThreeYearPerformance_AsText());
                 return this;
             }
 
@@ -82,7 +78,18 @@ namespace Charty.Menu
 
             if (string.Equals(text, "DbgPrintDataPoints", comparer))
             {
-                Chart.DbgPrintDataPoints();
+                Symbol.DbgPrintDataPoints();
+                return this;
+            }
+
+            if (text.StartsWith("Set CurrentPrice ", comparer))
+            {
+                string priceString = text.Replace("Set CurrentPrice ", "");
+                double price = double.Parse(priceString);
+                Symbol.RunExponentialRegression_IfNotExists();
+                Symbol.ExponentialRegressionModel.SetTemporaryEstimates(price);
+                Console.WriteLine(Symbol.ExponentialRegressionModel.GetExpectedOneYearPerformance_AsText());
+                Console.WriteLine(Symbol.ExponentialRegressionModel.GetExpectedThreeYearPerformance_AsText());
                 return this;
             }
 

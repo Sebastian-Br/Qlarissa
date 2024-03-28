@@ -1,13 +1,7 @@
 ﻿using Charty.Chart;
-using Charty.Chart.ChartAnalysis;
+using Charty.Chart.Analysis.ExponentialRegression;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
-using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Charty.Database
 {
@@ -25,9 +19,9 @@ namespace Charty.Database
             SetupTables();
         }
 
-        #region Readers
         private SqliteConnection Connection { get; set; }
 
+        #region Readers
         public Dictionary<string, Symbol> LoadSymbolDictionary()
         {
             Dictionary<string, Symbol> symbolDictionary = new();
@@ -42,11 +36,16 @@ namespace Charty.Database
                 SymbolDataPoint[] sortedDataPoints = symbolDataPointsTable
                 .Where(pair => pair.Key.Item1 == symbolTableEntry.Key) // Filter by SymbolId
                 .OrderBy(pair => pair.Key.Item2) // Sort by Date in ascending order
-                .Select(pair => pair.Value) // Select the SymbolDataPoint objects
+                .Select(pair => pair.Value) // Select SymbolDataPoints
                 .ToArray();
 
                 SymbolOverview overview = overviewTable[symbolTableEntry.Key];
-                ExponentialRegressionResult expRegressionResult = exponentialRegressionResultsTable[symbolTableEntry.Key];
+                ExponentialRegressionResult expRegressionResult = null;
+
+                if (exponentialRegressionResultsTable.ContainsKey(symbolTableEntry.Key))
+                {
+                    expRegressionResult = exponentialRegressionResultsTable[symbolTableEntry.Key];
+                }
 
                 Symbol symbol = new(dataPoints: sortedDataPoints,
                     overview: overview,
@@ -238,6 +237,8 @@ namespace Charty.Database
                 commands.Add(InsertInto_ExponentialRegressionResults_OrReplace(symbol.ExponentialRegressionModel));
             }
 
+            commands.Add("DROP TABLE IF EXISTS " + SYMBOL_ID_NAME + ";");
+
             TransactCommands(commands);
         }
         
@@ -285,7 +286,7 @@ namespace Charty.Database
 
         private string Declare_SYMBOL_ID_FromSymbolsTable(string symbol)
         {
-            string command = "CREATE TEMPORARY TABLE " + SYMBOL_ID_NAME + "(Id INTEGER); " +
+            string command = "CREATE TEMPORARY TABLE IF NOT EXISTS " + SYMBOL_ID_NAME + "(Id INTEGER); " +
                 "INSERT INTO " + SYMBOL_ID_NAME + " (Id) " + "SELECT Id FROM " + Table_Symbols + " WHERE Symbol COLLATE NOCASE = " + SingleQuote(symbol) + ";";
             //string command = "WITH " + SYMBOL_ID_NAME + " AS (SELECT Id FROM " + Table_Symbols + " WHERE Symbol COLLATE NOCASE = " + SingleQuote(symbol) + ");";
             return command;

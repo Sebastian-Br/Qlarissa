@@ -1,4 +1,4 @@
-﻿using Charty.Chart.ChartAnalysis;
+﻿using Charty.Chart.Analysis.ExponentialRegression;
 using Charty.Chart.ExcludedTimePeriods;
 using Newtonsoft.Json.Linq;
 using ScottPlot;
@@ -34,16 +34,23 @@ namespace Charty.Chart
 
         private Dictionary<string,ExcludedTimePeriod> ExcludedTimePeriods { get; set; }
 
-        public void RunExponentialRegression()
+        public void RunExponentialRegression_IfNotExists()
         {
             if(ExponentialRegressionModel == null)
             {
-                ExponentialRegressionModel = new ExponentialRegressionResult(new ExponentialRegression(GetChartDataPointsWithoutExcludedTimePeriods()), DataPoints.Last().MediumPrice, Overview);
+                ExponentialRegressionModel = new ExponentialRegressionResult(new ExponentialRegression(GetDataPointsNotInExcludedTimePeriods()), DataPoints.Last().MediumPrice, Overview);
             }
         }
 
         public override string ToString()
         {
+            if(this.ExponentialRegressionModel != null)
+            {
+                if (this.ExponentialRegressionModel.TemporaryEstimates != null)
+                {
+                    return Overview.Name + " (" + Overview.Symbol + ") - " + this.ExponentialRegressionModel.TemporaryEstimates.CurrentPrice + " " + Overview.Currency.ToString();
+                }
+            }
             return Overview.Name + " (" + Overview.Symbol + ") - " + DataPoints.Last().MediumPrice + " " + Overview.Currency.ToString();
         }
 
@@ -138,7 +145,7 @@ namespace Charty.Chart
             return false;
         }
 
-        public SymbolDataPoint[] GetChartDataPointsWithoutExcludedTimePeriods()
+        public SymbolDataPoint[] GetDataPointsNotInExcludedTimePeriods()
         {
             List<SymbolDataPoint> result = new List<SymbolDataPoint>();
             for(int i = 0; i < DataPoints.Length; i++)

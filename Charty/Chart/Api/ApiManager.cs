@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Charty.Chart.Api.ApiChart;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using ScottPlot;
 using ScottPlot.Colormaps;
@@ -12,7 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace Charty.Chart.Api.ApiChart
+namespace Charty.Chart.Api
 {
     internal class ApiManager
     {
@@ -27,12 +28,12 @@ namespace Charty.Chart.Api.ApiChart
                 throw new ArgumentNullException(nameof(ApiKeys));
             }
 
-            if(ApiKeys.Count == 0)
+            if (ApiKeys.Count == 0)
             {
                 throw new ArgumentException(nameof(ApiKeys));
             }
 
-            foreach(string keys in ApiKeys) // using multiple ApiKeys might not actually work and their rate-detection might *only* be IP-based (detecting some proxies)
+            foreach (string keys in ApiKeys) // using multiple ApiKeys might not actually work and their rate-detection might *only* be IP-based (detecting some proxies)
             {
                 if (string.IsNullOrEmpty(keys))
                 {
@@ -63,7 +64,7 @@ namespace Charty.Chart.Api.ApiChart
         /// <exception cref="ArgumentException"></exception>
         public async Task<ApiSymbol> GetApiSymbol(string symbol)
         {
-            functionStart:
+        functionStart:
             string requestUri = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&outputsize=full&symbol=" + symbol;
             int index = ApiKeyIndex % ApiKeys.Count; // just to ensure that, even if the index is incremented while a request is running, the index will not be out of bounds
             requestUri = requestUri + "&apikey=" + ApiKeys[index];
@@ -81,7 +82,7 @@ namespace Charty.Chart.Api.ApiChart
             {
                 Console.WriteLine("API Key with index " + ApiKeyIndex + " is exhausted. Using the next Key.");
                 ApiKeyIndex++;
-                if(ApiKeyIndex >= ApiKeys.Count)
+                if (ApiKeyIndex >= ApiKeys.Count)
                 {
                     throw new ArgumentException("All API keys are exhausted");
                 }
@@ -97,7 +98,7 @@ namespace Charty.Chart.Api.ApiChart
 
         public async Task<ApiOverview> GetApiOverview(string symbol)
         {
-            functionStart:
+        functionStart:
             string requestUri = "https://www.alphavantage.co/query?function=OVERVIEW&symbol=" + symbol;
             int index = ApiKeyIndex % ApiKeys.Count; // just to ensure that, even if the index is incremented while a request is running, the index will not be out of bounds
             requestUri = requestUri + "&apikey=" + ApiKeys[index];
@@ -122,7 +123,7 @@ namespace Charty.Chart.Api.ApiChart
                 goto functionStart;
             }
 
-            if(jsonResponse == "{}") // no Overview found
+            if (jsonResponse == "{}") // no Overview found
             {
                 Console.WriteLine("API Overview data for " + symbol + " does not exist");
             }

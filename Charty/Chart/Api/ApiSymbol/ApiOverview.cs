@@ -15,7 +15,7 @@ namespace Charty.Chart.Api.ApiChart
         public SymbolOverview ToBusinessOverview()
         {
             SymbolOverview chartOverview = new SymbolOverview();
-            chartOverview.Symbol = Symbol;
+            chartOverview.Symbol = Symbol.ToUpper();
             chartOverview.Name = Name;
             chartOverview.MarketCapitalization = long.Parse(MarketCapitalization);
 

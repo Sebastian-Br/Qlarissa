@@ -6,8 +6,11 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Charty.Chart.ExcludedTimePeriods;
 using Charty.Chart.Api.ApiChart;
-using Charty.Chart.ChartAnalysis;
 using System.Runtime.CompilerServices;
+using Charty.Chart.Api;
+using Charty.Chart.Analysis.ExponentialRegression;
+using ScottPlot;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Charty.Chart
 {
@@ -45,22 +48,41 @@ namespace Charty.Chart
             Dictionary<string, Symbol> importedDictionary = DataBase.LoadSymbolDictionary();
             foreach (var symbol in importedDictionary.Values)
             {
-                Console.WriteLine("Added '" + symbol + "' from the DB.");
+                Console.WriteLine("Added '" + symbol.Overview.Symbol + "' from the DB.");
                 AddDefaultExcludedTimePeriodsToSymbol(symbol);
             }
+
+            SymbolDictionary = importedDictionary;
         }
 
-        public async Task InitializeSymbol(string symbol)
+        public async Task InitializeSymbolFromAPI(string symbol, bool performUpdate = false)
         {
+            if (SymbolDictionary.ContainsKey(symbol))
+            {
+                if(performUpdate == false)
+                {
+                    Console.WriteLine("Symbol '" + symbol + "' is already known.");
+                    return;
+                }
+            }
+            else
+            {
+                if (performUpdate) // and does not contain key
+                {
+                    Console.WriteLine("Symbol '" + symbol + "' can not be updated because it is unknown.");
+                    return;
+                }
+            }
+
             ApiSymbol apiChart = await ApiManager.GetApiSymbol(symbol);
             ApiOverview apiOverview = await ApiManager.GetApiOverview(symbol);
-            SymbolOverview chartOverview;
+            SymbolOverview overview;
 
             if(apiOverview == null || string.IsNullOrEmpty(apiOverview.Name)) // indicating that retrieving the apiOverview failed
             {
                 if (AlternateOverviewSource.ContainsKey(symbol))
                 {
-                    chartOverview = AlternateOverviewSource[symbol];
+                    overview = AlternateOverviewSource[symbol];
                     Console.WriteLine("Added '" + symbol + "' from the AlternateOverviewSource");
                 }
                 else
@@ -70,13 +92,30 @@ namespace Charty.Chart
             }
             else
             {
-                chartOverview = apiOverview.ToBusinessOverview();
+                overview = apiOverview.ToBusinessOverview();
             }
 
-            Symbol result = apiChart.ToBusinessChart(chartOverview);
+            Symbol result = apiChart.ToBusinessChart(overview);
             AddDefaultExcludedTimePeriodsToSymbol(result);
-            SymbolDictionary.Add(symbol, result);
-            Console.WriteLine("Added '" + symbol + "'");
+            result.RunExponentialRegression_IfNotExists();
+
+            DataBase.InsertOrUpdateSymbolInformation(result);
+            //SymbolDictionary.Add(symbol, result);
+            SymbolDictionary[symbol] = result;
+            Console.WriteLine((performUpdate ? "Updated" : "Added") + " '" + symbol + "'");
+        }
+
+        public async Task UpdateAll()
+        {
+            List<string> orderedSymbolKeys = SymbolDictionary
+            .OrderBy(kv => kv.Value.DataPoints.Last().Date)
+            .Select(kv => kv.Key.ToUpper())
+            .ToList();
+
+            foreach (string key in orderedSymbolKeys)
+            {
+                await InitializeSymbolFromAPI(key, true);
+            }
         }
 
         private void AddDefaultExcludedTimePeriodsToSymbol(Symbol symbol)
@@ -91,7 +130,7 @@ namespace Charty.Chart
         {
             foreach(string symbol in ConfigurationSymbols.Keys)
             {
-                await InitializeSymbol(symbol);
+                await InitializeSymbolFromAPI(symbol);
             }
         }
 
@@ -121,10 +160,12 @@ namespace Charty.Chart
             if(SymbolDictionary.Count > 0)
             {
                 Console.WriteLine("Starting Analysis");
-                foreach (Symbol chart in SymbolDictionary.Values)
+                foreach (Symbol symbol in SymbolDictionary.Values)
                 {
-                    chart.RunExponentialRegression();
+                    symbol.RunExponentialRegression_IfNotExists();
+                    DataBase.InsertOrUpdateSymbolInformation(symbol);
                 }
+
                 Console.WriteLine("Analysis Complete");
                 return true;
             }

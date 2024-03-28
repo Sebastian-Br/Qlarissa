@@ -9,7 +9,7 @@ using MathNet.Numerics;
 using MathNet.Numerics.Optimization;
 using ScottPlot;
 
-namespace Charty.Chart.ChartAnalysis
+namespace Charty.Chart.Analysis.ExponentialRegression
 {
     /// <summary>
     /// y = a * b^x
@@ -25,6 +25,7 @@ namespace Charty.Chart.ChartAnalysis
             double[] y = new double[chartDataPoints.Length];
             for (int i = 0; i < chartDataPoints.Length; i++)
             {
+                //Console.WriteLine(chartDataPoints[i].Date);
                 x[i] = GetYearIndex(chartDataPoints[i]);
                 y[i] = chartDataPoints[i].MediumPrice;
             }
@@ -53,7 +54,7 @@ namespace Charty.Chart.ChartAnalysis
             MathNet.Numerics.LinearAlgebra.Vector<double> initialGuess = MathNet.Numerics.LinearAlgebra.Vector<double>.Build.DenseOfArray(new[] { initialA, initialB });
 
             // Use Levenberg-Marquardt algorithm to minimize the objective function
-            NelderMeadSimplex nms = new(1e-6, 1000000);
+            NelderMeadSimplex nms = new(1e-20, 10000000);
             var result = nms.FindMinimum(objFunction, initialGuess);
 
             // Extract optimized parameters
@@ -62,7 +63,7 @@ namespace Charty.Chart.ChartAnalysis
             Console.WriteLine("ExponentialRegression: y = " + A + " * " + B + " ^x");
         }
 
-        public double A {  get; private set; }
+        public double A { get; private set; }
 
         public double B { get; private set; }
 
@@ -76,7 +77,7 @@ namespace Charty.Chart.ChartAnalysis
             int year = date.Year;
             int dayOfYear = date.DayOfYear;
             int daysInYear = DateTime.IsLeapYear(year) ? 366 : 365;
-            double yearIndex = year + (dayOfYear / (double)daysInYear);
+            double yearIndex = year + dayOfYear / (double)daysInYear;
             return yearIndex;
         }
     }

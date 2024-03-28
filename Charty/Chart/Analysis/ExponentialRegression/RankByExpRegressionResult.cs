@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Charty.Chart.ChartAnalysis
+namespace Charty.Chart.Analysis.ExponentialRegression
 {
     public class RankByExpRegressionResult
     {
@@ -13,7 +13,7 @@ namespace Charty.Chart.ChartAnalysis
             ExponentialRegressionResults = new();
         }
 
-        public List<ExponentialRegressionResult> ExponentialRegressionResults { get; private set;}
+        public List<ExponentialRegressionResult> ExponentialRegressionResults { get; private set; }
 
         public void PrintResultsRankedBy1YearEstimate()
         {
@@ -24,8 +24,8 @@ namespace Charty.Chart.ChartAnalysis
             Console.WriteLine("****************************************");
             foreach (var result in ExponentialRegressionResults)
             {
-                Console.Write("Rank " + rank + ": " + result.Overview.GetBasicInformation());
-                Console.WriteLine("Expected 1 Year Performance: " + result.OneYearGrowthEstimatePercentage + " %");
+                Console.Write("Rank " + rank + ": " + result.GetExpectedOneYearPerformance_AsText() + "\n");
+                //Console.WriteLine("Expected 1 Year Performance: " + result.OneYearGrowthEstimatePercentage + " %");
                 rank++;
             }
             Console.WriteLine("****************************************");
@@ -40,9 +40,8 @@ namespace Charty.Chart.ChartAnalysis
             Console.WriteLine("****************************************");
             foreach (var result in ExponentialRegressionResults)
             {
-                Console.Write("Rank " + rank + ": " + result.Overview.GetBasicInformation());
-                Console.WriteLine("Expected 3 Year Performance: " + result.ThreeYearGrowthEstimatePercentage 
-                        + " % (1 year equivalent: " + ConvertToOneYearEstimate(result.ThreeYearGrowthEstimatePercentage) + " %)");
+                Console.Write("Rank " + rank + ": " + result.GetExpectedThreeYearPerformance_AsText() + "\n");
+                //Console.WriteLine("Expected 3 Year Performance: " + result.ThreeYearGrowthEstimatePercentage + " % (1 year equivalent: " + ConvertToOneYearEstimate(result.ThreeYearGrowthEstimatePercentage) + " %)");
                 rank++;
             }
             Console.WriteLine("****************************************");
@@ -50,18 +49,12 @@ namespace Charty.Chart.ChartAnalysis
 
         private void OrderBy1YearEstimate()
         {
-            ExponentialRegressionResults.Sort((x, y) => y.OneYearGrowthEstimatePercentage.CompareTo(x.OneYearGrowthEstimatePercentage));
+            ExponentialRegressionResults.Sort((x, y) => y.GetMostRecent_OneYearGrowthEstimatePercentage().CompareTo(x.GetMostRecent_OneYearGrowthEstimatePercentage()));
         }
 
-        private void OrderBy3YearEstimate() 
+        private void OrderBy3YearEstimate()
         {
-            ExponentialRegressionResults.Sort((x, y) => y.ThreeYearGrowthEstimatePercentage.CompareTo(x.ThreeYearGrowthEstimatePercentage));
-        }
-
-        private double ConvertToOneYearEstimate(double threeYearEstimate)
-        {
-            double rate = threeYearEstimate / 100.0;
-            return Math.Round((Math.Pow(1.0 + rate, 1.0 / 3.0) - 1.0) * 100.0, 6); // Rounding to 6 decimal places
+            ExponentialRegressionResults.Sort((x, y) => y.GetMostRecent_ThreeYearGrowthEstimatePercentage().CompareTo(x.GetMostRecent_ThreeYearGrowthEstimatePercentage()));
         }
     }
 }

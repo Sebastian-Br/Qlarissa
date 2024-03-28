@@ -1,5 +1,5 @@
 ﻿using Charty.Chart;
-using Charty.Chart.Api.ApiChart;
+using Charty.Chart.Api;
 using Charty.Chart.ChartAnalysis;
 using Charty.CustomConfiguration;
 using Charty.Menu;
@@ -19,7 +19,7 @@ namespace Charty
             IHost host = CreateHostBuilder().Build();
             IConfiguration baseConfiguration = host.Services.GetRequiredService<IConfiguration>();
             CustomConfiguration.CustomConfiguration customConfiguration = BuildCustomConfiguration();
-            ApiManager apiManager = new(baseConfiguration);
+            // ApiManager apiManager = new(baseConfiguration);
             // apiManager.GetApiSymbol("ETR:ADS").Wait(); WORKS
 
             //customConfiguration.CheckSymbolsToBeAnalyzed().Wait(); checked all except ETR:s
@@ -41,7 +41,7 @@ namespace Charty
             }
         }
 
-        public void TestDBsave(IConfiguration baseConfiguration, CustomConfiguration.CustomConfiguration customConfiguration)
+        static void TestDBsave(IConfiguration baseConfiguration, CustomConfiguration.CustomConfiguration customConfiguration)
         {
 
             Database.DB db = new Database.DB(baseConfiguration);
@@ -51,7 +51,22 @@ namespace Charty
             ];
             SymbolOverview overview = new SymbolOverview() { Currency = Chart.Enums.Currency.USD_US_DOLLAR, DividendPerShareYearly = 1.2, MarketCapitalization = 0, Name = "TEST Inc.", Symbol = "TST", PEratio = 0 };
             Symbol symbol = new(points, overview);
-            symbol.RunExponentialRegression();
+            symbol.RunExponentialRegression_IfNotExists();
+            db.InsertOrUpdateSymbolInformation(symbol);
+        }
+
+        static void TestDBsave2(IConfiguration baseConfiguration, CustomConfiguration.CustomConfiguration customConfiguration)
+        {
+
+            Database.DB db = new Database.DB(baseConfiguration);
+            SymbolDataPoint[] points = [ new SymbolDataPoint() { Date = new DateOnly(2023,1,1), HighPrice = 50, LowPrice = 40, MediumPrice = 45},
+            new SymbolDataPoint() { Date = new DateOnly(2023,1,2), HighPrice = 51, LowPrice = 41, MediumPrice = 46},
+            new SymbolDataPoint() { Date = new DateOnly(2023,1,3), HighPrice = 52, LowPrice = 42, MediumPrice = 47},
+            new SymbolDataPoint() { Date = new DateOnly(2023,1,4), HighPrice = 53, LowPrice = 43, MediumPrice = 48},
+            ];
+            SymbolOverview overview = new SymbolOverview() { Currency = Chart.Enums.Currency.USD_US_DOLLAR, DividendPerShareYearly = 1.37, MarketCapitalization = 0, Name = "TEST Inc.", Symbol = "TST", PEratio = 0 };
+            Symbol symbol = new(points, overview);
+            symbol.RunExponentialRegression_IfNotExists();
             db.InsertOrUpdateSymbolInformation(symbol);
         }
 
