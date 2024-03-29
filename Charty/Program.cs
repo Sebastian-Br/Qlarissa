@@ -42,34 +42,7 @@ namespace Charty
             }
         }
 
-        static void TestDBsave(IConfiguration baseConfiguration, CustomConfiguration.CustomConfiguration customConfiguration)
-        {
-
-            Database.DB db = new Database.DB(baseConfiguration);
-            SymbolDataPoint[] points = [ new SymbolDataPoint() { Date = new DateOnly(2023,1,1), HighPrice = 50, LowPrice = 40, MediumPrice = 45},
-            new SymbolDataPoint() { Date = new DateOnly(2023,1,2), HighPrice = 51, LowPrice = 41, MediumPrice = 46},
-            new SymbolDataPoint() { Date = new DateOnly(2023,1,3), HighPrice = 52, LowPrice = 42, MediumPrice = 47},
-            ];
-            SymbolOverview overview = new SymbolOverview() { Currency = Chart.Enums.Currency.USD, DividendPerShareYearly = 1.2, MarketCapitalization = 0, Name = "TEST Inc.", Symbol = "TST", PEratio = 0 };
-            Symbol symbol = new(points, overview);
-            symbol.RunExponentialRegression_IfNotExists();
-            db.InsertOrUpdateSymbolInformation(symbol);
-        }
-
-        static void TestDBsave2(IConfiguration baseConfiguration, CustomConfiguration.CustomConfiguration customConfiguration)
-        {
-
-            Database.DB db = new Database.DB(baseConfiguration);
-            SymbolDataPoint[] points = [ new SymbolDataPoint() { Date = new DateOnly(2023,1,1), HighPrice = 50, LowPrice = 40, MediumPrice = 45},
-            new SymbolDataPoint() { Date = new DateOnly(2023,1,2), HighPrice = 51, LowPrice = 41, MediumPrice = 46},
-            new SymbolDataPoint() { Date = new DateOnly(2023,1,3), HighPrice = 52, LowPrice = 42, MediumPrice = 47},
-            new SymbolDataPoint() { Date = new DateOnly(2023,1,4), HighPrice = 53, LowPrice = 43, MediumPrice = 48},
-            ];
-            SymbolOverview overview = new SymbolOverview() { Currency = Chart.Enums.Currency.USD, DividendPerShareYearly = 1.37, MarketCapitalization = 0, Name = "TEST Inc.", Symbol = "TST", PEratio = 0 };
-            Symbol symbol = new(points, overview);
-            symbol.RunExponentialRegression_IfNotExists();
-            db.InsertOrUpdateSymbolInformation(symbol);
-        }
+        
 
         static CustomConfiguration.CustomConfiguration BuildCustomConfiguration()
         {
@@ -88,64 +61,6 @@ namespace Charty
             });
 
             return hostBuilder;
-        }
-
-        /*
-         Unused Code Below
-         */
-
-        #region Incorrect Dictionary Deserialization
-        // These functions all fail in the same way: They do NOT extract dictionary entries WHEN a StartDate or EndDate is null.
-        // Additionally, they reorder the elements alphabetically according to their key. Why?
-        CustomConfiguration.CustomConfiguration IConfiguration_Get_Fails(IConfiguration baseConfiguration)
-        {
-            return baseConfiguration.GetRequiredSection(nameof(CustomConfiguration.CustomConfiguration)).Get<CustomConfiguration.CustomConfiguration>(); 
-        }
-
-        CustomConfiguration.CustomConfiguration ConfigurationBinder_Get_Fails(IConfiguration baseConfiguration)
-        {
-            return (CustomConfiguration.CustomConfiguration)ConfigurationBinder.Get(baseConfiguration, typeof(CustomConfiguration.CustomConfiguration));
-        }
-
-        CustomConfiguration.CustomConfiguration IOptions_Fails(IConfiguration baseConfiguration)
-        {
-            var services = new ServiceCollection();
-
-            services.AddOptions<CustomConfiguration.CustomConfiguration>()
-                .Bind(baseConfiguration.GetSection(nameof(CustomConfiguration.CustomConfiguration)));
-
-            var serviceProvider = services.BuildServiceProvider();
-            return serviceProvider.GetRequiredService<IOptions<CustomConfiguration.CustomConfiguration>>().Value;
-        }
-
-        #endregion
-
-        static Dictionary<TKey, TValue> GetDictionaryFromConfiguration<TKey,TValue>(IConfiguration configuration,string key) // this is required because by default, config.GetValue<string,any:object> doesn't deserialize the dictionary correctly for any constructed object type
-        {
-            IConfigurationSection section = configuration.GetSection(key);
-            var dictionary = GetSectionAsDictionary(section);
-            string defaultExcludedTimePeriodsString = JsonConvert.SerializeObject(dictionary);
-            Dictionary<TKey, TValue> resultDictionary = JsonConvert.DeserializeObject<Dictionary<TKey, TValue>>(defaultExcludedTimePeriodsString);
-            return resultDictionary;
-        }
-        static Dictionary<string, object> GetSectionAsDictionary(IConfigurationSection section)
-        {
-            var result = new Dictionary<string, object>();
-
-            foreach (var child in section.GetChildren())
-            {
-                if (child.Value != null)
-                {
-                    result[child.Key] = child.Value;
-                }
-                else
-                {
-                    var childDictionary = GetSectionAsDictionary(child);
-                    result[child.Key] = childDictionary.Any() ? childDictionary : null;
-                }
-            }
-
-            return result;
         }
     }
 }

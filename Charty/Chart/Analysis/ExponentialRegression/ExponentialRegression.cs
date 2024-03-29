@@ -52,7 +52,7 @@ namespace Charty.Chart.Analysis.ExponentialRegression
             MathNet.Numerics.LinearAlgebra.Vector<double> initialGuess = MathNet.Numerics.LinearAlgebra.Vector<double>.Build.DenseOfArray(new[] { initialA, initialB });
 
             // Use Levenberg-Marquardt algorithm to minimize the objective function
-            NelderMeadSimplex nms = new(1e-14, 1000000);
+            NelderMeadSimplex nms = new(1e-12, 1000000);
             var result = nms.FindMinimum(objFunction, initialGuess);
 
             // Extract optimized parameters
