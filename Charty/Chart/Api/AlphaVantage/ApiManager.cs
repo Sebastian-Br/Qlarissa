@@ -1,5 +1,4 @@
-﻿using Charty.Chart.Api.ApiChart;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using ScottPlot;
 using ScottPlot.Colormaps;
@@ -13,7 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace Charty.Chart.Api
+namespace Charty.Chart.Api.AlphaVantage
 {
     internal class ApiManager
     {
@@ -53,6 +52,8 @@ namespace Charty.Chart.Api
         private int ApiKeyIndex { get; set; }
 
         /// <summary>
+        /// DEPRECATED. API is unusable because the adjusted-daily function is a premium-only function.
+        /// It's thus impossible to verify data integrity for this function which already seems to be off for the TSCO.LON example.
         /// Gets the AlphaVantage API representation of a symbol.
         /// Calls DiscardEntriesBeforeDate() to discard all data points before 2009 to lower the load on the application and DB.
         /// This function would normally extract data points in descending order by date. This is unintentional.
@@ -65,7 +66,7 @@ namespace Charty.Chart.Api
         public async Task<ApiSymbol> GetApiSymbol(string symbol)
         {
         functionStart:
-            string requestUri = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&outputsize=full&symbol=" + symbol;
+            string requestUri = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&outputsize=full&symbol=" + symbol;
             int index = ApiKeyIndex % ApiKeys.Count; // just to ensure that, even if the index is incremented while a request is running, the index will not be out of bounds
             requestUri = requestUri + "&apikey=" + ApiKeys[index];
             Console.WriteLine("GetApiSymbol(): requestUri = " + requestUri);

@@ -5,12 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Charty.Chart.ExcludedTimePeriods;
-using Charty.Chart.Api.ApiChart;
 using System.Runtime.CompilerServices;
-using Charty.Chart.Api;
 using Charty.Chart.Analysis.ExponentialRegression;
 using ScottPlot;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using ScottPlot.TickGenerators.TimeUnits;
+using Charty.Chart.Api.AlphaVantage;
+using Charty.Chart.Api;
+using Charty.Chart.Api.PYfinance;
 
 namespace Charty.Chart
 {
@@ -27,11 +29,14 @@ namespace Charty.Chart
             RankByExpRegressionResult = new();
             DataBase = new(configuration);
             ImportSymbolDictionaryFromDataBase();
+            PYfinanceManager = new PyFinanceApiManager(configuration);
         }
 
         private Database.DB DataBase { get; set; }
 
         private ApiManager ApiManager {  get; set; }
+
+        private IApiManager PYfinanceManager { get; set; }
 
         private Dictionary <string, Symbol> SymbolDictionary { get; set; }
 
@@ -64,6 +69,10 @@ namespace Charty.Chart
                     Console.WriteLine("Symbol '" + symbol + "' is already known.");
                     return;
                 }
+                else
+                {
+                    Console.WriteLine("Updating " + symbol);
+                }
             }
             else
             {
@@ -74,28 +83,7 @@ namespace Charty.Chart
                 }
             }
 
-            ApiSymbol apiChart = await ApiManager.GetApiSymbol(symbol);
-            ApiOverview apiOverview = await ApiManager.GetApiOverview(symbol);
-            SymbolOverview overview;
-
-            if(apiOverview == null || string.IsNullOrEmpty(apiOverview.Name)) // indicating that retrieving the apiOverview failed
-            {
-                if (AlternateOverviewSource.ContainsKey(symbol))
-                {
-                    overview = AlternateOverviewSource[symbol];
-                    Console.WriteLine("Added '" + symbol + "' from the AlternateOverviewSource");
-                }
-                else
-                {
-                    throw new InvalidOperationException("Can not get Overview data for " + symbol);
-                }
-            }
-            else
-            {
-                overview = apiOverview.ToBusinessOverview();
-            }
-
-            Symbol result = apiChart.ToBusinessChart(overview);
+            Symbol result = await PYfinanceManager.RetrieveSymbol(symbol);
             AddDefaultExcludedTimePeriodsToSymbol(result);
             result.RunExponentialRegression_IfNotExists();
 
@@ -206,6 +194,53 @@ namespace Charty.Chart
             }
 
             RankByExpRegressionResult.PrintResultsRankedBy3YearEstimate();
+        }
+
+        public void Draw(string symbolStr)
+        {
+            var symbol = SymbolDictionary[symbolStr];
+            SymbolDataPoint[] dataPoints = symbol.GetDataPointsNotInExcludedTimePeriods();
+            double[] x = dataPoints.Select(point => ConvertDateToYearIndex(point.Date)).ToArray();
+            double[] y = dataPoints.Select(point => point.MediumPrice).ToArray();
+            //int numberOfDataPoints = mediumPrices.Length;
+
+            double firstYearIndex = ConvertDateToYearIndex(dataPoints.First().Date);
+            double lastYearIndex = ConvertDateToYearIndex(dataPoints.Last().Date);
+
+            DateOnly xDateForExpRegression = dataPoints.First().Date;
+            double xDateIndexForExpReg = ConvertDateToYearIndex(xDateForExpRegression);
+
+            List<double> expRegXs = new List<double>();
+            List<double> expRegYs = new List<double>();
+
+
+            while(xDateIndexForExpReg <= lastYearIndex)
+            {
+                expRegXs.Add(xDateIndexForExpReg);
+                expRegYs.Add(symbol.ExponentialRegressionModel.GetEstimate(xDateForExpRegression));
+
+                xDateForExpRegression = xDateForExpRegression.AddDays(1);
+                xDateIndexForExpReg = ConvertDateToYearIndex(xDateForExpRegression);
+            }
+
+            ScottPlot.Plot myPlot = new();
+            myPlot.Add.Scatter(x, y);
+
+            ScottPlot.Palettes.Category20 palette = new();
+            var Scatter = myPlot.Add.Scatter(expRegXs.ToArray(), expRegYs.ToArray());
+            Scatter.Label = "Exponential Regression A= " + symbol.ExponentialRegressionModel.A + " B=" + symbol.ExponentialRegressionModel.B;
+            Scatter.Color = palette.Colors[2];
+            myPlot.Title(symbolStr);
+            myPlot.SavePng(symbolStr + ".png", 1200, 900);
+        }
+
+        private double ConvertDateToYearIndex(DateOnly date)
+        {
+            int year = date.Year;
+            int dayOfYear = date.DayOfYear;
+            int daysInYear = DateTime.IsLeapYear(year) ? 366 : 365;
+            double yearIndex = year + dayOfYear / (double)daysInYear;
+            return yearIndex;
         }
     }
 }

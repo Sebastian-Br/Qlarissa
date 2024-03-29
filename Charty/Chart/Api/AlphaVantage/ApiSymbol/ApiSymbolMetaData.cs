@@ -5,11 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Charty.Chart.Api.ApiChart
+namespace Charty.Chart.Api.AlphaVantage
 {
-    public class ApiChartMetaData
+    public class ApiSymbolMetaData
     {
-        public ApiChartMetaData()
+        public ApiSymbolMetaData()
         {
             Information = "";
             Symbol = "";

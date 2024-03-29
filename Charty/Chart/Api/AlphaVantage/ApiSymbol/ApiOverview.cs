@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Charty.Chart.Api.ApiChart
+namespace Charty.Chart.Api.AlphaVantage
 {
     // Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
     public class ApiOverview
@@ -37,30 +37,7 @@ namespace Charty.Chart.Api.ApiChart
                 chartOverview.DividendPerShareYearly = double.Parse(DividendPerShare);
             }
 
-            if (Currency == "USD")
-            {
-                chartOverview.Currency = Enums.Currency.USD_US_DOLLAR;
-            }
-            else if (Currency == "EUR")
-            {
-                chartOverview.Currency = Enums.Currency.EUR_EURO;
-            }
-            else if (Currency == "GBP")
-            {
-                chartOverview.Currency = Enums.Currency.GBP_POUND_STERLING;
-            }
-            else if (Currency == "AUD")
-            {
-                chartOverview.Currency = Enums.Currency.AUD_AUSTRALIAN_DOLLAR;
-            }
-            else if (Currency == "CAD")
-            {
-                chartOverview.Currency = Enums.Currency.CAD_CANADIAN_DOLLAR;
-            }
-            else
-            {
-                throw new ArgumentException("Currency '" + Currency + "' is not recognized");
-            }
+            chartOverview.Currency = CurrencyExtensions.ToEnum(Currency);
 
             return chartOverview;
         }

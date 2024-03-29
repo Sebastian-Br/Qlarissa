@@ -45,16 +45,14 @@ namespace Charty.Chart.Analysis.ExponentialRegression
                 return sum;
             };
 
-            // Create an instance of ObjectiveFunction
             var objFunction = ObjectiveFunction.Value(objective);
 
-            // Initial guess for parameters
             double initialA = 1.0;
             double initialB = 1.0;
             MathNet.Numerics.LinearAlgebra.Vector<double> initialGuess = MathNet.Numerics.LinearAlgebra.Vector<double>.Build.DenseOfArray(new[] { initialA, initialB });
 
             // Use Levenberg-Marquardt algorithm to minimize the objective function
-            NelderMeadSimplex nms = new(1e-20, 10000000);
+            NelderMeadSimplex nms = new(1e-14, 1000000);
             var result = nms.FindMinimum(objFunction, initialGuess);
 
             // Extract optimized parameters

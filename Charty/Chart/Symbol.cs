@@ -159,26 +159,6 @@ namespace Charty.Chart
             return result.ToArray();
         }
 
-        public void Draw(DateOnly start, DateOnly end, string fileName)
-        {
-            List<double> mediumPricesList = new();
-
-            for(int i = 0; i < DataPoints.Count(); i++)
-            {
-                if (DataPoints[i].Date >= start && DataPoints[i].Date <= end)
-                {
-                    mediumPricesList.Add(DataPoints[i].MediumPrice);
-                }
-            }
-
-            double[] mediumPrices = DataPoints.Select(point => point.MediumPrice).ToArray();
-            int numberOfDataPoints = mediumPrices.Length;
-
-            ScottPlot.Plot myPlot = new();
-            myPlot.Add.SignalConst(mediumPrices);
-            myPlot.SavePng(fileName, 800, 600);
-        }
-
         public bool WasStockBelowPrice(double price, DateOnly start, DateOnly end)
         {
             for(int i = 0; i < DataPoints.Length; i++)

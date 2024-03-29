@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Charty.Chart.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,10 +9,26 @@ namespace Charty.Chart.Enums
 {
     public enum Currency
     {
-        USD_US_DOLLAR = 1,
-        EUR_EURO = 2,
-        GBP_POUND_STERLING = 3,
-        AUD_AUSTRALIAN_DOLLAR = 4,
-        CAD_CANADIAN_DOLLAR = 5,
+        USD = 1,
+        EUR = 2,
+        GBP = 3,
+        AUD = 4,
+        CAD = 5,
+    }
+}
+
+public static class CurrencyExtensions
+{
+    public static Currency ToEnum(string currencyString)
+    {
+        if (Enum.TryParse(currencyString, out Currency currency))
+        {
+            return currency;
+        }
+        else
+        {
+            throw new ArgumentException(currencyString + " is unsupported.");
+            //return Currency.USD;
+        }
     }
 }

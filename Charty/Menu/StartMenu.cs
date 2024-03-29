@@ -34,7 +34,8 @@ namespace Charty.Menu
                 "Remove SYMBOL - Removes the Symbol from the Chart Dictionary\n" +
                 "AnalyzeAll - Run analyses (Exponential Regression) on all Symbols\n" +
                 "Rank1Year - Ranks all Symbols according to their expected 1-year performance\n" +
-                "Rank3Year - Ranks all Symbols according to their expected 3-year performance\n";
+                "Rank3Year - Ranks all Symbols according to their expected 3-year performance\n" +
+                "Draw SYMBOL - Draws a symbol chart\n";
         }
 
         public string StateName()
@@ -154,6 +155,24 @@ namespace Charty.Menu
             if (string.Equals(text, "Rank3Year", comparer))
             {
                 SymbolManager.RankExponentialRegressionResultsBy3YearForecast();
+                return this;
+            }
+
+            if (text.StartsWith("Draw ", comparer))
+            {
+                string symbol = text.Replace("Draw ", "").Trim();
+                if (string.IsNullOrEmpty(symbol))
+                {
+                    Console.WriteLine("Please specify a symbol");
+                    return this;
+                }
+
+                if (SymbolManager.ContainsSymbol(symbol))
+                {
+                    SymbolManager.Draw(symbol);
+                    Console.WriteLine("Drew " + symbol);
+                }
+
                 return this;
             }
 

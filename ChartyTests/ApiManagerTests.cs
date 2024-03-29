@@ -1,5 +1,5 @@
 using Charty.Chart;
-using Charty.Chart.Api.ApiChart;
+using Charty.Chart.Api.AlphaVantage.ApiSymbol;
 
 namespace ChartyTests
 {

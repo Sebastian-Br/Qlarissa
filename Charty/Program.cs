@@ -16,6 +16,7 @@ namespace Charty
     {
         static void Main(string[] args)
         {
+            // USE function=TIME_SERIES_DAILY_ADJUSTED !!!!!!!!
             IHost host = CreateHostBuilder().Build();
             IConfiguration baseConfiguration = host.Services.GetRequiredService<IConfiguration>();
             CustomConfiguration.CustomConfiguration customConfiguration = BuildCustomConfiguration();
@@ -49,7 +50,7 @@ namespace Charty
             new SymbolDataPoint() { Date = new DateOnly(2023,1,2), HighPrice = 51, LowPrice = 41, MediumPrice = 46},
             new SymbolDataPoint() { Date = new DateOnly(2023,1,3), HighPrice = 52, LowPrice = 42, MediumPrice = 47},
             ];
-            SymbolOverview overview = new SymbolOverview() { Currency = Chart.Enums.Currency.USD_US_DOLLAR, DividendPerShareYearly = 1.2, MarketCapitalization = 0, Name = "TEST Inc.", Symbol = "TST", PEratio = 0 };
+            SymbolOverview overview = new SymbolOverview() { Currency = Chart.Enums.Currency.USD, DividendPerShareYearly = 1.2, MarketCapitalization = 0, Name = "TEST Inc.", Symbol = "TST", PEratio = 0 };
             Symbol symbol = new(points, overview);
             symbol.RunExponentialRegression_IfNotExists();
             db.InsertOrUpdateSymbolInformation(symbol);
@@ -64,7 +65,7 @@ namespace Charty
             new SymbolDataPoint() { Date = new DateOnly(2023,1,3), HighPrice = 52, LowPrice = 42, MediumPrice = 47},
             new SymbolDataPoint() { Date = new DateOnly(2023,1,4), HighPrice = 53, LowPrice = 43, MediumPrice = 48},
             ];
-            SymbolOverview overview = new SymbolOverview() { Currency = Chart.Enums.Currency.USD_US_DOLLAR, DividendPerShareYearly = 1.37, MarketCapitalization = 0, Name = "TEST Inc.", Symbol = "TST", PEratio = 0 };
+            SymbolOverview overview = new SymbolOverview() { Currency = Chart.Enums.Currency.USD, DividendPerShareYearly = 1.37, MarketCapitalization = 0, Name = "TEST Inc.", Symbol = "TST", PEratio = 0 };
             Symbol symbol = new(points, overview);
             symbol.RunExponentialRegression_IfNotExists();
             db.InsertOrUpdateSymbolInformation(symbol);
