@@ -23,11 +23,6 @@ namespace Charty.CustomConfiguration
         /// </summary>
         public Dictionary<string, string> SymbolsToBeAnalyzed { get; set; }
 
-        /// <summary>
-        /// Contains Overview data for Symbols where it can't be retrieved via the API
-        /// </summary>
-        public Dictionary<string, SymbolOverview> AlternateOverviewSource { get; set; }
-
         private HttpClient _httpClient;
 
         public async Task CheckSymbolsToBeAnalyzed()

@@ -10,7 +10,6 @@ using Charty.Chart.Analysis.ExponentialRegression;
 using ScottPlot;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using ScottPlot.TickGenerators.TimeUnits;
-using Charty.Chart.Api.AlphaVantage;
 using Charty.Chart.Api;
 using Charty.Chart.Api.PYfinance;
 
@@ -20,23 +19,19 @@ namespace Charty.Chart
     {
         public SymbolManager(IConfiguration configuration, CustomConfiguration.CustomConfiguration customConfiguration)
         {
-            ApiManager = new(configuration);
             DefaultExcludedTimePeriods = customConfiguration.DefaultExcludedTimePeriods ?? throw new ArgumentNullException("DefaultExcludedTimePeriods is null");
-            AlternateOverviewSource = customConfiguration.AlternateOverviewSource ?? throw new ArgumentNullException(nameof(customConfiguration.AlternateOverviewSource));
             ConfigurationSymbols = customConfiguration.SymbolsToBeAnalyzed;
 
             SymbolDictionary = new();
             RankByExpRegressionResult = new();
             DataBase = new(configuration);
             ImportSymbolDictionaryFromDataBase();
-            PYfinanceManager = new PyFinanceApiManager(configuration);
+            PyFinanceAPI = new PyFinanceApiManager(configuration);
         }
 
         private Database.DB DataBase { get; set; }
 
-        private ApiManager ApiManager {  get; set; }
-
-        private IApiManager PYfinanceManager { get; set; }
+        private IApiManager PyFinanceAPI { get; set; }
 
         private Dictionary <string, Symbol> SymbolDictionary { get; set; }
 
@@ -83,7 +78,7 @@ namespace Charty.Chart
                 }
             }
 
-            Symbol result = await PYfinanceManager.RetrieveSymbol(symbol);
+            Symbol result = await PyFinanceAPI.RetrieveSymbol(symbol);
             AddDefaultExcludedTimePeriodsToSymbol(result);
             result.RunExponentialRegression_IfNotExists();
 
