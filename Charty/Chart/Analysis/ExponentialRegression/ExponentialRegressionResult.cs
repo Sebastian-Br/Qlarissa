@@ -68,38 +68,17 @@ namespace Charty.Chart.Analysis.ExponentialRegression
 
         public double GetMostRecent_OneYearGrowthEstimatePercentage()
         {
-            if(TemporaryEstimates == null)
-            {
-                return OneYearGrowthEstimatePercentage;
-            }
-
-            return TemporaryEstimates.OneYearGrowthEstimatePercentage;
+            return OneYearGrowthEstimatePercentage;
         }
 
         public double ThreeYearGrowthEstimatePercentage { get; private set; }
 
         public double GetMostRecent_ThreeYearGrowthEstimatePercentage()
         {
-            if (TemporaryEstimates == null)
-            {
-                return ThreeYearGrowthEstimatePercentage;
-            }
-
-            return TemporaryEstimates.ThreeYearGrowthEstimatePercentage;
+            return ThreeYearGrowthEstimatePercentage;
         }
 
         public DateOnly DateCreated { get; private set; }
-
-        /// <summary>
-        /// This is only used during a session and not saved to the DB.
-        /// The user can add a new current price to recalculate estimates.
-        /// </summary>
-        public TemporaryEstimates TemporaryEstimates { get; private set; }
-
-        public void SetTemporaryEstimates(double newCurrentPrice)
-        {
-            TemporaryEstimates = new(this, newCurrentPrice);
-        }
 
         public double GetEstimate(double t)
         {
@@ -150,14 +129,14 @@ namespace Charty.Chart.Analysis.ExponentialRegression
         public string GetExpectedOneYearPerformance_AsText()
         {
             return Overview.GetBasicInformation() + "\n" + "Expected 1 Year Performance: " + GetMostRecent_OneYearGrowthEstimatePercentage() + " % " +
-                "\n(Target Date:" + ((TemporaryEstimates == null) ? DateCreated.AddYears(1) : DateOnly.FromDateTime(DateTime.Now).AddYears(1)) + "), Target Price: " + CurrentPrice * (1.0 + OneYearGrowthEstimatePercentage / 100.0);
+                "\n(Target Date:" + DateCreated.AddYears(1) + "), Target Price: " + CurrentPrice * (1.0 + OneYearGrowthEstimatePercentage / 100.0);
         }
 
         public string GetExpectedThreeYearPerformance_AsText()
         {
             return Overview.GetBasicInformation() + "\n" + "Expected 3 Year Performance: " + GetMostRecent_ThreeYearGrowthEstimatePercentage() + " % " +
                 "(annualized: " + AnnualizeThreeYearEstimate(GetMostRecent_ThreeYearGrowthEstimatePercentage()) + " %) " +
-                "\nTarget Date:" + ((TemporaryEstimates == null) ? DateCreated.AddYears(3) : DateOnly.FromDateTime(DateTime.Now).AddYears(3)) + ", Target Price: " + CurrentPrice * (1.0 + ThreeYearGrowthEstimatePercentage / 100.0);
+                "\nTarget Date:" + DateCreated.AddYears(3) + ", Target Price: " + CurrentPrice * (1.0 + ThreeYearGrowthEstimatePercentage / 100.0);
         }
 
         private double AnnualizeThreeYearEstimate(double threeYearEstimate)

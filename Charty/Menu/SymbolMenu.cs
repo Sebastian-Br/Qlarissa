@@ -20,7 +20,6 @@ namespace Charty.Menu
                 "Analyze - Run analyses (ExponentialRegression)\n" +
                 "Get1YearForecast - Gets the forecast (today's date + 1 year) based on the Exponential Regression Model\n" +
                 "Get3YearForecast - Gets the forecast (today's date + 3 years) based on the Exponential Regression Model\n" +
-                "Set CurrentPrice x - Sets the Current Price used in the Regression Model to x\n" +
                 "DbgPrintDataPoints - Prints the Data Points for Debugging Purposes\n" +
                 "Exit - Return to the Main Menu\n";
         }
@@ -79,17 +78,6 @@ namespace Charty.Menu
             if (string.Equals(text, "DbgPrintDataPoints", comparer))
             {
                 Symbol.DbgPrintDataPoints();
-                return this;
-            }
-
-            if (text.StartsWith("Set CurrentPrice ", comparer))
-            {
-                string priceString = text.Replace("Set CurrentPrice ", "");
-                double price = double.Parse(priceString);
-                Symbol.RunRegressions_IfNotExists();
-                Symbol.ExponentialRegressionModel.SetTemporaryEstimates(price);
-                Console.WriteLine(Symbol.ExponentialRegressionModel.GetExpectedOneYearPerformance_AsText());
-                Console.WriteLine(Symbol.ExponentialRegressionModel.GetExpectedThreeYearPerformance_AsText());
                 return this;
             }
 

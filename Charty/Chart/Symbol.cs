@@ -58,13 +58,6 @@ namespace Charty.Chart
 
         public override string ToString()
         {
-            if(this.ExponentialRegressionModel != null)
-            {
-                if (this.ExponentialRegressionModel.TemporaryEstimates != null)
-                {
-                    return Overview.Name + " (" + Overview.Symbol + ") - " + this.ExponentialRegressionModel.TemporaryEstimates.CurrentPrice + " " + Overview.Currency.ToString();
-                }
-            }
             return Overview.Name + " (" + Overview.Symbol + ") - " + DataPoints.Last().MediumPrice + " " + Overview.Currency.ToString();
         }
 
