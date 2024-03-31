@@ -25,7 +25,6 @@ namespace Charty.Chart.Analysis.ExponentialRegression
             foreach (var result in ExponentialRegressionResults)
             {
                 Console.Write("Rank " + rank + ": " + result.GetExpectedOneYearPerformance_AsText() + "\n");
-                //Console.WriteLine("Expected 1 Year Performance: " + result.OneYearGrowthEstimatePercentage + " %");
                 rank++;
             }
             Console.WriteLine("****************************************");
@@ -41,7 +40,6 @@ namespace Charty.Chart.Analysis.ExponentialRegression
             foreach (var result in ExponentialRegressionResults)
             {
                 Console.Write("Rank " + rank + ": " + result.GetExpectedThreeYearPerformance_AsText() + "\n");
-                //Console.WriteLine("Expected 3 Year Performance: " + result.ThreeYearGrowthEstimatePercentage + " % (1 year equivalent: " + ConvertToOneYearEstimate(result.ThreeYearGrowthEstimatePercentage) + " %)");
                 rank++;
             }
             Console.WriteLine("****************************************");

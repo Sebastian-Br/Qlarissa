@@ -12,6 +12,9 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 using ScottPlot.TickGenerators.TimeUnits;
 using Charty.Chart.Api;
 using Charty.Chart.Api.PYfinance;
+using ScottPlot.AxisPanels;
+using ScottPlot.TickGenerators;
+using MathNet.Numerics;
 
 namespace Charty.Chart
 {
@@ -38,8 +41,6 @@ namespace Charty.Chart
         private Dictionary<string, ExcludedTimePeriod> DefaultExcludedTimePeriods {  get; set; }
 
         private RankByExpRegressionResult RankByExpRegressionResult { get; set; }
-
-        private Dictionary<string, SymbolOverview> AlternateOverviewSource { get; set; }
 
         private Dictionary<string,string> ConfigurationSymbols { get; set; }
 
@@ -80,7 +81,7 @@ namespace Charty.Chart
 
             Symbol result = await PyFinanceAPI.RetrieveSymbol(symbol);
             AddDefaultExcludedTimePeriodsToSymbol(result);
-            result.RunExponentialRegression_IfNotExists();
+            result.RunRegressions_IfNotExists();
 
             DataBase.InsertOrUpdateSymbolInformation(result);
             //SymbolDictionary.Add(symbol, result);
@@ -145,7 +146,7 @@ namespace Charty.Chart
                 Console.WriteLine("Starting Analysis");
                 foreach (Symbol symbol in SymbolDictionary.Values)
                 {
-                    symbol.RunExponentialRegression_IfNotExists();
+                    symbol.RunRegressions_IfNotExists();
                     DataBase.InsertOrUpdateSymbolInformation(symbol);
                 }
 
@@ -193,49 +194,104 @@ namespace Charty.Chart
 
         public void Draw(string symbolStr)
         {
+            DrawLog(symbolStr);
+            return;
+        }
+
+        public void DrawLog(string symbolStr)
+        {
+            int logConstant = 2;
+
             var symbol = SymbolDictionary[symbolStr];
             SymbolDataPoint[] dataPoints = symbol.GetDataPointsNotInExcludedTimePeriods();
-            double[] x = dataPoints.Select(point => ConvertDateToYearIndex(point.Date)).ToArray();
+            double[] x = dataPoints.Select(point => point.Date.ToDouble()).ToArray();
             double[] y = dataPoints.Select(point => point.MediumPrice).ToArray();
             //int numberOfDataPoints = mediumPrices.Length;
 
-            double firstYearIndex = ConvertDateToYearIndex(dataPoints.First().Date);
-            double lastYearIndex = ConvertDateToYearIndex(dataPoints.Last().Date);
+            double firstYearIndex = dataPoints.First().Date.ToDouble();
+            double lastYearIndex = dataPoints.Last().Date.ToDouble();
 
             DateOnly xDateForExpRegression = dataPoints.First().Date;
-            double xDateIndexForExpReg = ConvertDateToYearIndex(xDateForExpRegression);
+            double xDateIndexForExpReg = xDateForExpRegression.ToDouble();
 
-            List<double> expRegXs = new List<double>();
-            List<double> expRegYs = new List<double>();
+            List<double> expRegXs = new();
+            List<double> expRegYs = new();
 
+            List<double> cascadingCagrXs = new();
+            List<double> cascadingCagrYs = new();
 
-            while(xDateIndexForExpReg <= lastYearIndex)
+            List<double> inverseLogXs = new();
+            List<double> inverseLogYs = new();
+
+            /*while (xDateIndexForExpReg <= lastYearIndex)
             {
                 expRegXs.Add(xDateIndexForExpReg);
-                expRegYs.Add(symbol.ExponentialRegressionModel.GetEstimate(xDateForExpRegression));
+                expRegYs.Add(symbol.ExponentialRegressionModel.GetEstimate(xDateIndexForExpReg));
+
+                cascadingCagrXs.Add(xDateIndexForExpReg);
+                cascadingCagrYs.Add(symbol.CascadingCAGR.GetEstimate(xDateIndexForExpReg));
 
                 xDateForExpRegression = xDateForExpRegression.AddDays(1);
-                xDateIndexForExpReg = ConvertDateToYearIndex(xDateForExpRegression);
+                xDateIndexForExpReg = xDateForExpRegression.ToDouble();
+            }*/
+
+            double endYear = 2027;
+            for(double d = 2010; d < endYear; d+= 0.01)
+            {
+                expRegXs.Add(d);
+                expRegYs.Add(symbol.ExponentialRegressionModel.GetEstimate(d));
+                cascadingCagrXs.Add(d);
+                cascadingCagrYs.Add(symbol.CascadingCAGR.GetEstimate(d));
+                inverseLogXs.Add(d);
+                inverseLogYs.Add(symbol.InverseLogRegressionResult.GetEstimate(d));
             }
 
             ScottPlot.Plot myPlot = new();
-            myPlot.Add.Scatter(x, y);
+            myPlot.Axes.SetLimitsX(AxisLimits.HorizontalOnly(2010, endYear));
+            //myPlot.Axes.SetLimitsY(AxisLimits.VerticalOnly(0, 1400));
+            myPlot.Add.Scatter(x, y.Select(y => Math.Log(y)).ToArray()); // adds symbol x,y
 
             ScottPlot.Palettes.Category20 palette = new();
-            var Scatter = myPlot.Add.Scatter(expRegXs.ToArray(), expRegYs.ToArray());
-            Scatter.Label = "Exponential Regression A= " + symbol.ExponentialRegressionModel.A + " B=" + symbol.ExponentialRegressionModel.B;
-            Scatter.Color = palette.Colors[2];
-            myPlot.Title(symbolStr);
-            myPlot.SavePng(symbolStr + ".png", 1200, 900);
-        }
+            var expRegScatter = myPlot.Add.Scatter(expRegXs.ToArray(), expRegYs.ToArray().Select(y => Math.Log(y)).ToArray());
+            expRegScatter.Color = palette.Colors[2];
+            expRegScatter.LineWidth = 0.2f;
 
-        private double ConvertDateToYearIndex(DateOnly date)
-        {
-            int year = date.Year;
-            int dayOfYear = date.DayOfYear;
-            int daysInYear = DateTime.IsLeapYear(year) ? 366 : 365;
-            double yearIndex = year + dayOfYear / (double)daysInYear;
-            return yearIndex;
+            if ((cascadingCagrYs.ToArray().Select(y => Math.Log(y)).Any(x => x <= 0))) {
+                throw new Exception("CCAGR");
+            }
+
+            if ((expRegYs.ToArray().Select(y => Math.Log(y)).Any(x => x <= 0)))
+            {
+                throw new Exception("EXP");
+            }
+
+            if ((y.ToArray().Select(y => Math.Log(y)).Any(x => x <= 0)))
+            {
+                throw new Exception("y");
+            }
+
+            var cascadingCAGRscatter = myPlot.Add.Scatter(cascadingCagrXs.ToArray(), cascadingCagrYs.ToArray().Select(y => Math.Log(y)).ToArray());
+            cascadingCAGRscatter.Color = palette.Colors[6];
+            cascadingCAGRscatter.LineWidth = 0.2f;
+
+            var inverseLogScatter = myPlot.Add.Scatter(inverseLogXs.ToArray(), inverseLogYs.ToArray().Select(y => Math.Log(y)).ToArray());
+            inverseLogScatter.Color = Colors.Black;
+            inverseLogScatter.LineWidth = 0.2f;
+
+            // Use a custom formatter to control the label for each tick mark
+            static string logTickLabels(double y) => Math.Pow(double.E, y).ToString("N0");
+            // create a minor tick generator that places log-distributed minor ticks
+            ScottPlot.TickGenerators.LogMinorTickGenerator minorTickGen = new();
+            ScottPlot.TickGenerators.NumericAutomatic tickGen = new();
+            tickGen.MinorTickGenerator = minorTickGen;
+            // create a custom tick formatter to set the label text for each tick
+            static string LogTickLabelFormatter(double y) => $"{Math.Pow(double.E, y):N0}";
+            tickGen.IntegerTicksOnly = true;
+            tickGen.LabelFormatter = LogTickLabelFormatter;
+            myPlot.Axes.Left.TickGenerator = tickGen;
+
+            myPlot.Title(symbolStr + " EXPR²=" + symbol.ExponentialRegressionModel.GetRsquared() + " CAGRR²=" + symbol.CascadingCAGR.Rsquared + " INVLOGR²=" + symbol.InverseLogRegressionResult.GetRsquared());
+            myPlot.SavePng(symbolStr + ".png", 1300, 585);
         }
     }
 }

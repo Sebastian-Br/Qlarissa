@@ -16,11 +16,9 @@ namespace Charty
     {
         static void Main(string[] args)
         {
-            // USE function=TIME_SERIES_DAILY_ADJUSTED !!!!!!!!
             IHost host = CreateHostBuilder().Build();
             IConfiguration baseConfiguration = host.Services.GetRequiredService<IConfiguration>();
             CustomConfiguration.CustomConfiguration customConfiguration = BuildCustomConfiguration();
-            // ApiManager apiManager = new(baseConfiguration);
             // apiManager.GetApiSymbol("ETR:ADS").Wait(); WORKS
 
             //customConfiguration.CheckSymbolsToBeAnalyzed().Wait(); checked all except ETR:s
@@ -41,8 +39,6 @@ namespace Charty
                 }
             }
         }
-
-        
 
         static CustomConfiguration.CustomConfiguration BuildCustomConfiguration()
         {

@@ -53,20 +53,20 @@ namespace Charty.Menu
 
             if(string.Equals(text, "Analyze", comparer))
             {
-                Symbol.RunExponentialRegression_IfNotExists();
+                Symbol.RunRegressions_IfNotExists();
                 return this;
             }
 
             if (string.Equals(text, "Get1YearForecast", comparer))
             {
-                Symbol.RunExponentialRegression_IfNotExists();
+                Symbol.RunRegressions_IfNotExists();
                 Console.WriteLine(Symbol.ExponentialRegressionModel.GetExpectedOneYearPerformance_AsText());
                 return this;
             }
 
             if (string.Equals(text, "Get3YearForecast", comparer))
             {
-                Symbol.RunExponentialRegression_IfNotExists();
+                Symbol.RunRegressions_IfNotExists();
                 Console.WriteLine(Symbol.ExponentialRegressionModel.GetExpectedThreeYearPerformance_AsText());
                 return this;
             }
@@ -86,7 +86,7 @@ namespace Charty.Menu
             {
                 string priceString = text.Replace("Set CurrentPrice ", "");
                 double price = double.Parse(priceString);
-                Symbol.RunExponentialRegression_IfNotExists();
+                Symbol.RunRegressions_IfNotExists();
                 Symbol.ExponentialRegressionModel.SetTemporaryEstimates(price);
                 Console.WriteLine(Symbol.ExponentialRegressionModel.GetExpectedOneYearPerformance_AsText());
                 Console.WriteLine(Symbol.ExponentialRegressionModel.GetExpectedThreeYearPerformance_AsText());

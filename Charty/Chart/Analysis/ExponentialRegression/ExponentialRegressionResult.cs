@@ -1,15 +1,17 @@
-﻿using Charty.Chart.Enums;
+﻿using Charty.Chart.Analysis.CascadingCAGR;
+using Charty.Chart.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static ScottPlot.Generate;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using DateTime = System.DateTime;
 
 namespace Charty.Chart.Analysis.ExponentialRegression
 {
-    public class ExponentialRegressionResult
+    public class ExponentialRegressionResult : IRegressionResult
     {
         /// <summary>
         /// Used when importing data from the DB
@@ -33,18 +35,20 @@ namespace Charty.Chart.Analysis.ExponentialRegression
             DateCreated = _DateCreated;
         }
 
-        public ExponentialRegressionResult(ExponentialRegression e, double currentPrice, SymbolOverview overview)
+        public ExponentialRegressionResult(ExponentialRegression e, Symbol symbol)
         {
-            if (currentPrice <= 0)
+            A = e.A;
+            B = e.B;
+            CurrentPrice = symbol.DataPoints.Last().MediumPrice;
+            Overview = symbol.Overview;
+            DateCreated = DateOnly.FromDateTime(DateTime.Today);
+            Rsquared = e.Rsquared;
+
+            if (CurrentPrice <= 0)
             {
                 throw new ArgumentException("currentPrice can not be less than or equal to 0");
             }
 
-            A = e.A;
-            B = e.B;
-            CurrentPrice = currentPrice;
-            Overview = overview;
-            DateCreated = DateOnly.FromDateTime(DateTime.Today);
             SetEstimates();
         }
 
@@ -57,6 +61,10 @@ namespace Charty.Chart.Analysis.ExponentialRegression
         public double CurrentPrice { get; private set; }
 
         public double OneYearGrowthEstimatePercentage { get; private set; }
+
+        public RegressionResult RegressionResult { get; private set; } = RegressionResult.Exponential;
+
+        double Rsquared { get; set; }
 
         public double GetMostRecent_OneYearGrowthEstimatePercentage()
         {
@@ -93,9 +101,15 @@ namespace Charty.Chart.Analysis.ExponentialRegression
             TemporaryEstimates = new(this, newCurrentPrice);
         }
 
+        public double GetEstimate(double t)
+        {
+            return A * Math.Pow(B, t);
+        }
+
         public double GetEstimate(DateOnly date)
         {
-            return A * Math.Pow(B, ConvertDateToYearIndex(date));
+            double t = date.ToDouble();
+            return GetEstimate(t);
         }
 
         internal double Get1YearEstimateAbsolute()
@@ -121,15 +135,6 @@ namespace Charty.Chart.Analysis.ExponentialRegression
                 (Get3YearEstimateAbsolute() + AnnualizedDividendPerShare(Overview.DividendPerShareYearly) + 2.0 * Overview.DividendPerShareYearly)
                 / CurrentPrice
                 - 1.0) * 100.0;
-        }
-
-        private double ConvertDateToYearIndex(DateOnly date)
-        {
-            int year = date.Year;
-            int dayOfYear = date.DayOfYear;
-            int daysInYear = DateTime.IsLeapYear(year) ? 366 : 365;
-            double yearIndex = year + dayOfYear / (double)daysInYear;
-            return yearIndex;
         }
 
         internal double AnnualizedDividendPerShare(double dividendPerSharePerYear)
@@ -159,6 +164,31 @@ namespace Charty.Chart.Analysis.ExponentialRegression
         {
             double rate = threeYearEstimate / 100.0;
             return Math.Round((Math.Pow(1.0 + rate, 1.0 / 3.0) - 1.0) * 100.0, 6); // Rounding to 6 decimal places
+        }
+
+        public override string ToString()
+        {
+            return "y(t) = " + A + " * " + B + " ^ t";
+        }
+
+        public List<double> GetParameters()
+        {
+            throw new NotImplementedException();
+        }
+
+        public double GetRsquared()
+        {
+            return Rsquared;
+        }
+
+        public DateOnly GetCreationDate()
+        {
+            return DateCreated;
+        }
+
+        public RegressionResult GetRegressionResultType()
+        {
+            return RegressionResult;
         }
     }
 }

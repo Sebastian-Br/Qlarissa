@@ -8,6 +8,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 using MathNet.Numerics;
 using MathNet.Numerics.Optimization;
 using ScottPlot;
+using Charty.Chart.Analysis.CascadingCAGR;
 
 namespace Charty.Chart.Analysis.ExponentialRegression
 {
@@ -16,18 +17,19 @@ namespace Charty.Chart.Analysis.ExponentialRegression
     /// </summary>
     public class ExponentialRegression
     {
-        public ExponentialRegression(SymbolDataPoint[] chartDataPoints)
+        public ExponentialRegression(SymbolDataPoint[] dataPoints, double initialA = 1.0, double initialB = 1.0)
         {
-            if (chartDataPoints == null || chartDataPoints.Length == 0)
+            if (dataPoints == null || dataPoints.Length == 0)
                 throw new ArgumentException("No Data Points");
 
-            double[] x = new double[chartDataPoints.Length]; // could skip this new array initialization
-            double[] y = new double[chartDataPoints.Length];
-            for (int i = 0; i < chartDataPoints.Length; i++)
+            DataPoints = dataPoints;
+            double[] x = new double[dataPoints.Length]; // could skip this new array initialization
+            double[] y = new double[dataPoints.Length];
+            for (int i = 0; i < dataPoints.Length; i++)
             {
                 //Console.WriteLine(chartDataPoints[i].Date);
-                x[i] = GetYearIndex(chartDataPoints[i]);
-                y[i] = chartDataPoints[i].MediumPrice;
+                x[i] = GetYearIndex(dataPoints[i]);
+                y[i] = dataPoints[i].MediumPrice;
             }
 
             // Define the exponential model function                                    p = vector of parameters (a,b)
@@ -47,23 +49,34 @@ namespace Charty.Chart.Analysis.ExponentialRegression
 
             var objFunction = ObjectiveFunction.Value(objective);
 
-            double initialA = 1.0;
-            double initialB = 1.0;
             MathNet.Numerics.LinearAlgebra.Vector<double> initialGuess = MathNet.Numerics.LinearAlgebra.Vector<double>.Build.DenseOfArray(new[] { initialA, initialB });
 
             // Use Levenberg-Marquardt algorithm to minimize the objective function
-            NelderMeadSimplex nms = new(1e-12, 1000000);
+            NelderMeadSimplex nms = new(1e-9, 1000000);
             var result = nms.FindMinimum(objFunction, initialGuess);
 
             // Extract optimized parameters
             A = result.MinimizingPoint[0];
             B = result.MinimizingPoint[1];
-            Console.WriteLine("ExponentialRegression: y = " + A + " * " + B + " ^x");
+            CaculateRsquared();
+            Console.WriteLine("ExponentialRegression: y = " + A + " * " + B + " ^x" + " // after " + result.Iterations + " iterations");
         }
 
         public double A { get; private set; }
 
         public double B { get; private set; }
+
+        public SymbolDataPoint[] DataPoints { get; private set; } 
+
+        public double Rsquared { get; private set; }
+
+        private void CaculateRsquared()
+        {
+            double[] Xs = DataPoints.Select(x => x.Date.ToDouble()).ToArray();
+            double[] Ys = DataPoints.Select(x => x.MediumPrice).ToArray();
+
+            Rsquared = GoodnessOfFit.RSquared(Xs.Select(x => A * Math.Pow(B, x)), Ys);
+        }
 
         private double GetYearIndex(SymbolDataPoint dataPoint)
         {

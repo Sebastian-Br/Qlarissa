@@ -221,6 +221,7 @@ namespace Charty.Database
 
         public void InsertOrUpdateSymbolInformation(Symbol symbol)
         {
+            return; // REMOVE LATER
             List<string> commands = new();
             commands.Add(InsertInto_Symbols_IfNotExists(symbol.Overview.Symbol));
             commands.Add(Declare_SYMBOL_ID_FromSymbolsTable(symbol.Overview.Symbol));

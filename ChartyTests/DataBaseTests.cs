@@ -27,7 +27,7 @@ namespace ChartyTests
             ];
             SymbolOverview overview = new SymbolOverview() { Currency = Charty.Chart.Enums.Currency.USD, DividendPerShareYearly = 1.2, MarketCapitalization = 0, Name = "TEST Inc.", Symbol = "TST", PEratio = 0 };
             Symbol symbol = new(points, overview);
-            symbol.RunExponentialRegression_IfNotExists();
+            symbol.RunRegressions_IfNotExists();
             db.InsertOrUpdateSymbolInformation(symbol);
         }
 
@@ -42,7 +42,7 @@ namespace ChartyTests
             ];
             SymbolOverview overview = new SymbolOverview() { Currency = Charty.Chart.Enums.Currency.USD, DividendPerShareYearly = 1.37, MarketCapitalization = 0, Name = "TEST Inc.", Symbol = "TST", PEratio = 0 };
             Symbol symbol = new(points, overview);
-            symbol.RunExponentialRegression_IfNotExists();
+            symbol.RunRegressions_IfNotExists();
             db.InsertOrUpdateSymbolInformation(symbol);
         }
     }

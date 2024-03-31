@@ -1,4 +1,6 @@
-﻿using Charty.Chart.Analysis.ExponentialRegression;
+﻿using Charty.Chart.Analysis.CascadingCAGR;
+using Charty.Chart.Analysis.ExponentialRegression;
+using Charty.Chart.Analysis.InverseLogRegression;
 using Charty.Chart.ExcludedTimePeriods;
 using Newtonsoft.Json.Linq;
 using ScottPlot;
@@ -32,13 +34,25 @@ namespace Charty.Chart
 
         public ExponentialRegressionResult ExponentialRegressionModel { get; private set; }
 
+        public CascadingCAGR CascadingCAGR { get; private set; }
+
+        public InverseLogRegressionResult InverseLogRegressionResult { get; private set; }
+
         private Dictionary<string,ExcludedTimePeriod> ExcludedTimePeriods { get; set; }
 
-        public void RunExponentialRegression_IfNotExists()
+        public void RunRegressions_IfNotExists()
         {
             if(ExponentialRegressionModel == null)
             {
-                ExponentialRegressionModel = new ExponentialRegressionResult(new ExponentialRegression(GetDataPointsNotInExcludedTimePeriods()), DataPoints.Last().MediumPrice, Overview);
+                ExponentialRegression expR = new ExponentialRegression(GetDataPointsNotInExcludedTimePeriods());
+                ExponentialRegressionModel = new ExponentialRegressionResult(expR, this);
+                CascadingCAGR = new(this);
+                InverseLogRegressionResult = new(this);
+            }
+            else
+            {
+                InverseLogRegressionResult = new(this);
+                CascadingCAGR = new(this);
             }
         }
 
