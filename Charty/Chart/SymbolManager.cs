@@ -209,9 +209,24 @@ namespace Charty.Chart
             return Ranking.RankBy3YearForecast_AsText();
         }
 
+        public string RankByAggregateScore()
+        {
+            return Ranking.RankByAggregateScore_AsText();
+        }
+
         public void Draw(string symbolStr)
         {
             DrawLog(symbolStr);
+            return;
+        }
+
+        public void DrawAll()
+        {
+            foreach(string symbolStr in SymbolDictionary.Keys)
+            {
+                DrawLog(symbolStr);
+            }
+
             return;
         }
 

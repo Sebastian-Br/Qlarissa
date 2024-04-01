@@ -35,7 +35,10 @@ namespace Charty.Menu
                 "AnalyzeAll - Run analyses (Exponential Regression) on all Symbols\n" +
                 "Rank1Year - Ranks all Symbols according to their expected 1-year performance\n" +
                 "Rank3Year - Ranks all Symbols according to their expected 3-year performance\n" +
-                "Draw SYMBOL - Draws a symbol chart\n";
+                "RankAggregate - Ranks all Symbols according an aggregated score\n" +
+                "Draw SYMBOL - Draws a symbol's chart\n" +
+                "DrawAll - Draws all symbols' charts\n"
+                ;
         }
 
         public string StateName()
@@ -146,6 +149,12 @@ namespace Charty.Menu
                 return this;
             }
 
+            if (string.Equals(text, "DrawAll", comparer))
+            {
+                SymbolManager.DrawAll();
+                return this;
+            }
+
             if (string.Equals(text, "Rank1Year", comparer))
             {
                 Console.WriteLine(SymbolManager.RankBy1YearForecast());
@@ -155,6 +164,12 @@ namespace Charty.Menu
             if (string.Equals(text, "Rank3Year", comparer))
             {
                 Console.WriteLine(SymbolManager.RankBy3YearForecast());
+                return this;
+            }
+
+            if (string.Equals(text, "RankAggregate", comparer))
+            {
+                Console.WriteLine(SymbolManager.RankByAggregateScore());
                 return this;
             }
 

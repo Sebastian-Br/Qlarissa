@@ -48,6 +48,28 @@ namespace Charty.Chart.Ranking
             string result = "";
             Symbols = [.. SymbolManager.RetrieveSymbols()];
 
+            Symbols.Sort((x, y) => GetAggregatedScore(y).CompareTo(GetAggregatedScore(x)));
+
+            int rank = 1;
+            result += ("****************************************\n");
+            result += ("Symbols Ranked by Aggregate Score\n");
+            result += ("****************************************\n");
+            foreach (var symbol in Symbols)
+            {
+                result += ("Rank " + rank + ": " + symbol.ToString() + "\n");
+                result += ("Score: " + GetAggregatedScore(symbol));
+                rank++;
+            }
+            result += ("****************************************\n");
+
+            return result;
+        }
+
+        public string RankByAggregateScore_AsText()
+        {
+            string result = "";
+            Symbols = [.. SymbolManager.RetrieveSymbols()];
+
             Symbols.Sort((x, y) => y.GetNYearForecastPercent(3).CompareTo(x.GetNYearForecastPercent(3)));
 
             int rank = 1;
@@ -64,6 +86,66 @@ namespace Charty.Chart.Ranking
             result += ("****************************************\n");
 
             return result;
+        }
+
+        private double GetAggregatedScore(Symbol symbol)
+        {
+            double _1YE = symbol.GetNYearForecastPercent(1);
+            double _3YEa = AnnualizeNYearEstimate(symbol.GetNYearForecastPercent(3), 3); // Three-Year-annualized
+
+            double _1YE_Weight = 1;
+            double _3YEa_Weight = 2;
+            double total_YE_weights = _1YE_Weight + _3YEa_Weight;
+
+            double _1YE_weighted = _1YE * _1YE_Weight;
+            double _3YEa_weighted = _3YEa * _3YEa_Weight;
+
+            double normalized_1YE = _1YE_weighted / total_YE_weights;
+            double normalized_3YEa = _3YEa_weighted / total_YE_weights;
+
+            double weightedAnnualizedForecast = normalized_1YE + normalized_3YEa;
+            double currentScore = weightedAnnualizedForecast * 10.0;
+
+            double marketCap = symbol.Overview.MarketCapitalization;
+            double marketCapUSDequivalent;
+
+            if(symbol.Overview.Currency == Enums.Currency.USD)
+            {
+                marketCapUSDequivalent = marketCap;
+            }
+            else if (symbol.Overview.Currency == Enums.Currency.EUR)
+            {
+                marketCapUSDequivalent = marketCap * 1.08; // TODO: Get forex values automatically
+            }
+            else if (symbol.Overview.Currency == Enums.Currency.GBP)
+            {
+                marketCapUSDequivalent = marketCap * 1.26;
+            }
+            else if (symbol.Overview.Currency == Enums.Currency.AUD)
+            {
+                marketCapUSDequivalent = marketCap * 0.65;
+            }
+            else if (symbol.Overview.Currency == Enums.Currency.CAD)
+            {
+                marketCapUSDequivalent = marketCap * 0.74;
+            }
+            else
+            {
+                throw new NotImplementedException(nameof(symbol.Overview.Currency));
+            }
+
+            currentScore = currentScore * Sigmoidal_MarketCap_Weight(marketCapUSDequivalent);
+
+            return currentScore;
+        }
+
+        private double Sigmoidal_MarketCap_Weight(double marketCap)
+        {
+            double k = 0.25;
+            return 
+                (1.0) 
+                /
+                (1.0 + Math.Exp(-k * (marketCap - 15e9)));
         }
 
         private double AnnualizeNYearEstimate(double estimate, double n)
