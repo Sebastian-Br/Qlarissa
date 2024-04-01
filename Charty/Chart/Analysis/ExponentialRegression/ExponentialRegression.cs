@@ -42,7 +42,7 @@ namespace Charty.Chart.Analysis.ExponentialRegression
                 for (int i = 0; i < x.Length; i++)
                 {
                     double residual = model(x[i], p) - y[i];
-                    sum += residual * residual;
+                    sum += 0.01 * residual * residual;
                 }
                 return sum;
             };
@@ -52,14 +52,14 @@ namespace Charty.Chart.Analysis.ExponentialRegression
             MathNet.Numerics.LinearAlgebra.Vector<double> initialGuess = MathNet.Numerics.LinearAlgebra.Vector<double>.Build.DenseOfArray(new[] { initialA, initialB });
 
             // Use Levenberg-Marquardt algorithm to minimize the objective function
-            NelderMeadSimplex nms = new(1e-15, 2000000);
+            NelderMeadSimplex nms = new(1e-14, 1200000);
             var result = nms.FindMinimum(objFunction, initialGuess);
 
             // Extract optimized parameters
             A = result.MinimizingPoint[0];
             B = result.MinimizingPoint[1];
             CaculateRsquared();
-            Console.WriteLine("ExponentialRegression: y = " + A + " * " + B + " ^x" + " // after " + result.Iterations + " iterations");
+            //Console.WriteLine("ExponentialRegression: y = " + A + " * " + B + " ^x" + " // after " + result.Iterations + " iterations");
         }
 
         public double A { get; private set; }

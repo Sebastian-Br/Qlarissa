@@ -18,8 +18,8 @@ namespace Charty.Menu
         {
             return "R - Reload Help Menu\n" +
                 "Analyze - Run analyses (ExponentialRegression)\n" +
-                "Get1YearForecast - Gets the forecast (today's date + 1 year) based on the Exponential Regression Model\n" +
-                "Get3YearForecast - Gets the forecast (today's date + 3 years) based on the Exponential Regression Model\n" +
+                //"Get1YearForecast - Gets the forecast (today's date + 1 year) based on the Exponential Regression Model\n" +
+                //"Get3YearForecast - Gets the forecast (today's date + 3 years) based on the Exponential Regression Model\n" +
                 "DbgPrintDataPoints - Prints the Data Points for Debugging Purposes\n" +
                 "Exit - Return to the Main Menu\n";
         }
@@ -53,20 +53,6 @@ namespace Charty.Menu
             if(string.Equals(text, "Analyze", comparer))
             {
                 Symbol.RunRegressions_IfNotExists();
-                return this;
-            }
-
-            if (string.Equals(text, "Get1YearForecast", comparer))
-            {
-                Symbol.RunRegressions_IfNotExists();
-                Console.WriteLine(Symbol.ExponentialRegressionModel.GetExpectedOneYearPerformance_AsText());
-                return this;
-            }
-
-            if (string.Equals(text, "Get3YearForecast", comparer))
-            {
-                Symbol.RunRegressions_IfNotExists();
-                Console.WriteLine(Symbol.ExponentialRegressionModel.GetExpectedThreeYearPerformance_AsText());
                 return this;
             }
 

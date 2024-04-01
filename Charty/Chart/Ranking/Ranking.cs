@@ -43,7 +43,7 @@ namespace Charty.Chart.Ranking
             return result;
         }
 
-        public string RankBy3YearForecast_AsText()
+        public string RankByAggregateScore_AsText()
         {
             string result = "";
             Symbols = [.. SymbolManager.RetrieveSymbols()];
@@ -57,7 +57,7 @@ namespace Charty.Chart.Ranking
             foreach (var symbol in Symbols)
             {
                 result += ("Rank " + rank + ": " + symbol.ToString() + "\n");
-                result += ("Score: " + GetAggregatedScore(symbol));
+                result += ("Score: " + GetAggregatedScore(symbol)) + "\n";
                 rank++;
             }
             result += ("****************************************\n");
@@ -65,7 +65,7 @@ namespace Charty.Chart.Ranking
             return result;
         }
 
-        public string RankByAggregateScore_AsText()
+        public string RankBy3YearForecast_AsText()
         {
             string result = "";
             Symbols = [.. SymbolManager.RetrieveSymbols()];

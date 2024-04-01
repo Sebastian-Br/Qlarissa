@@ -140,11 +140,9 @@ namespace Charty.Database
                 while (reader.Read())
                 {
                     int symbolId = reader.GetInt32(0);
-                    ExponentialRegressionResult result = new(
+                    ExponentialRegressionResult result = new( //TODO: MODEL CHANGED
                         _A : reader.GetDouble(1),
                         _B : reader.GetDouble(2),
-                        _OneYearGrowthEstimatePercentage : reader.GetDouble(3),
-                        _ThreeYearGrowthEstimatePercentage : reader.GetDouble(4),
                         _CurrentPrice : reader.GetDouble(5),
                         _DateCreated : DateOnly.FromDateTime(reader.GetDateTime(6)),
                         _Overview : overviewTable[symbolId]
@@ -357,12 +355,10 @@ namespace Charty.Database
 
         private string CreateValuesString(ExponentialRegressionResult result)
         {
-            string partialCommand = "VALUES (" +
+            string partialCommand = "VALUES (" + //TODO: MODEL CHANGED
                 SYMBOL_ID + ", " +
                 result.A + ", " +
                 result.B + ", " +
-                result.OneYearGrowthEstimatePercentage + ", " +
-                result.ThreeYearGrowthEstimatePercentage + ", " +
                 result.CurrentPrice + ", " +
                 SingleQuote(result.DateCreated) + 
                 ");";

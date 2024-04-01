@@ -23,14 +23,12 @@ namespace Charty.Chart.Analysis.ExponentialRegression
         /// <param name="_ThreeYearGrowthEstimatePercentage"></param>
         /// <param name="_DateCreated"></param>
         public ExponentialRegressionResult(double _A, double _B, SymbolOverview _Overview, double _CurrentPrice,
-            double _OneYearGrowthEstimatePercentage, double _ThreeYearGrowthEstimatePercentage, DateOnly _DateCreated)
+            DateOnly _DateCreated)
         {
             A = _A;
             B = _B;
             Overview = _Overview;
             CurrentPrice = _CurrentPrice;
-            OneYearGrowthEstimatePercentage = _OneYearGrowthEstimatePercentage;
-            ThreeYearGrowthEstimatePercentage = _ThreeYearGrowthEstimatePercentage;
             DateCreated = _DateCreated;
         }
 
@@ -47,8 +45,6 @@ namespace Charty.Chart.Analysis.ExponentialRegression
             {
                 throw new ArgumentException("currentPrice can not be less than or equal to 0");
             }
-
-            SetEstimates();
         }
 
         public double A { get; private set; }
@@ -59,23 +55,9 @@ namespace Charty.Chart.Analysis.ExponentialRegression
 
         public double CurrentPrice { get; private set; }
 
-        public double OneYearGrowthEstimatePercentage { get; private set; }
-
         public RegressionResultType RegressionResult { get; private set; } = RegressionResultType.Exponential;
 
         double Rsquared { get; set; }
-
-        public double GetMostRecent_OneYearGrowthEstimatePercentage()
-        {
-            return OneYearGrowthEstimatePercentage;
-        }
-
-        public double ThreeYearGrowthEstimatePercentage { get; private set; }
-
-        public double GetMostRecent_ThreeYearGrowthEstimatePercentage()
-        {
-            return ThreeYearGrowthEstimatePercentage;
-        }
 
         public DateOnly DateCreated { get; private set; }
 
@@ -90,63 +72,9 @@ namespace Charty.Chart.Analysis.ExponentialRegression
             return GetEstimate(t);
         }
 
-        internal double Get1YearEstimateAbsolute()
-        {
-            DateOnly targetDate = DateCreated.AddYears(1);
-            return GetEstimate(targetDate);
-        }
-
-        internal double Get3YearEstimateAbsolute()
-        {
-            DateOnly targetDate = DateCreated.AddYears(3);
-            return GetEstimate(targetDate);
-        }
-
-        private void SetEstimates()
-        {
-            OneYearGrowthEstimatePercentage = (
-                (Get1YearEstimateAbsolute() + AnnualizedDividendPerShare(Overview.DividendPerShareYearly))
-                / CurrentPrice
-                - 1.0) * 100.0;
-
-            ThreeYearGrowthEstimatePercentage = (
-                (Get3YearEstimateAbsolute() + AnnualizedDividendPerShare(Overview.DividendPerShareYearly) + 2.0 * Overview.DividendPerShareYearly)
-                / CurrentPrice
-                - 1.0) * 100.0;
-        }
-
-        internal double AnnualizedDividendPerShare(double dividendPerSharePerYear)
-        {
-            DateTime currentDate = DateTime.Now;
-            int daysPassed = currentDate.DayOfYear;
-            double percentageOfYearPassed = daysPassed / (DateTime.IsLeapYear(currentDate.Year) ? 366.0 : 365.0) * 100.0;
-
-            double annualizedDividend = dividendPerSharePerYear * (1 - percentageOfYearPassed / 100.0);
-            return annualizedDividend;
-        }
-
-        public string GetExpectedOneYearPerformance_AsText()
-        {
-            return Overview.GetBasicInformation() + "\n" + "Expected 1 Year Performance: " + GetMostRecent_OneYearGrowthEstimatePercentage() + " % " +
-                "\n(Target Date:" + DateCreated.AddYears(1) + "), Target Price: " + CurrentPrice * (1.0 + OneYearGrowthEstimatePercentage / 100.0);
-        }
-
-        public string GetExpectedThreeYearPerformance_AsText()
-        {
-            return Overview.GetBasicInformation() + "\n" + "Expected 3 Year Performance: " + GetMostRecent_ThreeYearGrowthEstimatePercentage() + " % " +
-                "(annualized: " + AnnualizeThreeYearEstimate(GetMostRecent_ThreeYearGrowthEstimatePercentage()) + " %) " +
-                "\nTarget Date:" + DateCreated.AddYears(3) + ", Target Price: " + CurrentPrice * (1.0 + ThreeYearGrowthEstimatePercentage / 100.0);
-        }
-
-        private double AnnualizeThreeYearEstimate(double threeYearEstimate)
-        {
-            double rate = threeYearEstimate / 100.0;
-            return Math.Round((Math.Pow(1.0 + rate, 1.0 / 3.0) - 1.0) * 100.0, 6); // Rounding to 6 decimal places
-        }
-
         public override string ToString()
         {
-            return "y(t) = " + A + " * " + B + " ^ t";
+            return "y(t) = " + A + " * " + B + " ^ t + [R²=" + Rsquared + "]";
         }
 
         public List<double> GetParameters()

@@ -168,38 +168,6 @@ namespace Charty.Chart
             }
         }
 
-        /*public void RankExponentialRegressionResultsBy1YearForecast()
-        {
-            if(!AnalyzeAll())
-            {
-                return;
-            }
-
-            RankByExpRegressionResult = new();
-            foreach (Symbol symbol in SymbolDictionary.Values)
-            {
-                RankByExpRegressionResult.ExponentialRegressionResults.Add(symbol.ExponentialRegressionModel);
-            }
-
-            RankByExpRegressionResult.PrintResultsRankedBy1YearEstimate();
-        }
-
-        public void RankExponentialRegressionResultsBy3YearForecast()
-        {
-            if (!AnalyzeAll())
-            {
-                return;
-            }
-
-            RankByExpRegressionResult = new();
-            foreach (Symbol symbol in SymbolDictionary.Values)
-            {
-                RankByExpRegressionResult.ExponentialRegressionResults.Add(symbol.ExponentialRegressionModel);
-            }
-
-            RankByExpRegressionResult.PrintResultsRankedBy3YearEstimate();
-        }*/
-
         public string RankBy1YearForecast()
         {
             return Ranking.RankBy1YearForecast_AsText();
@@ -227,6 +195,7 @@ namespace Charty.Chart
                 DrawLog(symbolStr);
             }
 
+            Console.WriteLine("Drew all Symbols");
             return;
         }
 
