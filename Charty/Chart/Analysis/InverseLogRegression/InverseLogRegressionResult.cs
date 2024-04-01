@@ -38,7 +38,7 @@ namespace Charty.Chart.Analysis.InverseLogRegression
 
         Symbol Symbol { get; set; }
 
-        RegressionResult RegressionResult { get; set; } = RegressionResult.InverseLogistic;
+        RegressionResultType RegressionResult { get; set; } = RegressionResultType.InverseLogistic;
 
         LogisticRegressionResult LogisticRegressionResult { get; set; }
 
@@ -62,7 +62,7 @@ namespace Charty.Chart.Analysis.InverseLogRegression
             return null;
         }
 
-        public RegressionResult GetRegressionResultType()
+        public RegressionResultType GetRegressionResultType()
         {
             return RegressionResult;
         }
@@ -209,7 +209,7 @@ namespace Charty.Chart.Analysis.InverseLogRegression
                 iteration++;
             }
 
-            Console.WriteLine("Finished Logistic Regression Exp Walk. Iterations: " + iteration);
+            //Console.WriteLine("Finished Logistic Regression Exp Walk. Iterations: " + iteration);
 
             // Create the result using the best parameters found
             LogisticRegressionResult result = new LogisticRegressionResult(bestRSquared, A: bestB, B: bestA, _x0: firstDateIndex + lastValid_xDelta0, Xs.First());

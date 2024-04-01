@@ -1,20 +1,22 @@
 ﻿using Charty.Chart.Analysis.ExponentialRegression;
+using Charty.Chart.Enums;
 using MathNet.Numerics;
 using ScottPlot;
 
 namespace Charty.Chart.Analysis.CascadingCAGR
 {
-    public class CascadingCAGR
+    public class ProjectingCAGR : IRegressionResult
     {
-        // y = y0 * B ^ (t - x0)
+        // y = y0 * g(t) ^ (t - x0)
         // y0 and x0 are constants. B is derived from the original regression model.
-        public CascadingCAGR(Symbol symbol)
+        public ProjectingCAGR(Symbol symbol)
         {
             Symbol = symbol;
             BaseRegression = symbol.ExponentialRegressionModel;
             y0 = symbol.DataPoints[0].MediumPrice;
             x0 = symbol.DataPoints[0].Date.ToDouble();
-            Console.WriteLine("CascadingCAGR: " + y0 + " * " + BaseRegression.B + " ^ (t-" + x0 + ")");
+            //Console.WriteLine("CascadingCAGR: " + y0 + " * " + BaseRegression.B + " ^ (t-" + x0 + ")");
+            //Console.WriteLine("CascadingCAGR: " + symbol);
 
             // first cascading exp-Regression will start at datapoints[0].Date and end at the first dataPoint with date >= that date.AddMonths(earliestAnalasysEndDate_Delta_Months)
             int earliestAnalasysEndDate_Delta_Months = 48;
@@ -44,7 +46,9 @@ namespace Charty.Chart.Analysis.CascadingCAGR
             GrowthRateRegressions.Add(GetLogisticRegression(CAGRs_UntilDate));
             GrowthRateRegressions.Sort((a, b) => b.GetRsquared().CompareTo(a.GetRsquared()));
             CalculateRsquared();
-            PlotDictionary_WithBestRegression(CAGRs_UntilDate);
+            DateCreated = DateOnly.FromDateTime(DateTime.Now);
+            RegressionResult = RegressionResultType.ProjectingCAGR;
+            //PlotDictionary_WithBestRegression(CAGRs_UntilDate);
             //PlotDictionary(RegularExpressionBs_UntilDate);
         }
 
@@ -58,6 +62,10 @@ namespace Charty.Chart.Analysis.CascadingCAGR
         private Symbol Symbol { get; set; }
 
         internal List<IRegressionResult> GrowthRateRegressions { get; private set; }
+
+        DateOnly DateCreated { get; set; }
+
+        RegressionResultType RegressionResult { get; set; }
 
         private void CalculateRsquared()
         {
@@ -100,7 +108,7 @@ namespace Charty.Chart.Analysis.CascadingCAGR
             ScottPlot.Palettes.Category20 palette = new();
             Scatter.Color = palette.Colors[2];
             //myPlot.FigureBackground.Color = Color.FromHex("#0b3049");
-            myPlot.Title("CCAGR Growth Rate with Regression:\n" + GrowthRateRegressions.First().ToString());
+            myPlot.Title("PCAGR Growth Rate with Regression:\n" + GrowthRateRegressions.First().ToString());
             //myPlot.Axes.SetLimitsY(AxisLimits.VerticalOnly(0.9, 1.6));
             myPlot.Axes.SetLimitsX(AxisLimits.HorizontalOnly(2008, 2026));
 
@@ -125,7 +133,7 @@ namespace Charty.Chart.Analysis.CascadingCAGR
             var scatter = myPlot.Add.Scatter(Xs, bestYs);
 
             scatter.LineWidth = 1.0f;
-            if(bestRegression.GetRegressionResultType() == Enums.RegressionResult.Linear)
+            if(bestRegression.GetRegressionResultType() == Enums.RegressionResultType.Linear)
             {
                 scatter.Color = Colors.Red;
             }
@@ -134,7 +142,7 @@ namespace Charty.Chart.Analysis.CascadingCAGR
                 scatter.Color = Colors.DarkGreen;
             }
 
-            myPlot.SavePng(BaseRegression.Overview.Symbol + "_CCAGR36_WithRegression.png", 1000, 500);
+            myPlot.SavePng(BaseRegression.Overview.Symbol + "_PCAGR36_WithRegression.png", 1000, 500);
         }
 
         /// <summary>
@@ -220,9 +228,29 @@ namespace Charty.Chart.Analysis.CascadingCAGR
             ScottPlot.Palettes.Category20 palette = new();
             Scatter.Color = palette.Colors[2];
             myPlot.FigureBackground.Color = Color.FromHex("#0b3049");
-            myPlot.Title("CCAGR");
+            myPlot.Title("PCAGR");
             //myPlot.Axes.SetLimitsY(AxisLimits.VerticalOnly(0.0, 1.6));
-            myPlot.SavePng("CCAGR_INITIALIZED_NOLIMIT36.png", 600, 400);
+            myPlot.SavePng("PCAGR_INITIALIZED_NOLIMIT36.png", 600, 400);
+        }
+
+        public List<double> GetParameters()
+        {
+            throw new NotImplementedException();
+        }
+
+        public double GetRsquared()
+        {
+            return Rsquared;
+        }
+
+        public DateOnly GetCreationDate()
+        {
+            return DateCreated;
+        }
+
+        public RegressionResultType GetRegressionResultType()
+        {
+            return RegressionResult;
         }
     }
 }

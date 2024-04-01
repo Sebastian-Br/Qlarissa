@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Charty.Chart.Analysis.CascadingCAGR
+namespace Charty.Chart.Analysis
 {
     internal interface IRegressionResult
     {
@@ -19,7 +19,7 @@ namespace Charty.Chart.Analysis.CascadingCAGR
 
         public DateOnly GetCreationDate();
 
-        public RegressionResult GetRegressionResultType();
+        public RegressionResultType GetRegressionResultType();
 
         public string ToString();
     }

@@ -1,5 +1,4 @@
-﻿using Charty.Chart.Analysis.CascadingCAGR;
-using Charty.Chart.Enums;
+﻿using Charty.Chart.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -62,7 +61,7 @@ namespace Charty.Chart.Analysis.ExponentialRegression
 
         public double OneYearGrowthEstimatePercentage { get; private set; }
 
-        public RegressionResult RegressionResult { get; private set; } = RegressionResult.Exponential;
+        public RegressionResultType RegressionResult { get; private set; } = RegressionResultType.Exponential;
 
         double Rsquared { get; set; }
 
@@ -165,7 +164,7 @@ namespace Charty.Chart.Analysis.ExponentialRegression
             return DateCreated;
         }
 
-        public RegressionResult GetRegressionResultType()
+        public RegressionResultType GetRegressionResultType()
         {
             return RegressionResult;
         }

@@ -1,4 +1,5 @@
-﻿using Charty.Chart.Analysis.CascadingCAGR;
+﻿using Charty.Chart.Analysis;
+using Charty.Chart.Analysis.CascadingCAGR;
 using Charty.Chart.Analysis.ExponentialRegression;
 using Charty.Chart.Analysis.InverseLogRegression;
 using Charty.Chart.ExcludedTimePeriods;
@@ -34,9 +35,9 @@ namespace Charty.Chart
 
         public ExponentialRegressionResult ExponentialRegressionModel { get; private set; }
 
-        public CascadingCAGR CascadingCAGR { get; private set; }
+        public ProjectingCAGR ProjectingCAGRmodel { get; private set; }
 
-        public InverseLogRegressionResult InverseLogRegressionResult { get; private set; }
+        public InverseLogRegressionResult InverseLogRegressionModel { get; private set; }
 
         private Dictionary<string,ExcludedTimePeriod> ExcludedTimePeriods { get; set; }
 
@@ -46,19 +47,19 @@ namespace Charty.Chart
             {
                 ExponentialRegression expR = new ExponentialRegression(GetDataPointsNotInExcludedTimePeriods());
                 ExponentialRegressionModel = new ExponentialRegressionResult(expR, this);
-                CascadingCAGR = new(this);
-                InverseLogRegressionResult = new(this);
+                ProjectingCAGRmodel = new(this);
+                InverseLogRegressionModel = new(this);
             }
             else
             {
-                InverseLogRegressionResult = new(this);
-                CascadingCAGR = new(this);
+                InverseLogRegressionModel = new(this);
+                ProjectingCAGRmodel = new(this);
             }
         }
 
         public override string ToString()
         {
-            return Overview.Name + " (" + Overview.Symbol + ") - " + DataPoints.Last().MediumPrice + " " + Overview.Currency.ToString();
+            return Overview.Name + " (" + Overview.Symbol + ") - " + Math.Round(DataPoints.Last().MediumPrice, 2) + " " + Overview.Currency.ToString();
         }
 
         public bool AddExcludedTimePeriod(string key, ExcludedTimePeriod excludedTimePeriod)
@@ -180,6 +181,46 @@ namespace Charty.Chart
             }
 
             return false;
+        }
+
+        public double GetNYearForecastAbsolute(double n)
+        {
+            double dividends = n * Overview.DividendPerShareYearly;
+
+            double expRegWeight = GetWeight(ExponentialRegressionModel);
+            double pcagrWeight = GetWeight(ProjectingCAGRmodel);
+            double invLogRegWeight = GetWeight(InverseLogRegressionModel);
+
+            double totalWeight = expRegWeight + pcagrWeight + invLogRegWeight;
+
+            double normalized_expRegWeight = expRegWeight / totalWeight;
+            double normalized_pcagrWeight = pcagrWeight / totalWeight;
+            double normalized_invLogRegWeight = invLogRegWeight / totalWeight;
+
+            double t = (DateOnly.FromDateTime(DateTime.Now)).ToDouble() + n;
+            double expRegEstimate = ExponentialRegressionModel.GetEstimate(t);
+            double pcagrEstimate = ProjectingCAGRmodel.GetEstimate(t);
+            double invLogEstimate = InverseLogRegressionModel.GetEstimate(t);
+
+            double weighted_expRegEstimate = normalized_expRegWeight * expRegEstimate;
+            double weighted_pcagrWeight = normalized_pcagrWeight * pcagrEstimate;
+            double weighted_invLogRegWeight = normalized_invLogRegWeight * invLogEstimate;
+
+            double estimate = weighted_expRegEstimate + weighted_pcagrWeight + weighted_invLogRegWeight;
+
+            return estimate + dividends;
+        }
+
+        private double GetWeight(IRegressionResult result)
+        {
+            double rsquared = result.GetRsquared();
+            double weight = 1.0 / (1.0 - rsquared);
+            return weight * weight;
+        }
+
+        public double GetNYearForecastPercent(double n)
+        {
+            return ((GetNYearForecastAbsolute(n) / (DataPoints.Last().MediumPrice)) -1)*100.0;
         }
 
         public void DbgPrintDataPoints()

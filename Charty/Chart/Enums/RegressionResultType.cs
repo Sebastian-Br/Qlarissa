@@ -6,13 +6,14 @@ using System.Threading.Tasks;
 
 namespace Charty.Chart.Enums
 {
-    public enum RegressionResult
+    public enum RegressionResultType
     {
         Linear = 1,
         Logistic = 2,
         Exponential = 3,
         Polynomial = 4,
         LinearWeighted = 5,
-        InverseLogistic = 6,
+        ProjectingCAGR = 6,
+        InverseLogistic = 7,
     }
 }

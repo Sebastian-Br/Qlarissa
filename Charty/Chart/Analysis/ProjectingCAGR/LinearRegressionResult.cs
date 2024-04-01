@@ -27,7 +27,7 @@ namespace Charty.Chart.Analysis.CascadingCAGR
 
         double Rsquared { get; set; }
 
-        RegressionResult RegressionResult { get; set; } = RegressionResult.Linear;
+        RegressionResultType RegressionResult { get; set; } = RegressionResultType.Linear;
 
         DateOnly DateCreated { get; set; }
 
@@ -52,7 +52,7 @@ namespace Charty.Chart.Analysis.CascadingCAGR
             return Parameters;
         }
 
-        public RegressionResult GetRegressionResultType()
+        public RegressionResultType GetRegressionResultType()
         {
             return RegressionResult;
         }

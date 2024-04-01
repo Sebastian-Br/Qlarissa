@@ -26,10 +26,10 @@ namespace Charty.Chart
             ConfigurationSymbols = customConfiguration.SymbolsToBeAnalyzed;
 
             SymbolDictionary = new();
-            RankByExpRegressionResult = new();
             DataBase = new(configuration);
-            ImportSymbolDictionaryFromDataBase();
+            //ImportSymbolDictionaryFromDataBase();
             PyFinanceAPI = new PyFinanceApiManager(configuration);
+            Ranking = new(this);
         }
 
         private Database.DB DataBase { get; set; }
@@ -40,9 +40,9 @@ namespace Charty.Chart
 
         private Dictionary<string, ExcludedTimePeriod> DefaultExcludedTimePeriods {  get; set; }
 
-        private RankByExpRegressionResult RankByExpRegressionResult { get; set; }
-
         private Dictionary<string,string> ConfigurationSymbols { get; set; }
+
+        private Ranking.Ranking Ranking { get; set; }
 
         private void ImportSymbolDictionaryFromDataBase()
         {
@@ -81,7 +81,7 @@ namespace Charty.Chart
 
             Symbol result = await PyFinanceAPI.RetrieveSymbol(symbol);
             AddDefaultExcludedTimePeriodsToSymbol(result);
-            result.RunRegressions_IfNotExists();
+            //result.RunRegressions_IfNotExists();
 
             DataBase.InsertOrUpdateSymbolInformation(result);
             //SymbolDictionary.Add(symbol, result);
@@ -116,6 +116,8 @@ namespace Charty.Chart
             {
                 await InitializeSymbolFromAPI(symbol);
             }
+
+            return;
         }
 
         public Symbol RetrieveSymbol(string symbol)
@@ -127,6 +129,11 @@ namespace Charty.Chart
             }
 
             return null;
+        }
+
+        public List<Symbol> RetrieveSymbols()
+        {
+            return SymbolDictionary.Values.ToList();
         }
 
         public bool RemoveSymbol(string symbol)
@@ -146,6 +153,7 @@ namespace Charty.Chart
                 Console.WriteLine("Starting Analysis");
                 foreach (Symbol symbol in SymbolDictionary.Values)
                 {
+                    Console.WriteLine("Analyzing: " +  symbol);
                     symbol.RunRegressions_IfNotExists();
                     DataBase.InsertOrUpdateSymbolInformation(symbol);
                 }
@@ -160,7 +168,7 @@ namespace Charty.Chart
             }
         }
 
-        public void RankExponentialRegressionResultsBy1YearForecast()
+        /*public void RankExponentialRegressionResultsBy1YearForecast()
         {
             if(!AnalyzeAll())
             {
@@ -190,6 +198,15 @@ namespace Charty.Chart
             }
 
             RankByExpRegressionResult.PrintResultsRankedBy3YearEstimate();
+        }*/
+
+        public string RankBy1YearForecast()
+        {
+            return Ranking.RankBy1YearForecast_AsText();
+        }
+        public string RankBy3YearForecast()
+        {
+            return Ranking.RankBy3YearForecast_AsText();
         }
 
         public void Draw(string symbolStr)
@@ -235,29 +252,32 @@ namespace Charty.Chart
                 xDateIndexForExpReg = xDateForExpRegression.ToDouble();
             }*/
 
-            double endYear = 2027;
-            for(double d = 2010; d < endYear; d+= 0.01)
+            double startYear = 2009.5;
+            double endYear = DateOnly.FromDateTime(DateTime.Now.AddYears(3)).ToDouble() + 0.08;
+            for(double d = startYear; d < endYear; d+= 0.01)
             {
                 expRegXs.Add(d);
                 expRegYs.Add(symbol.ExponentialRegressionModel.GetEstimate(d));
                 cascadingCagrXs.Add(d);
-                cascadingCagrYs.Add(symbol.CascadingCAGR.GetEstimate(d));
+                cascadingCagrYs.Add(symbol.ProjectingCAGRmodel.GetEstimate(d));
                 inverseLogXs.Add(d);
-                inverseLogYs.Add(symbol.InverseLogRegressionResult.GetEstimate(d));
+                inverseLogYs.Add(symbol.InverseLogRegressionModel.GetEstimate(d));
             }
 
             ScottPlot.Plot myPlot = new();
-            myPlot.Axes.SetLimitsX(AxisLimits.HorizontalOnly(2010, endYear));
+            myPlot.Axes.SetLimitsX(AxisLimits.HorizontalOnly(startYear, endYear));
             //myPlot.Axes.SetLimitsY(AxisLimits.VerticalOnly(0, 1400));
             myPlot.Add.Scatter(x, y.Select(y => Math.Log(y)).ToArray()); // adds symbol x,y
 
             ScottPlot.Palettes.Category20 palette = new();
             var expRegScatter = myPlot.Add.Scatter(expRegXs.ToArray(), expRegYs.ToArray().Select(y => Math.Log(y)).ToArray());
             expRegScatter.Color = palette.Colors[2];
-            expRegScatter.LineWidth = 0.2f;
+            //expRegScatter.LineWidth = 0.2f;
+            expRegScatter.MarkerSize = 0.5f;
+            expRegScatter.Label = "EXP";
 
             if ((cascadingCagrYs.ToArray().Select(y => Math.Log(y)).Any(x => x <= 0))) {
-                throw new Exception("CCAGR");
+                throw new Exception("PCAGR");
             }
 
             if ((expRegYs.ToArray().Select(y => Math.Log(y)).Any(x => x <= 0)))
@@ -272,11 +292,13 @@ namespace Charty.Chart
 
             var cascadingCAGRscatter = myPlot.Add.Scatter(cascadingCagrXs.ToArray(), cascadingCagrYs.ToArray().Select(y => Math.Log(y)).ToArray());
             cascadingCAGRscatter.Color = palette.Colors[6];
-            cascadingCAGRscatter.LineWidth = 0.2f;
+            cascadingCAGRscatter.MarkerSize = 0.5f;
+            cascadingCAGRscatter.Label = "PCAGR";
 
             var inverseLogScatter = myPlot.Add.Scatter(inverseLogXs.ToArray(), inverseLogYs.ToArray().Select(y => Math.Log(y)).ToArray());
             inverseLogScatter.Color = Colors.Black;
-            inverseLogScatter.LineWidth = 0.2f;
+            inverseLogScatter.MarkerSize = 0.75f;
+            inverseLogScatter.Label = "INVLOG";
 
             // Use a custom formatter to control the label for each tick mark
             static string logTickLabels(double y) => Math.Pow(double.E, y).ToString("N0");
@@ -286,12 +308,33 @@ namespace Charty.Chart
             tickGen.MinorTickGenerator = minorTickGen;
             // create a custom tick formatter to set the label text for each tick
             static string LogTickLabelFormatter(double y) => $"{Math.Pow(double.E, y):N0}";
-            tickGen.IntegerTicksOnly = true;
+            //tickGen.IntegerTicksOnly = true;
             tickGen.LabelFormatter = LogTickLabelFormatter;
             myPlot.Axes.Left.TickGenerator = tickGen;
 
-            myPlot.Title(symbolStr + " EXPR²=" + symbol.ExponentialRegressionModel.GetRsquared() + " CAGRR²=" + symbol.CascadingCAGR.Rsquared + " INVLOGR²=" + symbol.InverseLogRegressionResult.GetRsquared());
-            myPlot.SavePng(symbolStr + ".png", 1300, 585);
+            myPlot.Title(symbol.ToString() + "\nEXPR²=" + symbol.ExponentialRegressionModel.GetRsquared() + " PCAGRR²=" + symbol.ProjectingCAGRmodel.Rsquared + " INVLOGR²=" + symbol.InverseLogRegressionModel.GetRsquared());
+            myPlot.Axes.Bottom.Label.Text = "Time [years]";
+            myPlot.Axes.Left.Label.Text = "Price [" + symbol.Overview.Currency.ToString() + "]";
+
+            myPlot.ShowLegend();
+            myPlot.Legend.Orientation = Orientation.Horizontal;
+            myPlot.Axes.Title.Label.OffsetY = -35;
+
+            var verticalLine1Y = myPlot.Add.VerticalLine(DateOnly.FromDateTime(DateTime.Now.AddYears(1)).ToDouble());
+            verticalLine1Y.Text = "+1Y";
+            verticalLine1Y.LineWidth = 1;
+            verticalLine1Y.LinePattern = LinePattern.Dotted;
+            verticalLine1Y.LabelOppositeAxis = true;
+
+            var verticalLine3Y = myPlot.Add.VerticalLine(DateOnly.FromDateTime(DateTime.Now.AddYears(3)).ToDouble());
+            verticalLine3Y.Text = "+3Y";
+            verticalLine3Y.LineWidth = 1;
+            verticalLine3Y.LinePattern = LinePattern.Dotted;
+            verticalLine3Y.LabelOppositeAxis = true;
+
+            myPlot.Axes.Right.TickGenerator = tickGen;
+
+            myPlot.SavePng(symbolStr + ".png", 1250, 575);
         }
     }
 }

@@ -148,13 +148,13 @@ namespace Charty.Menu
 
             if (string.Equals(text, "Rank1Year", comparer))
             {
-                SymbolManager.RankExponentialRegressionResultsBy1YearForecast();
+                Console.WriteLine(SymbolManager.RankBy1YearForecast());
                 return this;
             }
 
             if (string.Equals(text, "Rank3Year", comparer))
             {
-                SymbolManager.RankExponentialRegressionResultsBy3YearForecast();
+                Console.WriteLine(SymbolManager.RankBy3YearForecast());
                 return this;
             }
 
