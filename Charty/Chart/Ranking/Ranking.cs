@@ -141,11 +141,12 @@ namespace Charty.Chart.Ranking
 
         private double Sigmoidal_MarketCap_Weight(double marketCap)
         {
-            double k = 0.25;
+            double k = 0.1;
+            double marketCap_inBillions = marketCap / 1e9;
             return 
                 (1.0) 
                 /
-                (1.0 + Math.Exp(-k * (marketCap - 15e9)));
+                (1.0 + Math.Exp(-k * (marketCap_inBillions - 10)));
         }
 
         private double AnnualizeNYearEstimate(double estimate, double n)
