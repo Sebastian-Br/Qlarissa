@@ -58,7 +58,6 @@ namespace Charty.Chart.Analysis.ExponentialRegression
             // Extract optimized parameters
             A = result.MinimizingPoint[0];
             B = result.MinimizingPoint[1];
-            CaculateRsquared();
             //Console.WriteLine("ExponentialRegression: y = " + A + " * " + B + " ^x" + " // after " + result.Iterations + " iterations");
         }
 
@@ -67,16 +66,6 @@ namespace Charty.Chart.Analysis.ExponentialRegression
         public double B { get; private set; }
 
         public SymbolDataPoint[] DataPoints { get; private set; } 
-
-        public double Rsquared { get; private set; }
-
-        private void CaculateRsquared()
-        {
-            double[] Xs = DataPoints.Select(x => x.Date.ToDouble()).ToArray();
-            double[] Ys = DataPoints.Select(x => x.MediumPrice).ToArray();
-
-            Rsquared = GoodnessOfFit.RSquared(Xs.Select(x => A * Math.Pow(B, x)), Ys);
-        }
 
         private double GetYearIndex(SymbolDataPoint dataPoint)
         {

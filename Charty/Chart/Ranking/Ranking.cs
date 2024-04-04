@@ -88,7 +88,15 @@ namespace Charty.Chart.Ranking
             return result;
         }
 
-        private double GetAggregatedScore(Symbol symbol)
+        public (double,double) GetWeightedNYearForecast(Symbol symbol, double N)
+        {
+            (double, double) doubleTrouble = new();
+            doubleTrouble.Item1 = symbol.DataPoints.Last().Date.ToDouble() + 3.0;
+            doubleTrouble.Item2 = symbol.DataPoints.Last().MediumPrice * Math.Pow(1.0 + GetWeighted1YearEquivalentForecast(symbol) / 100.0, N);
+            return doubleTrouble;
+        }
+
+        private double GetWeighted1YearEquivalentForecast(Symbol symbol) // [%]
         {
             double _1YE = symbol.GetNYearForecastPercent(1);
             double _3YEa = AnnualizeNYearEstimate(symbol.GetNYearForecastPercent(3), 3); // Three-Year-annualized
@@ -104,7 +112,12 @@ namespace Charty.Chart.Ranking
             double normalized_3YEa = _3YEa_weighted / total_YE_weights;
 
             double weightedAnnualizedForecast = normalized_1YE + normalized_3YEa;
-            double currentScore = weightedAnnualizedForecast * 10.0;
+            return weightedAnnualizedForecast;
+        }
+
+        private double GetAggregatedScore(Symbol symbol)
+        {
+            double currentScore = GetWeighted1YearEquivalentForecast(symbol) * 10.0;
 
             double marketCap = symbol.Overview.MarketCapitalization;
             double marketCapUSDequivalent;
@@ -141,12 +154,12 @@ namespace Charty.Chart.Ranking
 
         private double Sigmoidal_MarketCap_Weight(double marketCap)
         {
-            double k = 0.1;
+            double k = 0.25;
             double marketCap_inBillions = marketCap / 1e9;
             return 
                 (1.0) 
                 /
-                (1.0 + Math.Exp(-k * (marketCap_inBillions - 10)));
+                (1.0 + Math.Exp(-k * (marketCap_inBillions - 8)));
         }
 
         private double AnnualizeNYearEstimate(double estimate, double n)

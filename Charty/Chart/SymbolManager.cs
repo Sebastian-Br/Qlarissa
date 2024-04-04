@@ -296,7 +296,10 @@ namespace Charty.Chart
             tickGen.LabelFormatter = LogTickLabelFormatter;
             myPlot.Axes.Left.TickGenerator = tickGen;
 
-            myPlot.Title(symbol.ToString() + "\nEXPR²=" + symbol.ExponentialRegressionModel.GetRsquared() + " PCAGRR²=" + symbol.ProjectingCAGRmodel.Rsquared + " INVLOGR²=" + symbol.InverseLogRegressionModel.GetRsquared());
+            int rsquaredDecimals = 9;
+            myPlot.Title(symbol.ToString() + "\nEXPR²=" + symbol.ExponentialRegressionModel.GetRsquared().Round(rsquaredDecimals)
+                + " PCAGRR²=" + symbol.ProjectingCAGRmodel.GetRsquared().Round(rsquaredDecimals)
+                + " INVLOGR²=" + symbol.InverseLogRegressionModel.GetRsquared().Round(rsquaredDecimals));
             myPlot.Axes.Bottom.Label.Text = "Time [years]";
             myPlot.Axes.Left.Label.Text = "Price [" + symbol.Overview.Currency.ToString() + "]";
 
@@ -316,7 +319,36 @@ namespace Charty.Chart
             verticalLine3Y.LinePattern = LinePattern.Dotted;
             verticalLine3Y.LabelOppositeAxis = true;
 
-            myPlot.Axes.Right.TickGenerator = tickGen;
+            //myPlot.Axes.Right.TickGenerator = tickGen;
+            double _1YE_weighted_X = symbol.DataPoints.Last().Date.ToDouble() + 1.0;
+            double _1YE_weighted_Y = symbol.GetNYearForecastAbsolute(1.0);
+            ScottPlot.Plottables.Marker marker_1YE = new()
+            {
+                X = _1YE_weighted_X,
+                Y = Math.Log(_1YE_weighted_Y),
+                Size = 8,
+                Color = Colors.Purple,
+                Shape = MarkerShape.OpenDiamond,
+                Label = _1YE_weighted_Y.Round(2).ToString(),
+                LineWidth = 2,
+            };
+
+            myPlot.Add.Plottable(marker_1YE);
+
+            double _3YE_weighted_X = symbol.DataPoints.Last().Date.ToDouble() + 3.0;
+            double _3YE_weighted_Y = symbol.GetNYearForecastAbsolute(3.0);
+            ScottPlot.Plottables.Marker marker3YE = new()
+            {
+                X = _3YE_weighted_X,
+                Y = Math.Log(_3YE_weighted_Y),
+                Size = 8,
+                Color = Colors.SaddleBrown,
+                Shape = MarkerShape.OpenDiamond,
+                Label = _3YE_weighted_Y.Round(2).ToString(),
+                LineWidth = 2,
+            };
+
+            myPlot.Add.Plottable(marker3YE);
 
             myPlot.SavePng(symbolStr + ".png", 1250, 575);
         }

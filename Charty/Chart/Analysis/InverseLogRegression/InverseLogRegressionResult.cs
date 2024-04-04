@@ -24,9 +24,9 @@ namespace Charty.Chart.Analysis.InverseLogRegression
             double[] Ys = Symbol.DataPoints.Select(dataPoint => Math.Log(dataPoint.MediumPrice)).ToArray();
 
             LogisticRegressionResult = GetLogisticRegression_ExpWalk_ChatGPTed(Xs, Ys);
-            Rsquared = LogisticRegressionResult.GetRsquared();
+            //Rsquared = LogisticRegressionResult.GetRsquared();
+            Rsquared = GoodnessOfFit.RSquared(Xs.Select(x => GetEstimate(x)), Ys);
             //DrawWithLogReg(Xs, Ys, LogisticRegressionResult);
-
             DateCreated = DateOnly.FromDateTime(DateTime.Now);
         }
 
@@ -109,52 +109,6 @@ namespace Charty.Chart.Analysis.InverseLogRegression
             myPlot.SavePng(Symbol.Overview.Symbol + "InvLog_WithRegression.png", 900, 600);
         }
 
-        private LogisticRegressionResult GetLogisticRegression(double[] Xs, double[] Ys)
-        {
-            Console.WriteLine("Started Logistic Regression");
-            double min_xDelta0 = -0.001;
-            double xDelta0 = min_xDelta0;
-            double firstDateIndex = Xs.First();
-            double currentX0 = firstDateIndex - xDelta0;
-
-            int maxIterations = 300000;
-            int iteration = 0;
-
-            double currentBest_rSquared = 0;
-            double stepSize = -0.001;
-
-            double a = 0, b = 0, rSquared = 0;
-
-            while (iteration < maxIterations) // optimize with exponential-walk gobbledigook.
-            {
-                currentX0 = firstDateIndex + xDelta0;
-
-                double[] x = Xs.Select(xx => (xx - currentX0)).ToArray();
-                double[] y = Ys;
-                var p = Fit.Logarithm(x, y);
-                // a + b * ln(x)
-                a = p.Item1;
-                b = p.Item2;
-                rSquared = GoodnessOfFit.RSquared(x.Select(x => a + b * Math.Log(x)), y);
-
-                if (rSquared > currentBest_rSquared)
-                {
-                    currentBest_rSquared = rSquared;
-                }
-                else
-                {
-                    break;
-                }
-
-                xDelta0 = xDelta0 + stepSize;
-                iteration++;
-            }
-
-            Console.WriteLine("Finished Logistic Regression");
-            LogisticRegressionResult result = new(rSquared, A: b, B: a, _x0: currentX0, Xs.First()); // different definition in the class
-            return result;
-        }
-
         private LogisticRegressionResult GetLogisticRegression_ExpWalk_ChatGPTed(double[] Xs, double[] Ys)
         {
             double min_xDelta0 = -0.001;
@@ -210,8 +164,6 @@ namespace Charty.Chart.Analysis.InverseLogRegression
             }
 
             //Console.WriteLine("Finished Logistic Regression Exp Walk. Iterations: " + iteration);
-
-            // Create the result using the best parameters found
             LogisticRegressionResult result = new LogisticRegressionResult(bestRSquared, A: bestB, B: bestA, _x0: firstDateIndex + lastValid_xDelta0, Xs.First());
             return result;
         }

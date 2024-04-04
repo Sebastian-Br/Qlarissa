@@ -1,4 +1,5 @@
 ﻿using Charty.Chart.Enums;
+using MathNet.Numerics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,7 +40,9 @@ namespace Charty.Chart.Analysis.ExponentialRegression
             CurrentPrice = symbol.DataPoints.Last().MediumPrice;
             Overview = symbol.Overview;
             DateCreated = DateOnly.FromDateTime(DateTime.Today);
-            Rsquared = e.Rsquared;
+            double[] Xs = symbol.DataPoints.Select(x => x.Date.ToDouble()).ToArray();
+            double[] Ys = symbol.DataPoints.Select(x => x.MediumPrice).ToArray();
+            Rsquared = GoodnessOfFit.RSquared(Xs.Select(x => GetEstimate(x)), Ys); ;
 
             if (CurrentPrice <= 0)
             {
@@ -68,8 +71,7 @@ namespace Charty.Chart.Analysis.ExponentialRegression
 
         public double GetEstimate(DateOnly date)
         {
-            double t = date.ToDouble();
-            return GetEstimate(t);
+            return GetEstimate(date.ToDouble());
         }
 
         public override string ToString()

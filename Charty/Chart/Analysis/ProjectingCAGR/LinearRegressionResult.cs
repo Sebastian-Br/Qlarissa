@@ -11,7 +11,7 @@ namespace Charty.Chart.Analysis.CascadingCAGR
     internal class LinearRegressionResult : IRegressionResult
     {
         /// <summary>
-        /// y = m*x + c
+        /// y = m*t + c
         /// </summary>
         /// <param name="m">Slope</param>
         /// <param name="c">Intercept</param>

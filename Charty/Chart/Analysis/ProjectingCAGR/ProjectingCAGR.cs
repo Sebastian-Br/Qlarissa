@@ -7,15 +7,19 @@ namespace Charty.Chart.Analysis.CascadingCAGR
 {
     public class ProjectingCAGR : IRegressionResult
     {
-        // y = y0 * g(t) ^ (t - x0)
-        // y0 and x0 are constants. B is derived from the original regression model.
+        /// <summary>
+        /// y = y0 * g(t) ^ (t - x0)
+        /// g is either a linear or log model depending on which fits best based on R²
+        /// Log: g(t) = a * ln(t - X0) + b
+        /// Lin: g(t) = m*t + c
+        /// </summary>
+        /// <param name="symbol"></param>
         public ProjectingCAGR(Symbol symbol)
         {
             Symbol = symbol;
             BaseRegression = symbol.ExponentialRegressionModel;
             y0 = symbol.DataPoints[0].MediumPrice;
             x0 = symbol.DataPoints[0].Date.ToDouble();
-            //Console.WriteLine("CascadingCAGR: " + y0 + " * " + BaseRegression.B + " ^ (t-" + x0 + ")");
             //Console.WriteLine("CascadingCAGR: " + symbol);
 
             // first cascading exp-Regression will start at datapoints[0].Date and end at the first dataPoint with date >= that date.AddMonths(earliestAnalasysEndDate_Delta_Months)
@@ -26,24 +30,19 @@ namespace Charty.Chart.Analysis.CascadingCAGR
 
             DateOnly targetDate = firstTargetDate;
             Dictionary<DateOnly, double> CAGRs_UntilDate = new();
-            double initialA = 1.0;
-            double initialB = 1.0;
 
             while (targetDate <= symbol.DataPoints.Last().Date)
             {
-                //Console.WriteLine("Target Date: " + targetDate);
                 SymbolDataPoint[] dataPoints_untilTargetDate = symbol.DataPoints.Where(x => x.Date <= targetDate).ToArray();
                 SymbolDataPoint lastDataPoint_untilTargetDate = dataPoints_untilTargetDate.Last();
-                //ExponentialRegression.ExponentialRegression e = new(dataPoints_untilTargetDate, initialA, initialB);
                 double cagr = Math.Pow((BaseRegression.GetEstimate(lastDataPoint_untilTargetDate.Date)) /(firstDataPoint.MediumPrice), (1.0/(lastDataPoint_untilTargetDate.Date.ToDouble() - firstDataPointDate.ToDouble())));
                 CAGRs_UntilDate.Add(targetDate, cagr);
-                //initialA = e.A; initialB = e.B;
-                targetDate = targetDate.AddDays(7);
+                targetDate = targetDate.AddDays(1);
             }
 
             GrowthRateRegressions = new();
             GrowthRateRegressions.Add(GetLinearRegression(CAGRs_UntilDate));
-            GrowthRateRegressions.Add(GetLogisticRegression(CAGRs_UntilDate));
+            GrowthRateRegressions.Add(GetLogisticRegression_ExpWalk_ChatGPTed(CAGRs_UntilDate.Keys.Select(x => x.ToDouble()).ToArray(), CAGRs_UntilDate.Values.ToArray()));
             GrowthRateRegressions.Sort((a, b) => b.GetRsquared().CompareTo(a.GetRsquared()));
             CalculateRsquared();
             DateCreated = DateOnly.FromDateTime(DateTime.Now);
@@ -164,52 +163,63 @@ namespace Charty.Chart.Analysis.CascadingCAGR
             return result;
         }
 
-        /// <summary>
-        /// https://numerics.mathdotnet.com/Regression#Curve-Fitting-Linear-Regression
-        /// </summary>
-        /// <param name="cagrResults"></param>
-        /// <returns></returns>
-        private LogisticRegressionResult GetLogisticRegression(Dictionary<DateOnly, double> cagrResults)
+        
+        private LogisticRegressionResult GetLogisticRegression_ExpWalk_ChatGPTed(double[] Xs, double[] Ys)
         {
             double min_xDelta0 = -0.001;
             double xDelta0 = min_xDelta0;
-            double firstDateIndex = cagrResults.Keys.First().ToDouble();
+            double firstDateIndex = Xs.First();
             double currentX0 = firstDateIndex - xDelta0;
 
-            int maxIterations = 100000000;
+            int maxIterations = 200000;
             int iteration = 0;
 
             double currentBest_rSquared = 0;
-            double stepSize = -0.0001;
+            double stepSize = -0.001;
+            double exitStepSize = 1e-308; // Exit condition based on step size
+            double lastValid_xDelta0 = xDelta0;
+            double bestA = 0, bestB = 0, bestRSquared = 0;
 
-            double a = 0, b = 0, rSquared = 0;
-
-            while( iteration < maxIterations ) // optimize with exponential-walk gobbledigook.
+            while (iteration < maxIterations && Math.Abs(stepSize) >= exitStepSize)
             {
                 currentX0 = firstDateIndex + xDelta0;
 
-                double[] x = cagrResults.Select(kvp => (kvp.Key.ToDouble() - currentX0)).ToArray();
-                double[] y = cagrResults.Select(kvp => kvp.Value).ToArray();
+                double[] x = Xs.Select(xx => (xx - currentX0)).ToArray();
+                double[] y = Ys;
                 var p = Fit.Logarithm(x, y);
-                // a + b * ln(x)
-                a = p.Item1;
-                b = p.Item2;
-                rSquared = GoodnessOfFit.RSquared(x.Select(x => a + b * Math.Log(x)), y);
+                double a = p.Item1;
+                double b = p.Item2;
+                double rSquared = GoodnessOfFit.RSquared(x.Select(x => a + b * Math.Log(x)), y);
 
                 if (rSquared > currentBest_rSquared)
                 {
+                    // Update current best result
                     currentBest_rSquared = rSquared;
+                    bestA = a;
+                    bestB = b;
+                    bestRSquared = rSquared;
+
+                    // Adjust step size for the next iteration using an exponential-walk approach
+                    stepSize *= 1.1; // Increase step size exponentially
+                    lastValid_xDelta0 = xDelta0;
                 }
                 else
                 {
-                    break;
+                    // Overshoot occurred, restore previous best result and decrease step size
+                    xDelta0 = lastValid_xDelta0;
+                    stepSize *= 0.5; // Decrease step size
+
+                    // Prevent step size from becoming too small
+                    if (Math.Abs(stepSize) < exitStepSize)
+                        break;
                 }
 
-                xDelta0 = xDelta0 + stepSize;
+                xDelta0 += stepSize;
                 iteration++;
             }
 
-            LogisticRegressionResult result = new(rSquared, A: b, B: a, _x0: currentX0, cagrResults.Keys.First().ToDouble()); // different definition in the class
+            //Console.WriteLine("Finished Logistic Regression Exp Walk. Iterations: " + iteration);
+            LogisticRegressionResult result = new LogisticRegressionResult(bestRSquared, A: bestB, B: bestA, _x0: firstDateIndex + lastValid_xDelta0, Xs.First());
             return result;
         }
 
