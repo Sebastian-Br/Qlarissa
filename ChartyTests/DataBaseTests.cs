@@ -25,7 +25,7 @@ namespace ChartyTests
             new SymbolDataPoint() { Date = new DateOnly(2023,1,2), HighPrice = 51, LowPrice = 41, MediumPrice = 46},
             new SymbolDataPoint() { Date = new DateOnly(2023,1,3), HighPrice = 52, LowPrice = 42, MediumPrice = 47},
             ];
-            SymbolOverview overview = new SymbolOverview() { Currency = Charty.Chart.Enums.Currency.USD, DividendPerShareYearly = 1.2, MarketCapitalization = 0, Name = "TEST Inc.", Symbol = "TST", PEratio = 0 };
+            SymbolOverview overview = new SymbolOverview() { Currency = Charty.Chart.Enums.Currency.USD, DividendPerShareYearly = 1.2, MarketCapitalization = 0, Name = "TEST Inc.", Symbol = "TST", TrailingPE = 0 };
             Symbol symbol = new(points, overview);
             symbol.RunRegressions_IfNotExists();
             db.InsertOrUpdateSymbolInformation(symbol);
@@ -40,7 +40,7 @@ namespace ChartyTests
             new SymbolDataPoint() { Date = new DateOnly(2023,1,3), HighPrice = 52, LowPrice = 42, MediumPrice = 47},
             new SymbolDataPoint() { Date = new DateOnly(2023,1,4), HighPrice = 53, LowPrice = 43, MediumPrice = 48},
             ];
-            SymbolOverview overview = new SymbolOverview() { Currency = Charty.Chart.Enums.Currency.USD, DividendPerShareYearly = 1.37, MarketCapitalization = 0, Name = "TEST Inc.", Symbol = "TST", PEratio = 0 };
+            SymbolOverview overview = new SymbolOverview() { Currency = Charty.Chart.Enums.Currency.USD, DividendPerShareYearly = 1.37, MarketCapitalization = 0, Name = "TEST Inc.", Symbol = "TST", TrailingPE = 0 };
             Symbol symbol = new(points, overview);
             symbol.RunRegressions_IfNotExists();
             db.InsertOrUpdateSymbolInformation(symbol);

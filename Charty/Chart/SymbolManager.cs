@@ -203,7 +203,7 @@ namespace Charty.Chart
         {
             int logConstant = 2;
 
-            var symbol = SymbolDictionary[symbolStr];
+            Symbol symbol = SymbolDictionary[symbolStr];
             SymbolDataPoint[] dataPoints = symbol.GetDataPointsNotInExcludedTimePeriods();
             double[] x = dataPoints.Select(point => point.Date.ToDouble()).ToArray();
             double[] y = dataPoints.Select(point => point.MediumPrice).ToArray();
@@ -224,19 +224,7 @@ namespace Charty.Chart
             List<double> inverseLogXs = new();
             List<double> inverseLogYs = new();
 
-            /*while (xDateIndexForExpReg <= lastYearIndex)
-            {
-                expRegXs.Add(xDateIndexForExpReg);
-                expRegYs.Add(symbol.ExponentialRegressionModel.GetEstimate(xDateIndexForExpReg));
-
-                cascadingCagrXs.Add(xDateIndexForExpReg);
-                cascadingCagrYs.Add(symbol.CascadingCAGR.GetEstimate(xDateIndexForExpReg));
-
-                xDateForExpRegression = xDateForExpRegression.AddDays(1);
-                xDateIndexForExpReg = xDateForExpRegression.ToDouble();
-            }*/
-
-            double startYear = 2009.5;
+            double startYear = symbol.DataPoints[0].Date.ToDouble();
             double endYear = DateOnly.FromDateTime(DateTime.Now.AddYears(3)).ToDouble() + 0.08;
             for(double d = startYear; d < endYear; d+= 0.01)
             {
@@ -250,13 +238,38 @@ namespace Charty.Chart
 
             ScottPlot.Plot myPlot = new();
             myPlot.Axes.SetLimitsX(AxisLimits.HorizontalOnly(startYear, endYear));
-            //myPlot.Axes.SetLimitsY(AxisLimits.VerticalOnly(0, 1400));
-            myPlot.Add.Scatter(x, y.Select(y => Math.Log(y)).ToArray()); // adds symbol x,y
+
+            foreach(ExcludedTimePeriod excludedTimePeriod in symbol.GetExcludedTimePeriods().Values)
+            {
+                if(excludedTimePeriod.StartDate == null)
+                {
+                    double left = startYear;
+                    double right = excludedTimePeriod.EndDate.Value.ToDouble();
+                    var hSpan = myPlot.Add.HorizontalSpan(left, right);
+                    hSpan.FillStyle.Color = Colors.LightSkyBlue.WithAlpha(.2);
+                }
+                else if (excludedTimePeriod.EndDate == null)
+                {
+                    double left = excludedTimePeriod.StartDate.Value.ToDouble();
+                    double right = endYear;
+                    var hSpan = myPlot.Add.HorizontalSpan(left, right);
+                    hSpan.FillStyle.Color = Colors.LightSkyBlue.WithAlpha(.2);
+                }
+                else
+                {
+                    double left = excludedTimePeriod.StartDate.Value.ToDouble();
+                    double right = excludedTimePeriod.EndDate.Value.ToDouble();
+                    var hSpan = myPlot.Add.HorizontalSpan(left, right);
+                    hSpan.FillStyle.Color = Colors.LightSkyBlue.WithAlpha(.2);
+                }
+            }
+
+            var chart = myPlot.Add.Scatter(x, y.Select(y => Math.Log(y)).ToArray()); // adds symbol x,y
+            chart.Color = Colors.DarkSlateGray;
 
             ScottPlot.Palettes.Category20 palette = new();
             var expRegScatter = myPlot.Add.Scatter(expRegXs.ToArray(), expRegYs.ToArray().Select(y => Math.Log(y)).ToArray());
             expRegScatter.Color = palette.Colors[2];
-            //expRegScatter.LineWidth = 0.2f;
             expRegScatter.MarkerSize = 0.5f;
             expRegScatter.Label = "EXP";
 
@@ -350,7 +363,7 @@ namespace Charty.Chart
 
             myPlot.Add.Plottable(marker3YE);
 
-            myPlot.SavePng(symbolStr + ".png", 1250, 575);
+            myPlot.SavePng(symbolStr + ".png", 1300, 575);
         }
     }
 }

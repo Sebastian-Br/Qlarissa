@@ -17,8 +17,10 @@ namespace Charty.Chart.Analysis.ExponentialRegression
     /// </summary>
     public class ExponentialRegression
     {
-        public ExponentialRegression(SymbolDataPoint[] dataPoints, double initialA = 1.0, double initialB = 1.0)
+        public ExponentialRegression(Symbol symbol, double initialA = 1.0, double initialB = 1.0)
         {
+            SymbolDataPoint[] dataPoints = symbol.GetDataPointsNotInExcludedTimePeriods();
+
             if (dataPoints == null || dataPoints.Length == 0)
                 throw new ArgumentException("No Data Points");
 

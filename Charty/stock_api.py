@@ -27,7 +27,8 @@ def get_stock_data():
                 "Name": ticker_info.get('longName', 'UNKNOWN'),
                 "Currency": ticker_info.get('currency', 'USD'),
                 "MarketCapitalization": ticker_info.get('marketCap', '0'),
-                "PEratio": ticker_info.get('trailingPE', '0'),  # Using current P/E ratio
+                "TrailingPE": ticker_info.get('trailingPE', '0'),
+                "ForwardPE": ticker_info.get('forwardPE', '0'),
                 "DividendPerShareYearly": ticker_info.get('dividendRate', '0'),
                 "HistoricalData": data_filtered.to_dict(orient='index')
             }

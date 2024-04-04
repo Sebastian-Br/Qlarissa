@@ -16,24 +16,24 @@ namespace Charty.Chart.Analysis.CascadingCAGR
         /// <param name="symbol"></param>
         public ProjectingCAGR(Symbol symbol)
         {
-            Symbol = symbol;
             BaseRegression = symbol.ExponentialRegressionModel;
-            y0 = symbol.DataPoints[0].MediumPrice;
-            x0 = symbol.DataPoints[0].Date.ToDouble();
+            SymbolDataPoint[] dataPoints = symbol.GetDataPointsNotInExcludedTimePeriods();
+            y0 = dataPoints[0].MediumPrice;
+            x0 = dataPoints[0].Date.ToDouble();
             //Console.WriteLine("CascadingCAGR: " + symbol);
 
             // first cascading exp-Regression will start at datapoints[0].Date and end at the first dataPoint with date >= that date.AddMonths(earliestAnalasysEndDate_Delta_Months)
             int earliestAnalasysEndDate_Delta_Months = 48;
-            SymbolDataPoint firstDataPoint = symbol.DataPoints[0];
+            SymbolDataPoint firstDataPoint = dataPoints[0];
             DateOnly firstDataPointDate = firstDataPoint.Date;
-            DateOnly firstTargetDate = symbol.DataPoints.First(x => x.Date >= firstDataPointDate.AddMonths(earliestAnalasysEndDate_Delta_Months)).Date;
+            DateOnly firstTargetDate = dataPoints.First(x => x.Date >= firstDataPointDate.AddMonths(earliestAnalasysEndDate_Delta_Months)).Date;
 
             DateOnly targetDate = firstTargetDate;
             Dictionary<DateOnly, double> CAGRs_UntilDate = new();
 
             while (targetDate <= symbol.DataPoints.Last().Date)
             {
-                SymbolDataPoint[] dataPoints_untilTargetDate = symbol.DataPoints.Where(x => x.Date <= targetDate).ToArray();
+                SymbolDataPoint[] dataPoints_untilTargetDate = dataPoints.Where(x => x.Date <= targetDate).ToArray();
                 SymbolDataPoint lastDataPoint_untilTargetDate = dataPoints_untilTargetDate.Last();
                 double cagr = Math.Pow((BaseRegression.GetEstimate(lastDataPoint_untilTargetDate.Date)) /(firstDataPoint.MediumPrice), (1.0/(lastDataPoint_untilTargetDate.Date.ToDouble() - firstDataPointDate.ToDouble())));
                 CAGRs_UntilDate.Add(targetDate, cagr);
@@ -44,7 +44,7 @@ namespace Charty.Chart.Analysis.CascadingCAGR
             GrowthRateRegressions.Add(GetLinearRegression(CAGRs_UntilDate));
             GrowthRateRegressions.Add(GetLogisticRegression_ExpWalk_ChatGPTed(CAGRs_UntilDate.Keys.Select(x => x.ToDouble()).ToArray(), CAGRs_UntilDate.Values.ToArray()));
             GrowthRateRegressions.Sort((a, b) => b.GetRsquared().CompareTo(a.GetRsquared()));
-            CalculateRsquared();
+            CalculateRsquared(symbol);
             DateCreated = DateOnly.FromDateTime(DateTime.Now);
             RegressionResult = RegressionResultType.ProjectingCAGR;
             //PlotDictionary_WithBestRegression(CAGRs_UntilDate);
@@ -58,24 +58,22 @@ namespace Charty.Chart.Analysis.CascadingCAGR
 
         public double Rsquared { get; private set; }
 
-        private Symbol Symbol { get; set; }
-
         internal List<IRegressionResult> GrowthRateRegressions { get; private set; }
 
         DateOnly DateCreated { get; set; }
 
         RegressionResultType RegressionResult { get; set; }
 
-        private void CalculateRsquared()
+        private void CalculateRsquared(Symbol symbol)
         {
             SymbolDataPoint[] dataPoints;
             if (GrowthRateRegressions[0] is LogisticRegressionResult result)
             {
-                dataPoints = Symbol.DataPoints.Where(x => x.Date.ToDouble() > result.ConstantT).ToArray();
+                dataPoints = symbol.GetDataPointsNotInExcludedTimePeriods().Where(x => x.Date.ToDouble() > result.ConstantT).ToArray();
             }
             else
             {
-                dataPoints = Symbol.DataPoints;
+                dataPoints = symbol.GetDataPointsNotInExcludedTimePeriods();
             }
 
             double[] Xs = dataPoints.Select(x => x.Date.ToDouble()).ToArray();
@@ -261,6 +259,12 @@ namespace Charty.Chart.Analysis.CascadingCAGR
         public RegressionResultType GetRegressionResultType()
         {
             return RegressionResult;
+        }
+
+        public double GetWeight()
+        {
+            double weight = 1.0 / (1.0 - GetRsquared());
+            return weight * weight;
         }
     }
 }

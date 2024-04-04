@@ -147,7 +147,8 @@ namespace Charty.Chart.Ranking
                 throw new NotImplementedException(nameof(symbol.Overview.Currency));
             }
 
-            currentScore = currentScore * Sigmoidal_MarketCap_Weight(marketCapUSDequivalent);
+            currentScore = currentScore * Sigmoidal_MarketCap_Weight(marketCapUSDequivalent); // prefer larger/more diversified corporations
+            currentScore = currentScore * GetMaxRsquared(symbol); // prefer corporations that are more predictable/stable
 
             return currentScore;
         }
@@ -160,6 +161,25 @@ namespace Charty.Chart.Ranking
                 (1.0) 
                 /
                 (1.0 + Math.Exp(-k * (marketCap_inBillions - 8)));
+        }
+
+        private double GetMaxRsquared(Symbol symbol)
+        {
+            double maxRsquared = 0.0;
+            if(symbol.ExponentialRegressionModel.GetRsquared() > maxRsquared)
+            {
+                maxRsquared = symbol.ExponentialRegressionModel.GetRsquared();
+            }
+            if (symbol.ProjectingCAGRmodel.GetRsquared() > maxRsquared)
+            {
+                maxRsquared = symbol.ProjectingCAGRmodel.GetRsquared();
+            }
+            if (symbol.InverseLogRegressionModel.GetRsquared() > maxRsquared)
+            {
+                maxRsquared = symbol.InverseLogRegressionModel.GetRsquared();
+            }
+
+            return maxRsquared;
         }
 
         private double AnnualizeNYearEstimate(double estimate, double n)

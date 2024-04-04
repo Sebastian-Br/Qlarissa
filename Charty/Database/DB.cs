@@ -90,7 +90,7 @@ namespace Charty.Database
                     overview.Name = reader.GetString(1);
                     overview.Currency = (Chart.Enums.Currency)reader.GetInt32(2);
                     overview.MarketCapitalization = reader.GetInt64(3);
-                    overview.PEratio = reader.GetDouble(4);
+                    overview.TrailingPE = reader.GetDouble(4);
                     overview.DividendPerShareYearly = reader.GetDouble(5);
                     overviewDictionary.Add(reader.GetInt32(0), overview);
                 }
@@ -345,7 +345,7 @@ namespace Charty.Database
                 SingleQuote(overview.Name) + ", " +
                 (int)overview.Currency + ", " +
                 overview.MarketCapitalization + ", " +
-                overview.PEratio + ", " +
+                overview.TrailingPE + ", " +
                 overview.DividendPerShareYearly +
                 ");"
                 ;

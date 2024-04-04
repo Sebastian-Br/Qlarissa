@@ -20,18 +20,15 @@ namespace Charty.Chart
 
         public long MarketCapitalization { get; set; }
 
-        public double PEratio { get; set; }
+        public double TrailingPE { get; set; }
+
+        public double ForwardPE { get; set; }
 
         public double DividendPerShareYearly { get; set; }
 
-        public string GetBasicInformation()
+        public override string ToString()
         {
             return Name + " (" + Symbol + ")";
-        }
-
-        public void PrintBasicInformation()
-        {
-            Console.WriteLine(GetBasicInformation());
         }
     }
 }

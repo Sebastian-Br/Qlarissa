@@ -39,10 +39,12 @@ namespace Charty.Chart.Analysis.ExponentialRegression
             B = e.B;
             CurrentPrice = symbol.DataPoints.Last().MediumPrice;
             Overview = symbol.Overview;
+
+            SymbolDataPoint[] dataPoints = symbol.GetDataPointsNotInExcludedTimePeriods();
+            double[] Xs = dataPoints.Select(x => x.Date.ToDouble()).ToArray();
+            double[] Ys = dataPoints.Select(x => x.MediumPrice).ToArray();
+            Rsquared = GoodnessOfFit.RSquared(Xs.Select(x => GetEstimate(x)), Ys);
             DateCreated = DateOnly.FromDateTime(DateTime.Today);
-            double[] Xs = symbol.DataPoints.Select(x => x.Date.ToDouble()).ToArray();
-            double[] Ys = symbol.DataPoints.Select(x => x.MediumPrice).ToArray();
-            Rsquared = GoodnessOfFit.RSquared(Xs.Select(x => GetEstimate(x)), Ys); ;
 
             if (CurrentPrice <= 0)
             {
@@ -97,6 +99,12 @@ namespace Charty.Chart.Analysis.ExponentialRegression
         public RegressionResultType GetRegressionResultType()
         {
             return RegressionResult;
+        }
+
+        public double GetWeight()
+        {
+            double weight = 1.0 / (1.0 - GetRsquared());
+            return weight * weight;
         }
     }
 }

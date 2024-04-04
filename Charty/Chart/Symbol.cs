@@ -45,7 +45,7 @@ namespace Charty.Chart
         {
             if(ExponentialRegressionModel == null)
             {
-                ExponentialRegression expR = new ExponentialRegression(GetDataPointsNotInExcludedTimePeriods());
+                ExponentialRegression expR = new ExponentialRegression(this);
                 ExponentialRegressionModel = new ExponentialRegressionResult(expR, this);
                 ProjectingCAGRmodel = new(this);
                 InverseLogRegressionModel = new(this);
@@ -65,6 +65,11 @@ namespace Charty.Chart
         public bool AddExcludedTimePeriod(string key, ExcludedTimePeriod excludedTimePeriod)
         {
             return ExcludedTimePeriods.TryAdd(key, excludedTimePeriod);
+        }
+
+        public Dictionary<string, ExcludedTimePeriod> GetExcludedTimePeriods()
+        {
+            return ExcludedTimePeriods;
         }
 
         private bool IsDateInExcludedTimePeriod(DateOnly date, ExcludedTimePeriod excludedTimePeriod)
@@ -187,9 +192,9 @@ namespace Charty.Chart
         {
             double dividends = n * Overview.DividendPerShareYearly;
 
-            double expRegWeight = GetWeight(ExponentialRegressionModel);
-            double pcagrWeight = GetWeight(ProjectingCAGRmodel);
-            double invLogRegWeight = GetWeight(InverseLogRegressionModel);
+            double expRegWeight = ExponentialRegressionModel.GetWeight();
+            double pcagrWeight = ProjectingCAGRmodel.GetWeight();
+            double invLogRegWeight = InverseLogRegressionModel.GetWeight();
 
             double totalWeight = expRegWeight + pcagrWeight + invLogRegWeight;
 
@@ -209,13 +214,6 @@ namespace Charty.Chart
             double estimate = weighted_expRegEstimate + weighted_pcagrWeight + weighted_invLogRegWeight;
 
             return estimate + dividends;
-        }
-
-        private double GetWeight(IRegressionResult result)
-        {
-            double rsquared = result.GetRsquared();
-            double weight = 1.0 / (1.0 - rsquared);
-            return weight * weight;
         }
 
         public double GetNYearForecastPercent(double n)

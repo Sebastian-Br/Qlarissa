@@ -1,4 +1,5 @@
 ﻿using Charty.Chart.Api.PyFinance;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,9 @@ namespace Charty.Chart.Api.PYfinance
         public string Name { get; set; }
         public string Currency { get; set; }
         public long MarketCapitalization { get; set; }
-        public double PEratio { get; set; }
+        public double TrailingPE { get; set; }
+
+        public double ForwardPE { get; set; }
         public double DividendPerShareYearly { get; set; }
         public Dictionary<string, PyFiDataPoint> HistoricalData { get; set; }
 
@@ -25,7 +28,8 @@ namespace Charty.Chart.Api.PYfinance
             overview.Name = Name;
             overview.Currency = CurrencyExtensions.ToEnum(Currency);
             overview.DividendPerShareYearly = DividendPerShareYearly;
-            overview.PEratio = PEratio;
+            overview.TrailingPE = TrailingPE;
+            overview.ForwardPE = ForwardPE;
             overview.MarketCapitalization = MarketCapitalization;
 
             List <SymbolDataPoint> symbolDataPointList = new();
@@ -41,10 +45,7 @@ namespace Charty.Chart.Api.PYfinance
                 symbolDataPointList.Add(symbolDataPoint);
             }
 
-
-
             Symbol symbol = new(symbolDataPointList.ToArray(), overview);
-
             return symbol;
         }
     }

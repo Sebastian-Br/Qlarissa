@@ -76,5 +76,11 @@ namespace Charty.Chart.Analysis.CascadingCAGR
         {
             return RegressionResult;
         }
+
+        public double GetWeight()
+        {
+            double weight = 1.0 / (1.0 - GetRsquared());
+            return weight * weight;
+        }
     }
 }

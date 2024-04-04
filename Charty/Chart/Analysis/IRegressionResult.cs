@@ -21,6 +21,8 @@ namespace Charty.Chart.Analysis
 
         public RegressionResultType GetRegressionResultType();
 
+        public double GetWeight();
+
         public string ToString();
     }
 }

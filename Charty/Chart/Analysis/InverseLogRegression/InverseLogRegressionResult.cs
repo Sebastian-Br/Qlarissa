@@ -19,12 +19,11 @@ namespace Charty.Chart.Analysis.InverseLogRegression
         /// <param name="symbol"></param>
         public InverseLogRegressionResult(Symbol symbol)
         {
-            Symbol = symbol;
-            double[] Xs = Symbol.DataPoints.Select(dataPoint => dataPoint.Date.ToDouble()).ToArray();
-            double[] Ys = Symbol.DataPoints.Select(dataPoint => Math.Log(dataPoint.MediumPrice)).ToArray();
+            SymbolDataPoint[] dataPoints = symbol.GetDataPointsNotInExcludedTimePeriods();
+            double[] Xs = dataPoints.Select(dataPoint => dataPoint.Date.ToDouble()).ToArray();
+            double[] Ys = dataPoints.Select(dataPoint => Math.Log(dataPoint.MediumPrice)).ToArray();
 
             LogisticRegressionResult = GetLogisticRegression_ExpWalk_ChatGPTed(Xs, Ys);
-            //Rsquared = LogisticRegressionResult.GetRsquared();
             Rsquared = GoodnessOfFit.RSquared(Xs.Select(x => GetEstimate(x)), Ys);
             //DrawWithLogReg(Xs, Ys, LogisticRegressionResult);
             DateCreated = DateOnly.FromDateTime(DateTime.Now);
@@ -35,8 +34,6 @@ namespace Charty.Chart.Analysis.InverseLogRegression
         //List<double> Parameters { get; set; }
 
         double Rsquared { get; set; }
-
-        Symbol Symbol { get; set; }
 
         RegressionResultType RegressionResult { get; set; } = RegressionResultType.InverseLogistic;
 
@@ -79,7 +76,13 @@ namespace Charty.Chart.Analysis.InverseLogRegression
                 + "[R²=" + Rsquared + "]";
         }
 
-        private void DrawWithLogReg(double[] Xs, double[] Ys, LogisticRegressionResult l)
+        public double GetWeight()
+        {
+            double weight = 1.0 / (1.0 - GetRsquared());
+            return weight * weight;
+        }
+
+        private void DrawWithLogReg(double[] Xs, double[] Ys, LogisticRegressionResult l, Symbol symbol)
         {
             ScottPlot.Plot myPlot = new();
             Ys = Ys.Select(y => y).ToArray();
@@ -106,7 +109,7 @@ namespace Charty.Chart.Analysis.InverseLogRegression
             logScatter.Color = Colors.Green;
             logScatter.LineWidth = 0.4f;
 
-            myPlot.SavePng(Symbol.Overview.Symbol + "InvLog_WithRegression.png", 900, 600);
+            myPlot.SavePng(symbol.Overview.Symbol + "InvLog_WithRegression.png", 900, 600);
         }
 
         private LogisticRegressionResult GetLogisticRegression_ExpWalk_ChatGPTed(double[] Xs, double[] Ys)
