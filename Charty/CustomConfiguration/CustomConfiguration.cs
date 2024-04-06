@@ -13,6 +13,7 @@ namespace Charty.CustomConfiguration
         public CustomConfiguration()
         {
             _httpClient = new HttpClient();
+            SaveDirectoriesConfig = new();
         }
 
         public Dictionary<string, ExcludedTimePeriod> DefaultExcludedTimePeriods { get; set; }
@@ -22,6 +23,8 @@ namespace Charty.CustomConfiguration
         /// Values = Company names (just make the json easier to understand)
         /// </summary>
         public Dictionary<string, string> SymbolsToBeAnalyzed { get; set; }
+
+        public SaveDirectoriesConfiguration SaveDirectoriesConfig { get; private set; }
 
         private HttpClient _httpClient;
 

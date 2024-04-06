@@ -8,12 +8,12 @@ namespace Charty.Chart.Enums
 {
     public enum TimePeriod
     {
-        ThreeMonths,
-        SixMonths,
-        OneYear,
-        OneAndAHalfYears,
-        TwoYears,
-        ThreeYears,
-        FiveYears
+        ThreeMonths = 3,
+        SixMonths = 6,
+        OneYear = 12,
+        OneAndAHalfYears = 18,
+        TwoYears = 24,
+        ThreeYears = 36,
+        FiveYears = 60
     }
 }

@@ -24,6 +24,7 @@ namespace Charty.Chart
         {
             DefaultExcludedTimePeriods = customConfiguration.DefaultExcludedTimePeriods ?? throw new ArgumentNullException("DefaultExcludedTimePeriods is null");
             ConfigurationSymbols = customConfiguration.SymbolsToBeAnalyzed;
+            CustomConfiguration = customConfiguration;
 
             SymbolDictionary = new();
             DataBase = new(configuration);
@@ -31,6 +32,8 @@ namespace Charty.Chart
             PyFinanceAPI = new PyFinanceApiManager(configuration);
             Ranking = new(this);
         }
+
+        private CustomConfiguration.CustomConfiguration CustomConfiguration { get; set; }
 
         private Database.DB DataBase { get; set; }
 
@@ -81,6 +84,7 @@ namespace Charty.Chart
 
             Symbol result = await PyFinanceAPI.RetrieveSymbol(symbol);
             AddDefaultExcludedTimePeriodsToSymbol(result);
+            result.CustomConfiguration = CustomConfiguration;
             //result.RunRegressions_IfNotExists();
 
             DataBase.InsertOrUpdateSymbolInformation(result);
@@ -184,26 +188,27 @@ namespace Charty.Chart
 
         public void Draw(string symbolStr)
         {
-            DrawLog(symbolStr);
-            return;
+            Symbol symbol = SymbolDictionary[symbolStr];
+            DrawSymbolChartWithRegressions_LogScale(symbol);
+            if(symbol.GVA_1Year != null)
+            {
+                symbol.GVA_1Year.Draw();
+            }
         }
 
         public void DrawAll()
         {
-            foreach(string symbolStr in SymbolDictionary.Keys)
+            foreach(string symbol in SymbolDictionary.Keys)
             {
-                DrawLog(symbolStr);
+                Draw(symbol);
             }
 
             Console.WriteLine("Drew all Symbols");
             return;
         }
 
-        public void DrawLog(string symbolStr)
+        public void DrawSymbolChartWithRegressions_LogScale(Symbol symbol)
         {
-            int logConstant = 2;
-
-            Symbol symbol = SymbolDictionary[symbolStr];
             SymbolDataPoint[] dataPoints = symbol.GetDataPointsNotInExcludedTimePeriods();
             double[] x = dataPoints.Select(point => point.Date.ToDouble()).ToArray();
             double[] y = dataPoints.Select(point => point.MediumPrice).ToArray();
@@ -265,7 +270,7 @@ namespace Charty.Chart
             }
 
             var chart = myPlot.Add.Scatter(x, y.Select(y => Math.Log(y)).ToArray()); // adds symbol x,y
-            chart.Color = Colors.DarkSlateGray;
+            //chart.Color = Colors.DarkSlateGray;
 
             ScottPlot.Palettes.Category20 palette = new();
             var expRegScatter = myPlot.Add.Scatter(expRegXs.ToArray(), expRegYs.ToArray().Select(y => Math.Log(y)).ToArray());
@@ -332,7 +337,6 @@ namespace Charty.Chart
             verticalLine3Y.LinePattern = LinePattern.Dotted;
             verticalLine3Y.LabelOppositeAxis = true;
 
-            //myPlot.Axes.Right.TickGenerator = tickGen;
             double _1YE_weighted_X = symbol.DataPoints.Last().Date.ToDouble() + 1.0;
             double _1YE_weighted_Y = symbol.GetNYearForecastAbsolute(1.0);
             ScottPlot.Plottables.Marker marker_1YE = new()
@@ -363,7 +367,7 @@ namespace Charty.Chart
 
             myPlot.Add.Plottable(marker3YE);
 
-            myPlot.SavePng(symbolStr + ".png", 1300, 575);
+            myPlot.SavePng(CustomConfiguration.SaveDirectoriesConfig.ChartsDirectory + symbol.Overview.Symbol + ".png", 1300, 575);
         }
     }
 }

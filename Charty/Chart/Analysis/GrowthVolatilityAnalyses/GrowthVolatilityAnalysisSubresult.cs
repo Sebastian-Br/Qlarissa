@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
 {
-    internal class GrowthVolatilityAnalysisSubresult
+    public class GrowthVolatilityAnalysisSubresult
     {
         public GrowthVolatilityAnalysisSubresult(double growthPercent, double lowestPricePercent) 
         {

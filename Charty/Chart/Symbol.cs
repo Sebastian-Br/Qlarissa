@@ -2,15 +2,19 @@
 using Charty.Chart.Analysis.CascadingCAGR;
 using Charty.Chart.Analysis.ExponentialRegression;
 using Charty.Chart.Analysis.InverseLogRegression;
+using Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis;
 using Charty.Chart.ExcludedTimePeriods;
 using Newtonsoft.Json.Linq;
 using ScottPlot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
+using static ScottPlot.Generate;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using DateTime = System.DateTime;
 
 namespace Charty.Chart
 {
@@ -24,6 +28,14 @@ namespace Charty.Chart
                 throw new ArgumentException("chartDataPoints does not contain any elements!");
             }
 
+            DataPointDateToIndexMap = new();
+            int index = 0;
+            foreach (SymbolDataPoint dataPoint in dataPoints)
+            {
+                DataPointDateToIndexMap.Add(dataPoint.Date, index);
+                index++;
+            }
+
             Overview = overview ?? throw new ArgumentNullException(nameof(overview));
             ExcludedTimePeriods = new();
             ExponentialRegressionModel = exponentialRegressionResult;
@@ -33,27 +45,32 @@ namespace Charty.Chart
 
         public SymbolDataPoint[] DataPoints {  get; private set; }
 
+        public Dictionary<DateOnly, int> DataPointDateToIndexMap { get; private set; }
+
         public ExponentialRegressionResult ExponentialRegressionModel { get; private set; }
 
         public ProjectingCAGR ProjectingCAGRmodel { get; private set; }
 
         public InverseLogRegressionResult InverseLogRegressionModel { get; private set; }
 
-        private Dictionary<string,ExcludedTimePeriod> ExcludedTimePeriods { get; set; }
+        public GrowthVolatilityAnalysis GVA_1Year { get; private set; }
+
+        Dictionary<string,ExcludedTimePeriod> ExcludedTimePeriods { get; set; }
+
+        bool Analyzed { get; set; }
+
+        public CustomConfiguration.CustomConfiguration CustomConfiguration { get; set; }
 
         public void RunRegressions_IfNotExists()
         {
-            if(ExponentialRegressionModel == null)
+            if (!Analyzed)
             {
                 ExponentialRegression expR = new ExponentialRegression(this);
                 ExponentialRegressionModel = new ExponentialRegressionResult(expR, this);
-                ProjectingCAGRmodel = new(this);
-                InverseLogRegressionModel = new(this);
-            }
-            else
-            {
                 InverseLogRegressionModel = new(this);
                 ProjectingCAGRmodel = new(this);
+                GVA_1Year = new(this, Enums.TimePeriod.OneYear, CustomConfiguration.SaveDirectoriesConfig.VolatilityAnalysisDirectory);
+                Analyzed = true;
             }
         }
 
@@ -186,6 +203,39 @@ namespace Charty.Chart
             }
 
             return false;
+        }
+
+        public double? GetMinimum_NotInExcludedTimePeriods(DateOnly startDate, DateOnly endDate)
+        {
+            if(IsDateRangeExcluded(startDate, endDate))
+            {
+                return null;
+            }
+
+            return GetMinimum(startDate, endDate);
+        }
+
+        public double GetMinimum(DateOnly startDate, DateOnly endDate)
+        {
+            int startIndex = DataPointDateToIndexMap[startDate];
+            int endIndex = DataPointDateToIndexMap[endDate];
+
+            if(endIndex <= startIndex + 1)
+            {
+                throw new InvalidOperationException("endDate must be at least 2 days after startDate");
+            }
+
+            double minimum = DataPoints[startIndex + 1].LowPrice;
+
+            for(int i = startIndex + 2; i < endIndex; i++)
+            {
+                if (DataPoints[i].LowPrice < minimum)
+                {
+                    minimum = DataPoints[i].LowPrice;
+                }
+            }
+
+            return minimum;
         }
 
         public double GetNYearForecastAbsolute(double n)
