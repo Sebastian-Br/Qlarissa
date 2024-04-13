@@ -27,15 +27,11 @@ namespace Charty.Chart
             CustomConfiguration = customConfiguration;
 
             SymbolDictionary = new();
-            DataBase = new(configuration);
-            //ImportSymbolDictionaryFromDataBase();
             PyFinanceAPI = new PyFinanceApiManager(configuration);
             Ranking = new(this);
         }
 
         private CustomConfiguration.CustomConfiguration CustomConfiguration { get; set; }
-
-        private Database.DB DataBase { get; set; }
 
         private IApiManager PyFinanceAPI { get; set; }
 
@@ -46,18 +42,6 @@ namespace Charty.Chart
         private Dictionary<string,string> ConfigurationSymbols { get; set; }
 
         private Ranking.Ranking Ranking { get; set; }
-
-        private void ImportSymbolDictionaryFromDataBase()
-        {
-            Dictionary<string, Symbol> importedDictionary = DataBase.LoadSymbolDictionary();
-            foreach (var symbol in importedDictionary.Values)
-            {
-                Console.WriteLine("Added '" + symbol.Overview.Symbol + "' from the DB.");
-                AddDefaultExcludedTimePeriodsToSymbol(symbol);
-            }
-
-            SymbolDictionary = importedDictionary;
-        }
 
         public async Task InitializeSymbolFromAPI(string symbol, bool performUpdate = false)
         {
@@ -87,7 +71,6 @@ namespace Charty.Chart
             result.CustomConfiguration = CustomConfiguration;
             //result.RunRegressions_IfNotExists();
 
-            DataBase.InsertOrUpdateSymbolInformation(result);
             //SymbolDictionary.Add(symbol, result);
             SymbolDictionary[symbol] = result;
             Console.WriteLine((performUpdate ? "Updated" : "Added") + " '" + symbol + "'");
@@ -159,7 +142,6 @@ namespace Charty.Chart
                 {
                     Console.WriteLine("Analyzing: " +  symbol);
                     symbol.RunRegressions_IfNotExists();
-                    DataBase.InsertOrUpdateSymbolInformation(symbol);
                 }
 
                 Console.WriteLine("Analysis Complete");

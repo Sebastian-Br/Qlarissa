@@ -87,6 +87,44 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
             return historicLikelihood;
         }
 
+        /// <summary>
+        /// This score is more sophisticated than tracking historic min% likelihoods.
+        /// Each subresult is assigned a score based the overall growth in that time period and based on min%.
+        /// If growth is positive, the score for that subresult is:   growth%² * penalty(min%)^-1
+        /// If growth is negative, the score for that subresult is: - growth%² * penalty(min%)
+        /// </summary>
+        /// <returns></returns>
+        public double GetAggregateGrowthVolatilityScore()
+        {
+            double[] aggregateScores = new double[Subresults.Count];
+            int i = 0;
+
+            foreach(GrowthVolatilityAnalysisSubresult subResult in Subresults)
+            {
+                aggregateScores[i] = 
+                    subResult.GrowthPercent > 0 ? 
+                    subResult.GrowthPercent * subResult.GrowthPercent * (1.0 / GetMinPercentPenalty(subResult))
+                    :
+                    -(subResult.GrowthPercent * subResult.GrowthPercent) * GetMinPercentPenalty(subResult);
+                i++;
+            }
+
+            return aggregateScores.Average();
+        }
+
+        private double GetMinPercentPenalty(GrowthVolatilityAnalysisSubresult subResult)
+        {
+            return
+                (
+                2.0
+                /
+                1 + Math.Exp(0.1 * subResult.LowestPricePercent)
+                )
+                *
+                Math.Exp(-0.03 * subResult.LowestPricePercent)
+                ;
+        }
+
         public void Draw()
         {
             if (SaveDirectory != "")

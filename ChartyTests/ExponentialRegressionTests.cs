@@ -15,7 +15,7 @@ namespace ChartyTests
         [DynamicData(nameof(MockBusinessChart_20PercentYoY))]
         public void ExponentialRegressionParameterAssignment(Symbol MockBusinessChart_20PercentYoY)
         {
-            ExponentialRegression exponentialRegression = new(MockBusinessChart_20PercentYoY.DataPoints);
+            ExponentialRegression exponentialRegression = new(MockBusinessChart_20PercentYoY);
             Assert.IsTrue(exponentialRegression.B > 1.19);
             Assert.IsTrue(exponentialRegression.B < 1.21);
         }
@@ -24,7 +24,7 @@ namespace ChartyTests
         [DynamicData(nameof(MockBusinessChart_ADBE))]
         public void ExponentialRegressionParameterAssignment_ADBE(Symbol MockBusinessChart_ADBE)
         {
-            ExponentialRegression exponentialRegression = new(MockBusinessChart_ADBE.DataPoints);
+            ExponentialRegression exponentialRegression = new(MockBusinessChart_ADBE);
             Assert.IsTrue(exponentialRegression.B > 1.19);
             Assert.IsTrue(exponentialRegression.B < 1.26);
         }
@@ -33,7 +33,7 @@ namespace ChartyTests
         [DynamicData(nameof(MockBusinessChart_JKHY))]
         public void ExponentialRegressionParameterAssignment_JKHY(Symbol MockBusinessChart_JKHY)
         {
-            ExponentialRegression exponentialRegression = new(MockBusinessChart_JKHY.DataPoints);
+            ExponentialRegression exponentialRegression = new(MockBusinessChart_JKHY);
             Assert.IsTrue(exponentialRegression.B > 1.18);
             Assert.IsTrue(exponentialRegression.B < 1.22);
         }
