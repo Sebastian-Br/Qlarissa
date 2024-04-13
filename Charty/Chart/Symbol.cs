@@ -53,7 +53,7 @@ namespace Charty.Chart
 
         public InverseLogRegressionResult InverseLogRegressionModel { get; private set; }
 
-        public GrowthVolatilityAnalysis GVA_1Year { get; private set; }
+        public GrowthVolatilityAnalysis GVA_2Years { get; private set; }
 
         Dictionary<string,ExcludedTimePeriod> ExcludedTimePeriods { get; set; }
 
@@ -69,7 +69,7 @@ namespace Charty.Chart
                 ExponentialRegressionModel = new ExponentialRegressionResult(expR, this);
                 InverseLogRegressionModel = new(this);
                 ProjectingCAGRmodel = new(this);
-                GVA_1Year = new(this, Enums.TimePeriod.OneYear, CustomConfiguration.SaveDirectoriesConfig.VolatilityAnalysisDirectory);
+                GVA_2Years = new(this, Enums.TimePeriod.TwoYears, CustomConfiguration.SaveDirectoriesConfig.VolatilityAnalysisDirectory);
                 Analyzed = true;
             }
         }
@@ -225,9 +225,9 @@ namespace Charty.Chart
                 throw new InvalidOperationException("endDate must be at least 2 days after startDate");
             }
 
-            double minimum = DataPoints[startIndex + 1].LowPrice;
+            double minimum = DataPoints[startIndex].LowPrice;
 
-            for(int i = startIndex + 2; i < endIndex; i++)
+            for(int i = startIndex + 1; i <= endIndex; i++)
             {
                 if (DataPoints[i].LowPrice < minimum)
                 {

@@ -8,10 +8,12 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
 {
     public class GrowthVolatilityAnalysisSubresult
     {
-        public GrowthVolatilityAnalysisSubresult(double growthPercent, double lowestPricePercent) 
+        public GrowthVolatilityAnalysisSubresult(double growthPercent, double lowestPricePercent, SymbolDataPoint startDataPoint, SymbolDataPoint fwdDataPoint) 
         {
             GrowthPercent = growthPercent;
             LowestPricePercent = lowestPricePercent;
+            StartDataPoint = startDataPoint;
+            FwdDataPoint = fwdDataPoint;
         }
 
         public double GrowthPercent { get; private set; }
@@ -23,5 +25,9 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
         /// LowestPricePercent = -50
         /// </summary>
         public double LowestPricePercent { get; private set; }
+
+        public SymbolDataPoint StartDataPoint { get; private set; }
+
+        public SymbolDataPoint FwdDataPoint { get;private set; }
     }
 }

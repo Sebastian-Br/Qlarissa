@@ -172,9 +172,9 @@ namespace Charty.Chart
         {
             Symbol symbol = SymbolDictionary[symbolStr];
             DrawSymbolChartWithRegressions_LogScale(symbol);
-            if(symbol.GVA_1Year != null)
+            if(symbol.GVA_2Years != null)
             {
-                symbol.GVA_1Year.Draw();
+                symbol.GVA_2Years.Draw();
             }
         }
 
