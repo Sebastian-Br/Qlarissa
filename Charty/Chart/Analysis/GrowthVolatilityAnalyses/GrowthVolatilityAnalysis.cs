@@ -246,7 +246,10 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
                 double historicLikelihoodOfPercentageDrop = GetHistoricLikelihoodOfPercentageDrop(rightLimit); // considers all events to the left of rightLimit
                 ScottPlot.Bar myBar = new ScottPlot.Bar() { Position = barCenter, FillColor = Colors.Azure, Value = historicLikelihoodOfPercentageDrop };
                 myBar.Label = myBar.Value.Round(2).ToString();
-                bars.Add(myBar);
+                lock(bars)
+                {
+                    bars.Add(myBar);
+                }
             }
 
             var barPlot = myPlot.Add.Bars(bars.ToArray());
@@ -283,18 +286,25 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
                     double barPositionX = i;
                     (double, double, double) OverPerformanceAndKoChance = GetHistoric_KO_Leverage_Overperformance_AndKOchance_AndKOorLossChance(barX);
                     ScottPlot.Bar myBar = new ScottPlot.Bar() { Position = barPositionX, FillColor = Colors.Azure, Value = OverPerformanceAndKoChance.Item1 };
-                    tickList.Add(
-                        new(barPositionX, barX.ToString())
-                        );
+
+                    lock (tickList)
+                    {
+                        tickList.Add(new(barPositionX, barX.ToString()));
+                    }
+
                     myBar.Label = myBar.Value.Round(1).ToString()
                         + "\n" + OverPerformanceAndKoChance.Item2.Round(1).ToString()
                         + "\n" + OverPerformanceAndKoChance.Item3.Round(1).ToString();
 
                     myBar.LabelOffset = 25f;
                     myBar.FillColor = ScottPlot.Color.FromHSL(218, 92, 32, 0.7f);
-                    bars.Add(myBar);
 
-                    var koChanceLine = myPlot.Add.Line(barPositionX, 0, barPositionX, OverPerformanceAndKoChance.Item2);
+                    lock (bars)
+                    {
+                        bars.Add(myBar);
+                    }
+
+                    var koChanceLine = myPlot.Add.Line(barPositionX, 0, barPositionX, OverPerformanceAndKoChance.Item2); // should this be locked or not?
                     koChanceLine.LineColor = Colors.Red;
                     koChanceLine.LineWidth = 8.0f;
 
@@ -412,7 +422,7 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
             ScottPlot.Plot myPlot = new();
             double averageGrowthInTimePeriod = Subresults.Select(x => x.GrowthPercent).Average();
             myPlot.Title(Symbol.Overview.ToString() + " Annualized Growth Analysis"
-                + "\n Average Growth in " + (int)TimePeriod + " months: " + averageGrowthInTimePeriod.Round(2) + "% & Annualized Growth: " + Annualize(averageGrowthInTimePeriod).Round(2) + "%");
+                + "\n Average Growth in " + (int)TimePeriod + " months: " + averageGrowthInTimePeriod.Round(2) + "% - Annualized: " + Annualize(averageGrowthInTimePeriod).Round(2) + "%");
             myPlot.Axes.Title.Label.OffsetY = -35;
             double minimum = -30;
             double maximum = 50;
@@ -423,34 +433,48 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
 
             ScottPlot.Bar initialBar = new ScottPlot.Bar() { Position = -1, FillColor = Colors.Azure, Value = GetLikelihoodOfAnnualizedGrowthLessThanPercentage(minimum) };
             tickList.Add(
-                new(-1, "<" + minimum)
+                new(-1, "<" + minimum + "%")
                 );
             initialBar.Label = initialBar.Value.Round(1).ToString();
 
             initialBar.LabelOffset = 10f;
             bars.Add(initialBar);
 
-            for (int i = 0; i < numberOfBars; i++)
+            Parallel.ForEach(Partitioner.Create(0, numberOfBars), range =>
             {
-                double barX = i * stepSize + minimum; // barX is the leverage and the actual intended x value of that bar, NOT the position of the bar on the graph
-                barX = Math.Round(barX, 1);
+                for (int i = range.Item1; i < range.Item2; i++)
+                {
+                    double barX = i * stepSize + minimum;
+                    barX = Math.Round(barX, 1);
 
-                double barPositionX = i;
-                ScottPlot.Bar myBar = new ScottPlot.Bar() 
-                { Position = barPositionX, FillColor = Colors.Azure, 
-                    Value = GetLikelihoodOfAnnualizedGrowthGreaterThanOrEqualToAndLessThanPercentages(barX, barX+stepSize) };
-                tickList.Add(
-                    new(barPositionX, barX + "<=%<" + (barX + stepSize))
-                    );
-                myBar.Label = myBar.Value.Round(1).ToString();
+                    double barPositionX = i;
+                    ScottPlot.Bar myBar = new ScottPlot.Bar()
+                    {
+                        Position = barPositionX,
+                        FillColor = Colors.Azure,
+                        Value = GetLikelihoodOfAnnualizedGrowthGreaterThanOrEqualToAndLessThanPercentages(barX, barX + stepSize)
+                    };
 
-                myBar.LabelOffset = 10f;
-                bars.Add(myBar);
-            }
+                    lock (tickList)
+                    {
+                        tickList.Add(
+                        new(barPositionX, barX + "<=%<" + (barX + stepSize))
+                        );
+                    }
+                    
+                    myBar.Label = myBar.Value.Round(1).ToString();
+
+                    myBar.LabelOffset = 10f;
+                    lock (bars)
+                    {
+                        bars.Add(myBar);
+                    }
+                }
+            });
 
             ScottPlot.Bar lastBar = new ScottPlot.Bar() { Position = numberOfBars, FillColor = Colors.Azure, Value = GetLikelihoodOfAnnualizedGrowthGreaterThanPercentage(maximum) };
             tickList.Add(
-                new(numberOfBars, ">" + maximum)
+                new(numberOfBars, ">" + maximum + "%")
                 );
             lastBar.Label = lastBar.Value.Round(1).ToString();
 
