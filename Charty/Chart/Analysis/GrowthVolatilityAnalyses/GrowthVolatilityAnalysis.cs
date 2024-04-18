@@ -62,7 +62,7 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
                 }
             }
 
-            AdjustmentPercentagePA = 7.5; // todo: set this to the federal interest rate + a risk rate that has to be calculated somehow
+            AdjustmentPercentagePA = 9.93; // todo: set this to the federal interest rate + a risk rate that has to be calculated somehow
         }
 
 
@@ -149,19 +149,23 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
         {
             double initialKOfraction = (1.0 - (1.0 / leverage));
             // assuming this is a LONG/CALL product
-            List<double> leveragedOutcomes = new(); // elements in this list can take values typically ranging from 0 to e.g. 2.0, if the max leveraged return was 2.0x (+100%)
             int koCount = 0;
             int lossCount = 0;
+
+            List<double> nonLeveragedOutcomes = new();
+            List<double> leveragedOutcomes = new();
 
             foreach (GrowthVolatilityAnalysisSubresult subResult in Subresults)
             {
                 double initialKObarrier = initialKOfraction * subResult.StartDataPoint.HighPrice; // pessimistic approach - assuming the asset was bought at the worst moment intra-day
+                double nonLeveragedOutcome = 1.0 + subResult.GrowthPercent / 100.0; // e.g. 1.2
+                nonLeveragedOutcomes.Add(nonLeveragedOutcome);
+
                 if (!WasBarrierHit(initialKObarrier, subResult)) // KO barrier has not been touched
                 {
                     double leveragedOutcome = 1.0 + (leverage * subResult.GrowthPercent) / 100.0; // e.g. 1.4 for leverage := 2
-                    double nonLeveragedOutcome = 1.0 + subResult.GrowthPercent / 100.0; // e.g. 1.2
-                    double overPerformance = leveragedOutcome / nonLeveragedOutcome; // e.g. 1.1666 (16.6% relative overperformance compared to non-leveraged outcome)
-                    leveragedOutcomes.Add(overPerformance);
+                    leveragedOutcomes.Add(leveragedOutcome);
+
                     if(leveragedOutcome < 1.0)
                     {
                         lossCount++;
@@ -174,13 +178,15 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
                 }
             }
 
-            double averageLeveragedOutcomes = leveragedOutcomes.Average();
+            double nonLeveragedAvgPerformance = nonLeveragedOutcomes.Average();
+            double leveragedAvgPerformance = leveragedOutcomes.Average();
 
-            double averageOutcomePercent = (averageLeveragedOutcomes - 1.0) * 100.0;
+            double averageLeveragedOverperformance = leveragedAvgPerformance / nonLeveragedAvgPerformance;
+            double averageOverPerformancePercent = (averageLeveragedOverperformance - 1.0) * 100.0;
             double knockoutLikelihoodPercent = ((double)koCount) / ((double) Subresults.Count) * 100.0;
             double knockoutOrLossLikelihoodPercent = ((double) (koCount + lossCount)) / ((double) Subresults.Count) * 100.0;
 
-            (double, double, double) result = new(averageOutcomePercent, knockoutLikelihoodPercent, knockoutOrLossLikelihoodPercent);
+            (double, double, double) result = new(averageOverPerformancePercent, knockoutLikelihoodPercent, knockoutOrLossLikelihoodPercent);
             return result;
         }
 

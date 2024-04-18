@@ -44,8 +44,11 @@
     "ADSK": "Autodesk",
     "TEAM": "Atlassian",
     "SPY": "S&P500",
-    "UL":  "Unilever",
-    "RIO":  "Rio Tinto",
+    "URTH": "MSCI World",
+    "UL": "Unilever",
+    "RIO": "Rio Tinto",
+    "SY1.DE": "Symrise",
+    "PLD": "Prologis",
 
     "ADS.DE": "Adidas",
     "MC.PA": "Luis Vuitton / LVMH",
