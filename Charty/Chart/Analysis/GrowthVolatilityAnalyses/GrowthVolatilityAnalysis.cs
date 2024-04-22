@@ -232,17 +232,21 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
         {
             if (SaveDirectory != "")
             {
-                DrawMinPercentGraph();
+                DrawMaxLossGraph();
                 DrawLeveragedOverperformanceGraph();
                 DrawGrowthAnalysis();
             }
         }
 
-        private void DrawMinPercentGraph()
+        private void DrawMaxLossGraph()
         {
             ScottPlot.Plot myPlot = new();
-            myPlot.Title(Symbol.Overview.ToString() + " Min% Volatility Analysis");
-
+            myPlot.Title(Symbol.Overview.ToString() + " Max Loss [%]"
+                + "\n" + "P(-10%)=" + GetHistoricLikelihoodOfPercentageDrop(-10).Round(2) + "% P(-20%)=" + GetHistoricLikelihoodOfPercentageDrop(-20).Round(2) 
+                + "% P(-30%)=" + GetHistoricLikelihoodOfPercentageDrop(-30).Round(2) + "% P(-40%)=" + GetHistoricLikelihoodOfPercentageDrop(-40).Round(2)
+                + "% P(-50%)=" + GetHistoricLikelihoodOfPercentageDrop(-50).Round(2)
+                +"%");
+            myPlot.Axes.Title.Label.OffsetY = -35;
             int numberOfBars = (int)(HighestMinimumPercentage - LowestMinimumPercentage);
             List<ScottPlot.Bar> bars = new();
             for (int i = 0; i < numberOfBars; i++)
@@ -261,9 +265,9 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
             var barPlot = myPlot.Add.Bars(bars.ToArray());
             barPlot.ValueLabelStyle.FontSize = 10;
 
-            myPlot.Axes.Bottom.Label.Text = "Minimum [%] with regards to initial Asset Value over " + (int)TimePeriod + " Month Period (Cumulative)";
-            myPlot.Axes.Left.Label.Text = "Likelihood of that Minimum [%]";
-            myPlot.SavePng(SaveDirectory + Symbol.Overview.Symbol + "_MINPERCENT_GVA" + (int)TimePeriod + "month.png", numberOfBars * 30, 600);
+            myPlot.Axes.Bottom.Label.Text = "Maximum Unrealized Loss [%] with regards to initial Asset Value over " + (int)TimePeriod + " Month Period (Cumulative)";
+            myPlot.Axes.Left.Label.Text = "Likelihood of that Loss [%]";
+            myPlot.SavePng(SaveDirectory + Symbol.Overview.Symbol + "_MAXLOSS_" + (int)TimePeriod + "month.png", numberOfBars * 30, 600);
         }
 
         /// <summary>
@@ -330,7 +334,7 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
 
             myPlot.Axes.Bottom.Label.Text = "Leverage";
             myPlot.Axes.Left.Label.Text = "Overperformance vs underlying Asset [%]";
-            myPlot.SavePng(SaveDirectory + Symbol.Overview.Symbol + "_LVROVPF_GVA" + (int)TimePeriod + "month.png", numberOfBars * 30, 800);
+            myPlot.SavePng(SaveDirectory + Symbol.Overview.Symbol + "_LeveragedOverperformance_" + (int)TimePeriod + "month.png", numberOfBars * 30, 800);
         }
 
         private double Annualize(double percentage)

@@ -260,16 +260,16 @@ namespace Charty.Chart
             expRegScatter.MarkerSize = 0.5f;
             expRegScatter.Label = "EXP";
 
-            if ((cascadingCagrYs.ToArray().Select(y => Math.Log(y)).Any(x => x <= 0))) {
+            if ((cascadingCagrYs.ToArray().Any(x => x < 0))) {
                 throw new Exception("PCAGR");
             }
 
-            if ((expRegYs.ToArray().Select(y => Math.Log(y)).Any(x => x <= 0)))
+            if ((expRegYs.ToArray().Any(x => x < 0)))
             {
                 throw new Exception("EXP");
             }
 
-            if ((y.ToArray().Select(y => Math.Log(y)).Any(x => x <= 0)))
+            if ((y.ToArray().Any(x => x < 0)))
             {
                 throw new Exception("y");
             }

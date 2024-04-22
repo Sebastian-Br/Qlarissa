@@ -37,6 +37,7 @@ namespace Charty.Chart.Analysis.ExponentialRegression
         {
             A = e.A;
             B = e.B;
+            X0 = e.X0;
             CurrentPrice = symbol.DataPoints.Last().MediumPrice;
             Overview = symbol.Overview;
 
@@ -56,6 +57,8 @@ namespace Charty.Chart.Analysis.ExponentialRegression
 
         public double B { get; private set; }
 
+        public double X0 { get; private set; }
+
         public SymbolOverview Overview { get; private set; }
 
         public double CurrentPrice { get; private set; }
@@ -68,7 +71,7 @@ namespace Charty.Chart.Analysis.ExponentialRegression
 
         public double GetEstimate(double t)
         {
-            return A * Math.Pow(B, t);
+            return A * Math.Pow(B, t - X0);
         }
 
         public double GetEstimate(DateOnly date)

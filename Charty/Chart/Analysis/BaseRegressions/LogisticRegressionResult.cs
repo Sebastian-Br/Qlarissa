@@ -6,7 +6,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Charty.Chart.Analysis.CascadingCAGR
+namespace Charty.Chart.Analysis.BaseRegressions
 {
     internal class LogisticRegressionResult : IRegressionResult
     {
@@ -19,24 +19,24 @@ namespace Charty.Chart.Analysis.CascadingCAGR
             Rsquared = rSquared;
             Parameters.Add(A);
             Parameters.Add(B);
-            this.X0 = _x0;
+            X0 = _x0;
             DateCreated = DateOnly.FromDateTime(DateTime.Now);
             ConstantT = constantT;
         }
 
-        List<double> Parameters {  get; set; }
+        List<double> Parameters { get; set; }
 
         double Rsquared { get; set; }
 
         RegressionResultType RegressionResult { get; set; } = RegressionResultType.Logistic;
 
-        public double ConstantT {  get; private set; }
+        public double ConstantT { get; private set; }
 
-        DateOnly DateCreated {  get; set; }
+        DateOnly DateCreated { get; set; }
 
         public double GetEstimate(double t)
         {
-            if(t < ConstantT) // ln(t) is only defined for t > 0
+            if (t < ConstantT) // ln(t) is only defined for t > 0
             {
                 return Parameters[0] * Math.Log(ConstantT - X0) + Parameters[1];
             }

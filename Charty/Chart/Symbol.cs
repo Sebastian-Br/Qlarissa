@@ -30,7 +30,7 @@ namespace Charty.Chart
 
             DataPointDateToIndexMap = new();
             int index = 0;
-            foreach (SymbolDataPoint dataPoint in dataPoints)
+            foreach (SymbolDataPoint dataPoint in DataPoints)
             {
                 DataPointDateToIndexMap.Add(dataPoint.Date, index);
                 index++;

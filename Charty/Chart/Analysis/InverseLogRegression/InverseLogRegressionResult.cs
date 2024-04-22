@@ -1,4 +1,4 @@
-﻿using Charty.Chart.Analysis.CascadingCAGR;
+﻿using Charty.Chart.Analysis.BaseRegressions;
 using Charty.Chart.Enums;
 using MathNet.Numerics;
 using ScottPlot;
@@ -21,11 +21,13 @@ namespace Charty.Chart.Analysis.InverseLogRegression
         {
             SymbolDataPoint[] dataPoints = symbol.GetDataPointsNotInExcludedTimePeriods();
             double[] Xs = dataPoints.Select(dataPoint => dataPoint.Date.ToDouble()).ToArray();
-            double[] Ys = dataPoints.Select(dataPoint => Math.Log(dataPoint.MediumPrice)).ToArray();
+            double[] logYs = dataPoints.Select(dataPoint => Math.Log(dataPoint.MediumPrice)).ToArray();
 
-            LogisticRegressionResult = GetLogisticRegression_ExpWalk_ChatGPTed(Xs, Ys);
+            LogisticRegressionResult = GetLogisticRegression_ExpWalk_ChatGPTed(Xs, logYs);
+            DrawWithLogReg(Xs, logYs, LogisticRegressionResult, symbol);
+
+            double[] Ys = dataPoints.Select(dataPoint => dataPoint.MediumPrice).ToArray();
             Rsquared = GoodnessOfFit.RSquared(Xs.Select(x => GetEstimate(x)), Ys);
-            //DrawWithLogReg(Xs, Ys, LogisticRegressionResult);
             DateCreated = DateOnly.FromDateTime(DateTime.Now);
         }
 
@@ -91,7 +93,7 @@ namespace Charty.Chart.Analysis.InverseLogRegression
             symbolScatter.Color = palette.Colors[2];
             symbolScatter.LineWidth = 0.5f;
 
-            myPlot.Title("ln(CMCSA) with Regression [R²=" + l.GetRsquared() + "]");
+            myPlot.Title("LogReg of + " + symbol.Overview.Symbol + " with Regression [R²=" + l.GetRsquared() + "]");
 
             List<double> listLogRegXs = new();
             List<double> listLogRegYs = new();
@@ -109,7 +111,7 @@ namespace Charty.Chart.Analysis.InverseLogRegression
             logScatter.Color = Colors.Green;
             logScatter.LineWidth = 0.4f;
 
-            myPlot.SavePng(symbol.Overview.Symbol + "InvLog_WithRegression.png", 900, 600);
+            myPlot.SavePng(symbol.Overview.Symbol + "_InvLog_WithRegression.png", 900, 600);
         }
 
         private LogisticRegressionResult GetLogisticRegression_ExpWalk_ChatGPTed(double[] Xs, double[] Ys)

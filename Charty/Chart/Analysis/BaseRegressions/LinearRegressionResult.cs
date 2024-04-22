@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Charty.Chart.Analysis.CascadingCAGR
+namespace Charty.Chart.Analysis.BaseRegressions
 {
     internal class LinearRegressionResult : IRegressionResult
     {
@@ -15,7 +15,7 @@ namespace Charty.Chart.Analysis.CascadingCAGR
         /// </summary>
         /// <param name="m">Slope</param>
         /// <param name="c">Intercept</param>
-        public LinearRegressionResult(double rSquared, double m, double c) 
+        public LinearRegressionResult(double rSquared, double m, double c)
         {
             Parameters = new();
             Parameters.Add(m);

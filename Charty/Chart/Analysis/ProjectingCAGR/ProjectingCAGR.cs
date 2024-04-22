@@ -1,4 +1,5 @@
-﻿using Charty.Chart.Analysis.ExponentialRegression;
+﻿using Charty.Chart.Analysis.BaseRegressions;
+using Charty.Chart.Analysis.ExponentialRegression;
 using Charty.Chart.Enums;
 using MathNet.Numerics;
 using ScottPlot;
@@ -40,11 +41,21 @@ namespace Charty.Chart.Analysis.CascadingCAGR
                 targetDate = targetDate.AddDays(1);
             }
 
+            /*int firstTargetIndex = symbol.DataPointDateToIndexMap[firstTargetDate];
+            for(int i = firstTargetIndex; i < dataPoints.Length; i++) // todo: test. should run a lot faster. - this actually produces a worse model
+            {
+                SymbolDataPoint lastDataPoint_untilTargetDate = dataPoints[i];
+                double cagr = Math.Pow((BaseRegression.GetEstimate(lastDataPoint_untilTargetDate.Date)) / (firstDataPoint.MediumPrice), (1.0 / (lastDataPoint_untilTargetDate.Date.ToDouble() - firstDataPointDate.ToDouble())));
+                CAGRs_UntilDate.Add(dataPoints[i].Date, cagr);
+            }*/
+
             GrowthRateRegressions = new();
             GrowthRateRegressions.Add(GetLinearRegression(CAGRs_UntilDate));
             GrowthRateRegressions.Add(GetLogisticRegression_ExpWalk_ChatGPTed(CAGRs_UntilDate.Keys.Select(x => x.ToDouble()).ToArray(), CAGRs_UntilDate.Values.ToArray()));
             GrowthRateRegressions.Sort((a, b) => b.GetRsquared().CompareTo(a.GetRsquared()));
             CalculateRsquared(symbol);
+
+
             DateCreated = DateOnly.FromDateTime(DateTime.Now);
             RegressionResult = RegressionResultType.ProjectingCAGR;
             //PlotDictionary_WithBestRegression(CAGRs_UntilDate);
