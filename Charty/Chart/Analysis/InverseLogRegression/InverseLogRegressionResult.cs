@@ -1,4 +1,5 @@
 ﻿using Charty.Chart.Analysis.BaseRegressions;
+using Charty.Chart.Analysis.ExponentialRegression;
 using Charty.Chart.Enums;
 using MathNet.Numerics;
 using ScottPlot;
@@ -20,11 +21,26 @@ namespace Charty.Chart.Analysis.InverseLogRegression
         public InverseLogRegressionResult(Symbol symbol)
         {
             SymbolDataPoint[] dataPoints = symbol.GetDataPointsNotInExcludedTimePeriods();
+            PreprocessingX0 = - 2000.0;
             double[] Xs = dataPoints.Select(dataPoint => dataPoint.Date.ToDouble()).ToArray();
+
+            double[] preProcessedXs = dataPoints.Select(dataPoint => dataPoint.Date.ToDouble() + PreprocessingX0).ToArray();
             double[] logYs = dataPoints.Select(dataPoint => Math.Log(dataPoint.MediumPrice)).ToArray();
 
-            LogisticRegressionResult = GetLogisticRegression_ExpWalk_ChatGPTed(Xs, logYs);
-            DrawWithLogReg(Xs, logYs, LogisticRegressionResult, symbol);
+            RegressionsForLogYs = new();
+            LogisticRegressionResult = GetLogisticRegression_ExpWalk_ChatGPTed(preProcessedXs, logYs);
+            RegressionsForLogYs.Add(LogisticRegressionResult);
+
+            LinearRegressionResultWithX0 linearRegression = new(preProcessedXs, logYs, PreprocessingX0);
+            RegressionsForLogYs.Add(linearRegression);
+
+            ExponentialRegression.ExponentialRegression expReg = new ExponentialRegression.ExponentialRegression(Xs, logYs, -PreprocessingX0); // does preprocessing internally
+            ExponentialRegression.ExponentialRegressionResult exponentialRegression = new(expReg, Xs, logYs);
+            RegressionsForLogYs.Add(exponentialRegression);
+
+            RegressionsForLogYs.Sort((a, b) => b.GetRsquared().CompareTo(a.GetRsquared())); // sorts regressions in descending order with respect to R²
+
+            DrawWithLogReg(Xs, logYs, symbol);
 
             double[] Ys = dataPoints.Select(dataPoint => dataPoint.MediumPrice).ToArray();
             Rsquared = GoodnessOfFit.RSquared(Xs.Select(x => GetEstimate(x)), Ys);
@@ -37,9 +53,13 @@ namespace Charty.Chart.Analysis.InverseLogRegression
 
         double Rsquared { get; set; }
 
+        double PreprocessingX0 { get; set; }
+
         RegressionResultType RegressionResult { get; set; } = RegressionResultType.InverseLogistic;
 
         LogisticRegressionResult LogisticRegressionResult { get; set; }
+
+        List<IRegressionResult> RegressionsForLogYs { get; set; }
 
         public DateOnly GetCreationDate()
         {
@@ -53,7 +73,13 @@ namespace Charty.Chart.Analysis.InverseLogRegression
 
         public double GetEstimate(double t)
         {
-            return Math.Exp(LogisticRegressionResult.GetEstimate(t));
+            IRegressionResult bestRegression = RegressionsForLogYs[0];
+            if(bestRegression is LogisticRegressionResult)
+            {
+                t += PreprocessingX0;
+            }
+
+            return Math.Exp(bestRegression.GetEstimate(t));
         }
 
         public List<double> GetParameters()
@@ -84,7 +110,7 @@ namespace Charty.Chart.Analysis.InverseLogRegression
             return weight * weight;
         }
 
-        private void DrawWithLogReg(double[] Xs, double[] Ys, LogisticRegressionResult l, Symbol symbol)
+        private void DrawWithLogReg(double[] Xs, double[] Ys, Symbol symbol)
         {
             ScottPlot.Plot myPlot = new();
             Ys = Ys.Select(y => y).ToArray();
@@ -93,25 +119,71 @@ namespace Charty.Chart.Analysis.InverseLogRegression
             symbolScatter.Color = palette.Colors[2];
             symbolScatter.LineWidth = 0.5f;
 
-            myPlot.Title("LogReg of + " + symbol.Overview.Symbol + " with Regression [R²=" + l.GetRsquared() + "]");
+            myPlot.Title("Log of " + symbol.Overview.Symbol + " with Regressions");
 
-            List<double> listLogRegXs = new();
+            List<double> listXs = new();
             List<double> listLogRegYs = new();
+            List<double> listLinRegYs = new();
+            List<double> listExpRegYs = new();
 
-            for(double d = Xs.First(); d <= Xs.Last(); d += 0.01)
+            LogisticRegressionResult logisticRegression = (LogisticRegressionResult)RegressionsForLogYs.Find(regression => regression.GetRegressionResultType() == RegressionResultType.Logistic);
+            LinearRegressionResultWithX0 linearRegression = (LinearRegressionResultWithX0)RegressionsForLogYs.Find(regression => regression.GetRegressionResultType() == RegressionResultType.Linear);
+            ExponentialRegressionResult exponentialRegression = (ExponentialRegressionResult)RegressionsForLogYs.Find(regression => regression.GetRegressionResultType() == RegressionResultType.Exponential);
+
+            for (double d = Xs.First(); d <= Xs.Last(); d += 0.01)
             {
-                listLogRegXs.Add(d);
-                listLogRegYs.Add(l.GetEstimate(d));
+                listXs.Add(d);
+                listLogRegYs.Add(logisticRegression.GetEstimate(d + PreprocessingX0)); // logistic regression doesn't store the pre-processing x0
+                listLinRegYs.Add(linearRegression.GetEstimate(d));
+                listExpRegYs.Add(exponentialRegression.GetEstimate(d));
             }
 
-            double[] LogRegXs = listLogRegXs.ToArray();
+            double[] graphXs = listXs.ToArray();
             double[] LogRegYs = listLogRegYs.ToArray();
-            LogRegYs = LogRegYs.Select(y2 => y2).ToArray();
-            var logScatter = myPlot.Add.Scatter(LogRegXs, LogRegYs);
+            var logScatter = myPlot.Add.Scatter(graphXs, LogRegYs);
             logScatter.Color = Colors.Green;
-            logScatter.LineWidth = 0.4f;
+            logScatter.MarkerSize = 1.0f;
+            logScatter.Label = "Logistic Regression";
 
-            myPlot.SavePng(symbol.Overview.Symbol + "_InvLog_WithRegression.png", 900, 600);
+            double[] LinRegYs = listLinRegYs.ToArray();
+            var linScatter = myPlot.Add.Scatter(graphXs, LinRegYs);
+            linScatter.Color = Colors.Blue;
+            linScatter.MarkerSize = 1.0f;
+            linScatter.Label = "Linear Regression";
+
+            double[] ExpRegYs = listExpRegYs.ToArray();
+            var expScatter = myPlot.Add.Scatter(graphXs, ExpRegYs);
+            expScatter.Color = Colors.Red;
+            expScatter.MarkerSize = 1.0f;
+            expScatter.Label = "Exponential Regression";
+
+            //https://scottplot.net/cookbook/5.0/Annotation/AnnotationCustomize/
+            var logRegAnnotation = myPlot.Add.Annotation("LogRegR²=" + logisticRegression.GetRsquared());
+            logRegAnnotation.Label.FontSize = 18;
+            logRegAnnotation.Label.BackColor = Colors.Gray.WithAlpha(.3);
+            logRegAnnotation.Label.ForeColor = Colors.Black.WithAlpha(0.8);
+            logRegAnnotation.Label.BorderColor = Colors.Gray.WithAlpha(0.5);
+            logRegAnnotation.Label.BorderWidth = 1;
+
+            var linRegAnnotation = myPlot.Add.Annotation("LinRegR²=" + linearRegression.GetRsquared());
+            linRegAnnotation.Label.FontSize = 18;
+            linRegAnnotation.Label.BackColor = Colors.Gray.WithAlpha(.3);
+            linRegAnnotation.Label.ForeColor = Colors.Black.WithAlpha(0.8);
+            linRegAnnotation.Label.BorderColor = Colors.Gray.WithAlpha(0.5);
+            linRegAnnotation.Label.BorderWidth = 1;
+            linRegAnnotation.OffsetY = 35;
+
+            var expRegAnnotation = myPlot.Add.Annotation("ExpRegR²=" + exponentialRegression.GetRsquared());
+            expRegAnnotation.Label.FontSize = 18;
+            expRegAnnotation.Label.BackColor = Colors.Gray.WithAlpha(.3);
+            expRegAnnotation.Label.ForeColor = Colors.Black.WithAlpha(0.8);
+            expRegAnnotation.Label.BorderColor = Colors.Gray.WithAlpha(0.5);
+            expRegAnnotation.Label.BorderWidth = 1;
+            expRegAnnotation.OffsetY = 70;
+
+
+            myPlot.Legend.Show();
+            myPlot.SavePng(symbol.Overview.Symbol + "_InvLog_WithRegression.png", 1100, 600);
         }
 
         private LogisticRegressionResult GetLogisticRegression_ExpWalk_ChatGPTed(double[] Xs, double[] Ys)

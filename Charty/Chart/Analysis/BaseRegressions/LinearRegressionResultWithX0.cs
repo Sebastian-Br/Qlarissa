@@ -1,4 +1,5 @@
 ﻿using Charty.Chart.Enums;
+using MathNet.Numerics;
 using MathNet.Numerics.Integration;
 using System;
 using System.Collections.Generic;
@@ -17,15 +18,22 @@ namespace Charty.Chart.Analysis.BaseRegressions
         /// p1 = c
         /// p2 = X0
         /// </summary>
-        /// <param name="m">Slope</param>
-        /// <param name="c">Intercept</param>
-        public LinearRegressionResultWithX0(double rSquared, double m, double c, double x0)
+        /// <param name="xs">Pass the preprocessed xs here, i.e. xs.Select(x => x - x0)</param>
+        /// <param name="ys">Results</param>
+        /// <param name="x0">Intercept</param>
+        public LinearRegressionResultWithX0(double[] xs, double[] ys, double x0)
         {
             Parameters = new();
+
+            var p = Fit.Line(xs, ys);
+            double c = p.Item1; // intercept
+            double m = p.Item2; // slope
+
             Parameters.Add(m);
             Parameters.Add(c);
             Parameters.Add(x0);
-            Rsquared = rSquared;
+
+            Rsquared = GoodnessOfFit.RSquared(xs.Select(x => GetEstimate(x)), ys); ;
             DateCreated = DateOnly.FromDateTime(DateTime.Now);
         }
         List<double> Parameters { get; set; }
@@ -43,7 +51,7 @@ namespace Charty.Chart.Analysis.BaseRegressions
 
         public double GetEstimate(double t)
         {
-            return Parameters[0] * (t - Parameters[2]) + Parameters[1];
+            return Parameters[0] * (t + Parameters[2]) + Parameters[1];
         }
 
         public double GetEstimate(DateOnly date)

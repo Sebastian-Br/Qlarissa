@@ -55,7 +55,6 @@ namespace Charty.Chart.Analysis.CascadingCAGR
             GrowthRateRegressions.Sort((a, b) => b.GetRsquared().CompareTo(a.GetRsquared()));
             CalculateRsquared(symbol);
 
-
             DateCreated = DateOnly.FromDateTime(DateTime.Now);
             RegressionResult = RegressionResultType.ProjectingCAGR;
             //PlotDictionary_WithBestRegression(CAGRs_UntilDate);
@@ -161,13 +160,13 @@ namespace Charty.Chart.Analysis.CascadingCAGR
         private LinearRegressionResult GetLinearRegression(Dictionary<DateOnly, double> cagrResults)
         {
             // using x0 provides no benefits here
-            double[] x = cagrResults.Select(kvp => kvp.Key.ToDouble()).ToArray();
-            double[] y = cagrResults.Select(kvp => kvp.Value).ToArray();
-            var p = Fit.Line(x, y);
+            double[] xs = cagrResults.Select(kvp => kvp.Key.ToDouble()).ToArray();
+            double[] ys = cagrResults.Select(kvp => kvp.Value).ToArray();
+            var p = Fit.Line(xs, ys);
 
             double c = p.Item1; // intercept
             double m = p.Item2; // slope
-            double rSquared = GoodnessOfFit.RSquared(x.Select(x => c + m * x), y);
+            double rSquared = GoodnessOfFit.RSquared(xs.Select(x => c + m * x), ys);
             LinearRegressionResult result = new(rSquared, m, c);
             return result;
         }

@@ -25,7 +25,6 @@ namespace Charty.Chart.Analysis.ExponentialRegression
             if (dataPoints == null || dataPoints.Length == 0)
                 throw new ArgumentException("No Data Points");
 
-            DataPoints = dataPoints;
             double[] x = new double[dataPoints.Length]; // could skip this new array initialization
             double[] y = new double[dataPoints.Length];
             for (int i = 0; i < dataPoints.Length; i++)
@@ -43,13 +42,6 @@ namespace Charty.Chart.Analysis.ExponentialRegression
             // Define the objective function to minimize the residual sum of squares
             Func<MathNet.Numerics.LinearAlgebra.Vector<double>, double> objective = p =>
             {
-                /*double sum = 0;
-                for (int i = 0; i < x.Length; i++) // execution time: up to 13s
-                {
-                    double residual = model(x[i], p) - y[i];
-                    sum += 0.01 * residual * residual;
-                }
-                return sum;*/
                 double sumOfSquares = 0;
                 double[] squares = new double[x.Length];
 
@@ -58,7 +50,8 @@ namespace Charty.Chart.Analysis.ExponentialRegression
                     for (int i = range.Item1; i < range.Item2; i++)
                     {
                         double residual = model(x[i], p) - y[i];
-                        squares[i] = 0.001 * residual * residual;
+                        double residualSquare = residual * residual;
+                        squares[i] = 1e-16 * residualSquare; // you have to use a small factor to avoid issues when adding all of the values
                     }
                 });
 
@@ -72,7 +65,47 @@ namespace Charty.Chart.Analysis.ExponentialRegression
                 MathNet.Numerics.LinearAlgebra.Vector<double>.Build.DenseOfArray(new[] { initialA, initialB });
 
             // Use Levenberg-Marquardt algorithm to minimize the objective function
-            NelderMeadSimplex nms = new(1e-15, 800000);
+            NelderMeadSimplex nms = new(1e-15, 600000);
+            var result = nms.FindMinimum(objFunction, initialParameterGuesses);
+
+            // Extract optimized parameters
+            A = result.MinimizingPoint[0]; // 2.7252
+            B = result.MinimizingPoint[1]; // 1.3324
+            //Console.WriteLine("ExponentialRegression: y = " + A + " * " + B + " ^x" + " // after " + result.Iterations + " iterations");
+        }
+
+        public ExponentialRegression(double[] x, double[] y, double x0, double initialA = 1.0, double initialB = 1.0)
+        {
+            X0 = x0;
+            // Define the exponential model function                                    p = vector of parameters (a,b)
+            Func<double, MathNet.Numerics.LinearAlgebra.Vector<double>, double> model = (t, p) => p[0] * Math.Pow(p[1], t - X0);
+
+            // Define the objective function to minimize the residual sum of squares
+            Func<MathNet.Numerics.LinearAlgebra.Vector<double>, double> objective = p =>
+            {
+                double sumOfSquares = 0;
+                double[] squares = new double[x.Length];
+
+                Parallel.ForEach(Partitioner.Create(0, x.Length), range => // reduces execution times by around 55%
+                {
+                    for (int i = range.Item1; i < range.Item2; i++)
+                    {
+                        double residual = model(x[i], p) - y[i];
+                        squares[i] = 1e-16 * residual * residual; // you have to use a small factor to avoid issues when adding all of the values
+                    }
+                });
+
+                sumOfSquares = squares.Sum();
+                return sumOfSquares;
+            };
+
+            var objFunction = ObjectiveFunction.Value(objective);
+
+            MathNet.Numerics.LinearAlgebra.Vector<double> initialParameterGuesses =
+                MathNet.Numerics.LinearAlgebra.Vector<double>.Build.DenseOfArray(new[] { initialA, initialB });
+
+            // Use Levenberg-Marquardt algorithm to minimize the objective function
+            NelderMeadSimplex nms = new(1e-15, 600000);
             var result = nms.FindMinimum(objFunction, initialParameterGuesses);
 
             // Extract optimized parameters
@@ -86,7 +119,5 @@ namespace Charty.Chart.Analysis.ExponentialRegression
         public double B { get; private set; }
 
         public double X0 { get; private set; }
-
-        public SymbolDataPoint[] DataPoints { get; private set; } 
     }
 }
