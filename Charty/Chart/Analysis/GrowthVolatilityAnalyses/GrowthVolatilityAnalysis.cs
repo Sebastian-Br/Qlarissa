@@ -138,15 +138,12 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
 
         /// <summary>
         /// Returns the historic overperformance in [%] for a Knock-Out-Certificate with a specified leverage.
-        /// Positive values indicate overperformance.
-        /// Negative values indicate underperformance.
         /// </summary>
-        /// <param name="leverage"></param>
+        /// <param name="leverage">The leverage of the CALL/LONG derivative.</param>
         /// <returns>RETURN TYPE MIGHT NEED A SLIGHT REWORK!!!!</returns>
         private (double, double, double) GetHistoric_KO_Leverage_Overperformance_AndKOchance_AndKOorLossChance(double leverage)
         {
             double initialKOfraction = (1.0 - (1.0 / leverage));
-            // assuming this is a LONG/CALL product
             int koCount = 0;
             int lossCount = 0;
 
@@ -310,11 +307,11 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
                     }
 
                     var koChanceLine = myPlot.Add.Line(barPositionX, 0, barPositionX, OverPerformanceAndKoChance.Item2); // should this be locked or not?
-                    koChanceLine.LineColor = Colors.Red;
+                    koChanceLine.LineColor = Colors.Red.WithAlpha(0.7);
                     koChanceLine.LineWidth = 8.0f;
 
                     var koOrLossLine = myPlot.Add.Line(barPositionX + koChanceLine.LineWidth / 100.0, 0, barPositionX + koChanceLine.LineWidth / 100.0, OverPerformanceAndKoChance.Item3);
-                    koOrLossLine.LineColor = Colors.Orange;
+                    koOrLossLine.LineColor = Colors.Orange.WithAlpha(0.7);
                     koOrLossLine.LineWidth = koChanceLine.LineWidth / 2.0f;
                 }
             });

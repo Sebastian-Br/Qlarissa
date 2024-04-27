@@ -1,4 +1,5 @@
 ﻿using Charty.Chart.Analysis.ExponentialRegression;
+using MathNet.Numerics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,7 +36,7 @@ namespace Charty.Chart.Ranking
             foreach (var symbol in Symbols)
             {
                 result += ("Rank " + rank + ": " + symbol.ToString() + "\n");
-                result += ("1YE: " + symbol.GetNYearForecastPercent(1) + " % (Target Price: " + symbol.GetNYearForecastAbsolute(1) + ")\n");
+                result += ("1YE: " + symbol.GetNYearForecastPercent(1).Round(3) + " % (Target Price: " + symbol.GetNYearForecastAbsolute(1).Round(2) + ")\n");
                 rank++;
             }
             result += ("****************************************\n");
@@ -79,8 +80,8 @@ namespace Charty.Chart.Ranking
             foreach (var symbol in Symbols)
             {
                 result += ("Rank " + rank + ": " + symbol.ToString() + "\n");
-                result += ("3YE: " + symbol.GetNYearForecastPercent(3) + " % (Target Price: " + symbol.GetNYearForecastAbsolute(3) + ")\n");
-                result += ("3YE(annualized): " + AnnualizeNYearEstimate(symbol.GetNYearForecastPercent(3), 3) + "\n");
+                result += ("3YE: " + symbol.GetNYearForecastPercent(3).Round(3) + " % (Target Price: " + symbol.GetNYearForecastAbsolute(3).Round(2) + ")\n");
+                result += ("3YE(annualized): " + AnnualizeNYearEstimate(symbol.GetNYearForecastPercent(3), 3).Round(3) + "\n");
                 rank++;
             }
             result += ("****************************************\n");
