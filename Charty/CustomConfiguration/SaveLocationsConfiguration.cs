@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Charty.Chart;
+using Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,30 +8,59 @@ using System.Threading.Tasks;
 
 namespace Charty.CustomConfiguration
 {
-    public class SaveDirectoriesConfiguration
+    public static class SaveLocationsConfiguration
     {
-        public string ChartsDirectory { get; private set; }
+        private static string BaseDirectory = "ChartyData/";
 
-        public string VolatilityAnalysisDirectory { get; private set; }
+        private static string ChartsDirectory = BaseDirectory + "Charts/";
 
-        private string BaseDirectory { get; set; }
+        private static string VolatilityAnalysisDirectory = BaseDirectory + "VolatilityAnalysis/";
 
-        public SaveDirectoriesConfiguration()
+        public static string GetSymbolChartSaveFileLocation(Symbol symbol)
         {
-            BaseDirectory = "ChartyData/";
-
-            ChartsDirectory = BaseDirectory + "Charts/";
-            VolatilityAnalysisDirectory = BaseDirectory + "VolatilityAnalysis/";
-
-            CreatePathIfNotExists(ChartsDirectory);
-            CreatePathIfNotExists(VolatilityAnalysisDirectory);
+            string Directory = ChartsDirectory + symbol.Overview.Symbol + "/";
+            CreateDirectoryIfNotExists(Directory);
+            string FileName = symbol.Overview.Symbol + ".png";
+            return Directory + FileName;
         }
 
-        private void CreatePathIfNotExists(string directoryPath)
+        public static string GetLogRegressionsSaveFileLocation(Symbol symbol)
         {
-            if (!Directory.Exists(directoryPath))
+            string Directory = ChartsDirectory + symbol.Overview.Symbol + "/";
+            CreateDirectoryIfNotExists(Directory);
+            string FileName = symbol.Overview.Symbol + "_LogRegressions.png";
+            return Directory + FileName;
+        }
+
+        public static string GetGrowthAnalysisSaveFileLocation(Symbol symbol, GrowthVolatilityAnalysis gva)
+        {
+            string Directory = VolatilityAnalysisDirectory + symbol.Overview.Symbol + "/";
+            CreateDirectoryIfNotExists(Directory);
+            string FileName = symbol.Overview.Symbol + "_Growth" + (int)gva.TimePeriod  + ".png";
+            return Directory + FileName;
+        }
+
+        public static string GetLeveragedOverperformanceAnalysisSaveFileLocation(Symbol symbol, GrowthVolatilityAnalysis gva)
+        {
+            string Directory = VolatilityAnalysisDirectory + symbol.Overview.Symbol + "/";
+            CreateDirectoryIfNotExists(Directory);
+            string FileName = symbol.Overview.Symbol + "_LeveragedOverperformance" + (int)gva.TimePeriod + ".png";
+            return Directory + FileName;
+        }
+
+        public static string GetMaxLossAnalysisSaveFileLocation(Symbol symbol, GrowthVolatilityAnalysis gva)
+        {
+            string Directory = VolatilityAnalysisDirectory + symbol.Overview.Symbol + "/";
+            CreateDirectoryIfNotExists(Directory);
+            string FileName = symbol.Overview.Symbol + "_MaxLoss" + (int)gva.TimePeriod + ".png";
+            return Directory + FileName;
+        }
+
+        private static void CreateDirectoryIfNotExists(string directory)
+        {
+            if (!Directory.Exists(directory))
             {
-                Directory.CreateDirectory(directoryPath);
+                Directory.CreateDirectory(directory);
             }
         }
     }

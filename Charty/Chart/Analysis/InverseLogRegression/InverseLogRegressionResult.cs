@@ -1,6 +1,7 @@
 ﻿using Charty.Chart.Analysis.BaseRegressions;
 using Charty.Chart.Analysis.ExponentialRegression;
 using Charty.Chart.Enums;
+using Charty.CustomConfiguration;
 using MathNet.Numerics;
 using ScottPlot;
 using ScottPlot.Plottables;
@@ -183,7 +184,7 @@ namespace Charty.Chart.Analysis.InverseLogRegression
 
 
             myPlot.Legend.Show();
-            myPlot.SavePng(symbol.Overview.Symbol + "_InvLog_WithRegression.png", 1100, 600);
+            myPlot.SavePng(SaveLocationsConfiguration.GetLogRegressionsSaveFileLocation(symbol), 1100, 600);
         }
 
         private LogisticRegressionResult GetLogisticRegression_ExpWalk_ChatGPTed(double[] Xs, double[] Ys)

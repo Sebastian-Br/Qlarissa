@@ -27,8 +27,6 @@ namespace Charty.Menu
         {
             return "R - Reload Menu Help\n" +
                 "Add SYMBOL - Adds the Symbol to the Chart Dictionary (and DB)\n" +
-                "Update SYMBOL - Updates the existing Symbol (and updates the DB)\n" +
-                "UpdateAll - Updates all Symbols (until the API rate limit is reached, updates older symbol information first)\n" +
                 "Add ConfigSymbols - Adds all Symbols in the customConfiguration\n" +
                 "Switch SYMBOL - Switch to the Symbol's Menu\n" +
                 "Remove SYMBOL - Removes the Symbol from the Chart Dictionary\n" +
@@ -85,19 +83,6 @@ namespace Charty.Menu
                 return this;
             }
 
-            if (text.StartsWith("Update ", comparer))
-            {
-                string symbol = text.Replace("Update ", "").Trim();
-                if (string.IsNullOrEmpty(symbol))
-                {
-                    Console.WriteLine("Please specify a symbol");
-                    return this;
-                }
-
-                await SymbolManager.InitializeSymbolFromAPI(symbol, performUpdate : true);
-                return this;
-            }
-
             if (text.StartsWith("Switch ", comparer))
             {
                 string symbol = text.Replace("Switch ", "").Trim();
@@ -140,12 +125,6 @@ namespace Charty.Menu
             if (string.Equals(text, "AnalyzeAll", comparer))
             {
                 SymbolManager.AnalyzeAll();
-                return this;
-            }
-
-            if (string.Equals(text, "UpdateAll", comparer))
-            {
-                await SymbolManager.UpdateAll();
                 return this;
             }
 

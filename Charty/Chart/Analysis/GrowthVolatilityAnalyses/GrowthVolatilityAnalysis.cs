@@ -1,4 +1,5 @@
 ﻿using Charty.Chart.Enums;
+using Charty.CustomConfiguration;
 using MathNet.Numerics;
 using ScottPlot;
 using ScottPlot.Plottables;
@@ -15,7 +16,7 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
 {
     public class GrowthVolatilityAnalysis
     {
-        public GrowthVolatilityAnalysis(Symbol symbol, TimePeriod timePeriod, string saveDirectory = "") 
+        public GrowthVolatilityAnalysis(Symbol symbol, TimePeriod timePeriod) 
         {
             Symbol = symbol;
             SymbolDataPoint[] dataPoints = symbol.GetDataPointsNotInExcludedTimePeriods();
@@ -24,7 +25,6 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
             Subresults = new();
             LowestMinimumPercentage = 0;
             HighestMinimumPercentage = 0;
-            SaveDirectory = saveDirectory;
 
             foreach (SymbolDataPoint dataPoint in dataPoints)
             {
@@ -72,8 +72,6 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
         Symbol Symbol { get; set; }
         double LowestMinimumPercentage { get; set; }
         double HighestMinimumPercentage { get; set; }
-        string SaveDirectory { get; set; }
-
         double AdjustmentPercentagePA { get; set; }
 
         /// <summary>
@@ -230,18 +228,15 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
 
         public void Draw()
         {
-            if (SaveDirectory != "")
-            {
-                DrawMaxLossGraph();
-                DrawLeveragedOverperformanceGraph();
-                DrawGrowthAnalysis();
-            }
+            DrawMaxLossGraph();
+            DrawLeveragedOverperformanceGraph();
+            DrawGrowthAnalysis();
         }
 
         private void DrawMaxLossGraph()
         {
             ScottPlot.Plot myPlot = new();
-            myPlot.Title(Symbol.Overview.ToString() + " Max Loss [%]"
+            myPlot.Title(Symbol.Overview.ToString() + " Max Loss [%] - " + (int)TimePeriod + " months"
                 + "\n" + "P(-10%)=" + GetHistoricLikelihoodOfPercentageDrop(-10).Round(2) + "% P(-20%)=" + GetHistoricLikelihoodOfPercentageDrop(-20).Round(2) 
                 + "% P(-30%)=" + GetHistoricLikelihoodOfPercentageDrop(-30).Round(2) + "% P(-40%)=" + GetHistoricLikelihoodOfPercentageDrop(-40).Round(2)
                 + "% P(-50%)=" + GetHistoricLikelihoodOfPercentageDrop(-50).Round(2)
@@ -265,9 +260,9 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
             var barPlot = myPlot.Add.Bars(bars.ToArray());
             barPlot.ValueLabelStyle.FontSize = 10;
 
-            myPlot.Axes.Bottom.Label.Text = "Maximum Unrealized Loss [%] with regards to initial Asset Value over " + (int)TimePeriod + " Month Period (Cumulative)";
+            myPlot.Axes.Bottom.Label.Text = "Maximum Unrealized Loss [%] with regards to initial Asset Value over " + (int)TimePeriod + " Month Period";
             myPlot.Axes.Left.Label.Text = "Likelihood of that Loss [%]";
-            myPlot.SavePng(SaveDirectory + Symbol.Overview.Symbol + "_MAXLOSS_" + (int)TimePeriod + "month.png", numberOfBars * 30, 600);
+            myPlot.SavePng(SaveLocationsConfiguration.GetMaxLossAnalysisSaveFileLocation(Symbol, this), numberOfBars * 30, 600);
         }
 
         /// <summary>
@@ -277,11 +272,11 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
         private void DrawLeveragedOverperformanceGraph()
         {
             ScottPlot.Plot myPlot = new();
-            myPlot.Title(Symbol.Overview.ToString() + " Leveraged Overperformance Analysis over " + (int)TimePeriod + " months");
+            myPlot.Title(Symbol.Overview.ToString() + " Leveraged Overperformance Analysis over " + (int)TimePeriod + " months. Barrier adjusted by " + AdjustmentPercentagePA + "% p.a.");
 
             double stepSize = 0.1; // do not set this below 0.1. If you do, adjust the barX = Math.Round... bit below.
             double minLeverage = 1.1;
-            double maxLeverage = 7.0;
+            double maxLeverage = 5.0;
             int numberOfBars = (int) double.Round((maxLeverage - minLeverage) / stepSize);
             List<ScottPlot.Bar> bars = new();
             List<Tick> tickList = new();
@@ -334,7 +329,7 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
 
             myPlot.Axes.Bottom.Label.Text = "Leverage";
             myPlot.Axes.Left.Label.Text = "Overperformance vs underlying Asset [%]";
-            myPlot.SavePng(SaveDirectory + Symbol.Overview.Symbol + "_LeveragedOverperformance_" + (int)TimePeriod + "month.png", numberOfBars * 30, 800);
+            myPlot.SavePng(SaveLocationsConfiguration.GetLeveragedOverperformanceAnalysisSaveFileLocation(Symbol, this), numberOfBars * 30, 800);
         }
 
         private double Annualize(double percentage)
@@ -512,7 +507,7 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
 
             myPlot.Axes.Bottom.Label.Text = "Annualized Growth [%] over " + (int)TimePeriod + " month period";
             myPlot.Axes.Left.Label.Text = "Likelihood of Growth [%]";
-            myPlot.SavePng(SaveDirectory + Symbol.Overview.Symbol + "_GrowthAnalysis_" + (int)TimePeriod + "month.png", numberOfBars * 45, 500);
+            myPlot.SavePng(SaveLocationsConfiguration.GetGrowthAnalysisSaveFileLocation(Symbol, this), numberOfBars * 45, 500);
         }
 
         /*

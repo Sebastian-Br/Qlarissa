@@ -15,6 +15,7 @@ using Charty.Chart.Api.PYfinance;
 using ScottPlot.AxisPanels;
 using ScottPlot.TickGenerators;
 using MathNet.Numerics;
+using Charty.CustomConfiguration;
 
 namespace Charty.Chart
 {
@@ -69,24 +70,10 @@ namespace Charty.Chart
             Symbol result = await PyFinanceAPI.RetrieveSymbol(symbol);
             AddDefaultExcludedTimePeriodsToSymbol(result);
             result.CustomConfiguration = CustomConfiguration;
-            //result.RunRegressions_IfNotExists();
 
             //SymbolDictionary.Add(symbol, result);
             SymbolDictionary[symbol] = result;
             Console.WriteLine((performUpdate ? "Updated" : "Added") + " '" + symbol + "'");
-        }
-
-        public async Task UpdateAll()
-        {
-            List<string> orderedSymbolKeys = SymbolDictionary
-            .OrderBy(kv => kv.Value.DataPoints.Last().Date)
-            .Select(kv => kv.Key.ToUpper())
-            .ToList();
-
-            foreach (string key in orderedSymbolKeys)
-            {
-                await InitializeSymbolFromAPI(key, true);
-            }
         }
 
         private void AddDefaultExcludedTimePeriodsToSymbol(Symbol symbol)
@@ -101,7 +88,20 @@ namespace Charty.Chart
         {
             foreach(string symbol in ConfigurationSymbols.Keys)
             {
-                await InitializeSymbolFromAPI(symbol);
+                bool symbolInitializedSuccessfully = false;
+                do
+                {
+                    try
+                    {
+                        await InitializeSymbolFromAPI(symbol);
+                        symbolInitializedSuccessfully = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Couldn't initialize " + symbol + ". Error message: " + ex.Message + "\nRetrying.");
+                    }
+                }
+                while (!symbolInitializedSuccessfully);
             }
 
             return;
@@ -176,6 +176,11 @@ namespace Charty.Chart
             {
                 symbol.GVA_2Years.Draw();
             }
+
+            if(symbol.GVA_1Year != null)
+            {
+                symbol.GVA_1Year.Draw();
+            }
         }
 
         public void DrawAll()
@@ -189,7 +194,7 @@ namespace Charty.Chart
             return;
         }
 
-        public void DrawSymbolChartWithRegressions_LogScale(Symbol symbol)
+        private void DrawSymbolChartWithRegressions_LogScale(Symbol symbol)
         {
             SymbolDataPoint[] dataPoints = symbol.GetDataPointsNotInExcludedTimePeriods();
             double[] x = dataPoints.Select(point => point.Date.ToDouble()).ToArray();
@@ -349,7 +354,7 @@ namespace Charty.Chart
 
             myPlot.Add.Plottable(marker3YE);
 
-            myPlot.SavePng(CustomConfiguration.SaveDirectoriesConfig.ChartsDirectory + symbol.Overview.Symbol + ".png", 1300, 575);
+            myPlot.SavePng(SaveLocationsConfiguration.GetSymbolChartSaveFileLocation(symbol), 1300, 575);
         }
     }
 }

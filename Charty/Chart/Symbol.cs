@@ -54,6 +54,7 @@ namespace Charty.Chart
         public InverseLogRegressionResult InverseLogRegressionModel { get; private set; }
 
         public GrowthVolatilityAnalysis GVA_2Years { get; private set; }
+        public GrowthVolatilityAnalysis GVA_1Year { get; private set; }
 
         Dictionary<string,ExcludedTimePeriod> ExcludedTimePeriods { get; set; }
 
@@ -69,7 +70,8 @@ namespace Charty.Chart
                 ExponentialRegressionModel = new ExponentialRegressionResult(expR, this);
                 InverseLogRegressionModel = new(this);
                 ProjectingCAGRmodel = new(this);
-                GVA_2Years = new(this, Enums.TimePeriod.TwoYears, CustomConfiguration.SaveDirectoriesConfig.VolatilityAnalysisDirectory);
+                GVA_2Years = new(this, Enums.TimePeriod.TwoYears);
+                GVA_1Year = new(this, Enums.TimePeriod.OneYear);
                 Analyzed = true;
             }
         }

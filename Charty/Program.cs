@@ -19,9 +19,7 @@ namespace Charty
             IHost host = CreateHostBuilder().Build();
             IConfiguration baseConfiguration = host.Services.GetRequiredService<IConfiguration>();
             CustomConfiguration.CustomConfiguration customConfiguration = BuildCustomConfiguration();
-            // apiManager.GetApiSymbol("ETR:ADS").Wait(); WORKS
 
-            //customConfiguration.CheckSymbolsToBeAnalyzed().Wait(); checked all except ETR:s
             SymbolManager symbolManager = new(baseConfiguration, customConfiguration);
 
             IMenu menu = new StartMenu(symbolManager);
