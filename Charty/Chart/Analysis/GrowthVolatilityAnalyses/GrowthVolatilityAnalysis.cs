@@ -1,4 +1,5 @@
-﻿using Charty.Chart.Enums;
+﻿using Charty.Chart.Analysis.GrowthVolatilityAnalyses;
+using Charty.Chart.Enums;
 using Charty.CustomConfiguration;
 using MathNet.Numerics;
 using ScottPlot;
@@ -114,34 +115,50 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
         double GetAdjustedKObarrier(double koBarrier, DateOnly startDate, DateOnly endDate)
         {
             int numberOfDays = GetExactDaysDifference(startDate, endDate);
-            double effectiveAdjustmentPercentage = (AdjustmentPercentagePA / 365.0) * numberOfDays;
-            return Math.Pow(koBarrier, 1.0 + effectiveAdjustmentPercentage / 100.0);
+            double currentKoBarrier = koBarrier;
+
+            for(int i = 0; i < numberOfDays; i++)
+            {
+                currentKoBarrier = ProgressKoBarrierByOneDay(currentKoBarrier);
+            }
+
+            return currentKoBarrier;
+        }
+
+        double ProgressKoBarrierByOneDay(double previousKoBarrier)
+        {
+            return (previousKoBarrier * (1.0 + (AdjustmentPercentagePA / 100.0) / 360.0)).Round(4); // 360 is used in banking instead of 365. e.g. see https://derivate.bnpparibas.com/MediaLibrary/Document/Backend/Derivative_Documents/OfferCondition/FT_ISS_DE.2023-04-25.60919_call-non-Italian-001.pdf
         }
 
         bool WasBarrierHit(double initialBarrier, GrowthVolatilityAnalysisSubresult timeFrame)
         {
             SymbolDataPoint[] dataPoints = Symbol.DataPoints.Where(x => x.Date <= timeFrame.FwdDataPoint.Date && x.Date >= timeFrame.StartDataPoint.Date).ToArray();
             DateOnly initialDate = dataPoints[0].Date;
+            double effectiveBarrier = initialBarrier;
+            DateOnly lastDate = initialDate;
 
             foreach(SymbolDataPoint dataPoint in dataPoints)
             {
-                double adjustedBarrier = GetAdjustedKObarrier(initialBarrier, initialDate, dataPoint.Date);
+                //effectiveBarrier = GetAdjustedKObarrier(initialBarrier, initialDate, dataPoint.Date); // O(n²). My condolences; the performance just died.
 
-                if(dataPoint.LowPrice <= adjustedBarrier)
+                int daysSinceLastDate = GetExactDaysDifference(lastDate, dataPoint.Date);
+                for (int d = 0; d < daysSinceLastDate; d++)
+                {
+                    effectiveBarrier = ProgressKoBarrierByOneDay(effectiveBarrier);
+                }
+
+                if (dataPoint.LowPrice <= effectiveBarrier)
                 {
                     return true;
                 }
+
+                lastDate = dataPoint.Date;
             }
 
             return false;
         }
 
-        /// <summary>
-        /// Returns the historic overperformance in [%] for a Knock-Out-Certificate with a specified leverage.
-        /// </summary>
-        /// <param name="leverage">The leverage of the CALL/LONG derivative.</param>
-        /// <returns>RETURN TYPE MIGHT NEED A SLIGHT REWORK!!!!</returns>
-        private (double, double, double) GetHistoric_KO_Leverage_Overperformance_AndKOchance_AndKOorLossChance(double leverage)
+        private LeveragedOverperformanceAnalysisResult GetHistoricLeveragedOverperformanceAnalysis(double leverage)
         {
             double initialKOfraction = (1.0 - (1.0 / leverage));
             int koCount = 0;
@@ -158,10 +175,15 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
 
                 if (!WasBarrierHit(initialKObarrier, subResult)) // KO barrier has not been touched
                 {
-                    double leveragedOutcome = 1.0 + (leverage * subResult.GrowthPercent) / 100.0; // e.g. 1.4 for leverage := 2
+                    //double leveragedOutcome = 1.0 + (leverage * subResult.GrowthPercent) / 100.0; // e.g. 1.4 for leverage := 2
+                    // TODO: The above calculation is incorrect. The price of a KO certificate is equal to (Underlying Price - KO-Barrier) * 0.1
+                    double initialPriceOfCertificate = (subResult.StartDataPoint.MediumPrice - initialKObarrier) * 0.1;
+                    double fwdKoBarrier = GetAdjustedKObarrier(initialKObarrier, subResult.StartDataPoint.Date, subResult.FwdDataPoint.Date);
+                    double forwardPriceOfCertificate = (subResult.FwdDataPoint.MediumPrice - fwdKoBarrier) * 0.1;
+                    double leveragedOutcome = forwardPriceOfCertificate / initialPriceOfCertificate;
                     leveragedOutcomes.Add(leveragedOutcome);
 
-                    if(leveragedOutcome < 1.0)
+                    if (leveragedOutcome < 1.0)
                     {
                         lossCount++;
                     }
@@ -178,10 +200,11 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
 
             double averageLeveragedOverperformance = leveragedAvgPerformance / nonLeveragedAvgPerformance;
             double averageOverPerformancePercent = (averageLeveragedOverperformance - 1.0) * 100.0;
-            double knockoutLikelihoodPercent = ((double)koCount) / ((double) Subresults.Count) * 100.0;
-            double knockoutOrLossLikelihoodPercent = ((double) (koCount + lossCount)) / ((double) Subresults.Count) * 100.0;
+            double knockoutLikelihoodPercent = ((double)koCount) / ((double)Subresults.Count) * 100.0;
+            double knockoutOrLossLikelihoodPercent = ((double)(koCount + lossCount)) / ((double)Subresults.Count) * 100.0;
 
-            (double, double, double) result = new(averageOverPerformancePercent, knockoutLikelihoodPercent, knockoutOrLossLikelihoodPercent);
+            LeveragedOverperformanceAnalysisResult result = new(TimePeriod, averageOverPerformancePercent, knockoutLikelihoodPercent, knockoutOrLossLikelihoodPercent,
+                nonLeveragedAvgPerformance, leveragedAvgPerformance);
             return result;
         }
 
@@ -269,14 +292,14 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
         private void DrawLeveragedOverperformanceGraph()
         {
             ScottPlot.Plot myPlot = new();
-            myPlot.Title(Symbol.Overview.ToString() + " Leveraged Overperformance Analysis over " + (int)TimePeriod + " months. Barrier adjusted by " + AdjustmentPercentagePA + "% p.a.");
 
             double stepSize = 0.1; // do not set this below 0.1. If you do, adjust the barX = Math.Round... bit below.
             double minLeverage = 1.1;
-            double maxLeverage = 5.0;
+            double maxLeverage = 4.0;
             int numberOfBars = (int) double.Round((maxLeverage - minLeverage) / stepSize);
             List<ScottPlot.Bar> bars = new();
             List<Tick> tickList = new();
+            double annualizedNonLeveragedPerformance = 0;
 
             Parallel.ForEach(Partitioner.Create(0, numberOfBars + 1), range =>
             {
@@ -286,47 +309,66 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
                     barX = Math.Round(barX, 1);
 
                     double barPositionX = i;
-                    (double, double, double) OverPerformanceAndKoChance = GetHistoric_KO_Leverage_Overperformance_AndKOchance_AndKOorLossChance(barX);
-                    ScottPlot.Bar myBar = new ScottPlot.Bar() { Position = barPositionX, FillColor = Colors.Azure, Value = OverPerformanceAndKoChance.Item1 };
+                    LeveragedOverperformanceAnalysisResult result = GetHistoricLeveragedOverperformanceAnalysis(barX);
+                    ScottPlot.Bar myBar = new ScottPlot.Bar() { Position = barPositionX, FillColor = Colors.Azure, Value = result.AverageAnnualizedOverPerformancePercent };
 
                     lock (tickList)
                     {
                         tickList.Add(new(barPositionX, barX.ToString()));
                     }
 
-                    myBar.Label = myBar.Value.Round(1).ToString()
-                        + "\n" + OverPerformanceAndKoChance.Item2.Round(1).ToString()
-                        + "\n" + OverPerformanceAndKoChance.Item3.Round(1).ToString();
+                    myBar.Label = myBar.Value.Round(2).ToString()
+                        + "\n" + result.KnockoutLikelihoodPercent.Round(2).ToString()
+                        + "\n" + result.KnockoutOrLossLikelihoodPercent.Round(2).ToString()
+                        + "\n" + result.LeveragedAvgAnnualizedPerformancePercentage.Round(2).ToString();
 
-                    myBar.LabelOffset = 25f;
-                    myBar.FillColor = ScottPlot.Color.FromHSL(218, 92, 32, 0.7f);
+                    annualizedNonLeveragedPerformance = result.NonLeveragedAvgAnnualizedPerformancePercentage;
+                    myBar.LabelOffset = 36f;
+                    myBar.FillColor = Colors.Gray.WithAlpha(0.6);
+                    myBar.BorderColor = Colors.Black.WithAlpha(0.7);
 
                     lock (bars)
                     {
                         bars.Add(myBar);
                     }
 
-                    var koChanceLine = myPlot.Add.Line(barPositionX, 0, barPositionX, OverPerformanceAndKoChance.Item2); // should this be locked or not?
-                    koChanceLine.LineColor = Colors.Red.WithAlpha(0.7);
+                    var koChanceLine = myPlot.Add.Line(barPositionX, 0, barPositionX, result.KnockoutLikelihoodPercent); // should this be locked or not?
+                    koChanceLine.LineColor = Colors.Red.WithAlpha(0.65);
                     koChanceLine.LineWidth = 8.0f;
 
-                    var koOrLossLine = myPlot.Add.Line(barPositionX + koChanceLine.LineWidth / 100.0, 0, barPositionX + koChanceLine.LineWidth / 100.0, OverPerformanceAndKoChance.Item3);
-                    koOrLossLine.LineColor = Colors.Orange.WithAlpha(0.7);
+                    var koOrLossLine = myPlot.Add.Line(barPositionX + koChanceLine.LineWidth / 100.0, 0, barPositionX + koChanceLine.LineWidth / 100.0, result.KnockoutOrLossLikelihoodPercent);
+                    koOrLossLine.LineColor = Colors.Orange.WithAlpha(0.65);
                     koOrLossLine.LineWidth = koChanceLine.LineWidth / 2.0f;
                 }
             });
 
+            myPlot.Title(Symbol.Overview.ToString() + " Leveraged Overperformance Analysis over " + (int)TimePeriod + " months." +
+                " Barrier adjusted by " + AdjustmentPercentagePA + "% p.a." +
+                " Average Annual Non-Leveraged Growth: " + annualizedNonLeveragedPerformance.Round(2) + "%");
+
             var barPlot = myPlot.Add.Bars(bars.ToArray());
-            barPlot.ValueLabelStyle.FontSize = 10f;
+            barPlot.ValueLabelStyle.FontSize = 12f;
 
             //https://scottplot.net/cookbook/5.0/CustomizingTicks/RotatedTicksLongLabels/
             myPlot.Axes.Bottom.TickGenerator = new ScottPlot.TickGenerators.NumericManual(tickList.ToArray());
             myPlot.Axes.Bottom.TickLabelStyle.Rotation = 45;
             myPlot.Axes.Bottom.TickLabelStyle.Alignment = Alignment.MiddleLeft;
 
+            //https://scottplot.net/cookbook/5.0/Annotation/AnnotationCustomize/
+            var barAnnotation = myPlot.Add.Annotation(
+                "1. Overperformance vs Underlying [%]" +
+                "\n2. Likelihood of Knockout Event [%]" +
+                "\n3. Likelihood of Knockout or Loss [%]" +
+                "\n4. Annualized " + (int)TimePeriod + "-month Performance [%] ");
+            barAnnotation.Label.FontSize = 15;
+            barAnnotation.Label.BackColor = Colors.Blue.WithAlpha(.3);
+            barAnnotation.Label.ForeColor = Colors.Black.WithAlpha(0.9);
+            barAnnotation.Label.BorderColor = Colors.Blue.WithAlpha(0.5);
+            barAnnotation.Label.BorderWidth = 1;
+
             myPlot.Axes.Bottom.Label.Text = "Leverage";
-            myPlot.Axes.Left.Label.Text = "Overperformance vs underlying Asset [%]";
-            myPlot.SavePng(SaveLocationsConfiguration.GetLeveragedOverperformanceAnalysisSaveFileLocation(Symbol, this), numberOfBars * 30, 800);
+            myPlot.Axes.Left.Label.Text = "Overperformance vs Underlying Asset [%]";
+            myPlot.SavePng(SaveLocationsConfiguration.GetLeveragedOverperformanceAnalysisSaveFileLocation(Symbol, this), numberOfBars * 50, 800);
         }
 
         private double Annualize(double percentage)
