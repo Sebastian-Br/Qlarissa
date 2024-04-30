@@ -171,10 +171,7 @@ namespace Charty.Chart.Ranking
             {
                 maxRsquared = symbol.ExponentialRegressionModel.GetRsquared();
             }
-            if (symbol.ProjectingCAGRmodel.GetRsquared() > maxRsquared)
-            {
-                maxRsquared = symbol.ProjectingCAGRmodel.GetRsquared();
-            }
+
             if (symbol.InverseLogRegressionModel.GetRsquared() > maxRsquared)
             {
                 maxRsquared = symbol.InverseLogRegressionModel.GetRsquared();

@@ -8,7 +8,6 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 using MathNet.Numerics;
 using MathNet.Numerics.Optimization;
 using ScottPlot;
-using Charty.Chart.Analysis.CascadingCAGR;
 using System.Collections.Concurrent;
 
 namespace Charty.Chart.Analysis.ExponentialRegression

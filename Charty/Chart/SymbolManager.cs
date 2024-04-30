@@ -210,9 +210,6 @@ namespace Charty.Chart
             List<double> expRegXs = new();
             List<double> expRegYs = new();
 
-            List<double> cascadingCagrXs = new();
-            List<double> cascadingCagrYs = new();
-
             List<double> inverseLogXs = new();
             List<double> inverseLogYs = new();
 
@@ -222,8 +219,6 @@ namespace Charty.Chart
             {
                 expRegXs.Add(d);
                 expRegYs.Add(symbol.ExponentialRegressionModel.GetEstimate(d));
-                cascadingCagrXs.Add(d);
-                cascadingCagrYs.Add(symbol.ProjectingCAGRmodel.GetEstimate(d));
                 inverseLogXs.Add(d);
                 inverseLogYs.Add(symbol.InverseLogRegressionModel.GetEstimate(d));
             }
@@ -265,24 +260,15 @@ namespace Charty.Chart
             expRegScatter.MarkerSize = 0.5f;
             expRegScatter.Label = "EXP";
 
-            if ((cascadingCagrYs.ToArray().Any(x => x < 0))) {
-                throw new Exception("PCAGR");
-            }
-
             if ((expRegYs.ToArray().Any(x => x < 0)))
             {
-                throw new Exception("EXP");
+                throw new Exception("EXP Reg Estimate < 0");
             }
 
             if ((y.ToArray().Any(x => x < 0)))
             {
-                throw new Exception("y");
+                throw new Exception("y < 0");
             }
-
-            var cascadingCAGRscatter = myPlot.Add.Scatter(cascadingCagrXs.ToArray(), cascadingCagrYs.ToArray().Select(y => Math.Log(y)).ToArray());
-            cascadingCAGRscatter.Color = palette.Colors[6];
-            cascadingCAGRscatter.MarkerSize = 0.5f;
-            cascadingCAGRscatter.Label = "PCAGR";
 
             var inverseLogScatter = myPlot.Add.Scatter(inverseLogXs.ToArray(), inverseLogYs.ToArray().Select(y => Math.Log(y)).ToArray());
             inverseLogScatter.Color = Colors.Black;
@@ -303,7 +289,6 @@ namespace Charty.Chart
 
             int rsquaredDecimals = 9;
             myPlot.Title(symbol.ToString() + "\nEXPR²=" + symbol.ExponentialRegressionModel.GetRsquared().Round(rsquaredDecimals)
-                + " PCAGRR²=" + symbol.ProjectingCAGRmodel.GetRsquared().Round(rsquaredDecimals)
                 + " INVLOGR²=" + symbol.InverseLogRegressionModel.GetRsquared().Round(rsquaredDecimals));
             myPlot.Axes.Bottom.Label.Text = "Time [years]";
             myPlot.Axes.Left.Label.Text = "Price [" + symbol.Overview.Currency.ToString() + "]";
@@ -354,7 +339,7 @@ namespace Charty.Chart
 
             myPlot.Add.Plottable(marker3YE);
 
-            myPlot.SavePng(SaveLocationsConfiguration.GetSymbolChartSaveFileLocation(symbol), 1300, 575);
+            myPlot.SavePng(SaveLocationsConfiguration.GetSymbolChartSaveFileLocation(symbol), 1350, 575);
         }
     }
 }

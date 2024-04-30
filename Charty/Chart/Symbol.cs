@@ -1,5 +1,4 @@
 ﻿using Charty.Chart.Analysis;
-using Charty.Chart.Analysis.CascadingCAGR;
 using Charty.Chart.Analysis.ExponentialRegression;
 using Charty.Chart.Analysis.InverseLogRegression;
 using Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis;
@@ -49,8 +48,6 @@ namespace Charty.Chart
 
         public ExponentialRegressionResult ExponentialRegressionModel { get; private set; }
 
-        public ProjectingCAGR ProjectingCAGRmodel { get; private set; }
-
         public InverseLogRegressionResult InverseLogRegressionModel { get; private set; }
 
         public GrowthVolatilityAnalysis GVA_2Years { get; private set; }
@@ -69,7 +66,6 @@ namespace Charty.Chart
                 ExponentialRegression expR = new ExponentialRegression(this);
                 ExponentialRegressionModel = new ExponentialRegressionResult(expR, this);
                 InverseLogRegressionModel = new(this);
-                ProjectingCAGRmodel = new(this);
                 GVA_2Years = new(this, Enums.TimePeriod.TwoYears);
                 GVA_1Year = new(this, Enums.TimePeriod.OneYear);
                 Analyzed = true;
@@ -245,25 +241,21 @@ namespace Charty.Chart
             double dividends = n * Overview.DividendPerShareYearly;
 
             double expRegWeight = ExponentialRegressionModel.GetWeight();
-            double pcagrWeight = ProjectingCAGRmodel.GetWeight();
             double invLogRegWeight = InverseLogRegressionModel.GetWeight();
 
-            double totalWeight = expRegWeight + pcagrWeight + invLogRegWeight;
+            double totalWeight = expRegWeight + invLogRegWeight;
 
             double normalized_expRegWeight = expRegWeight / totalWeight;
-            double normalized_pcagrWeight = pcagrWeight / totalWeight;
             double normalized_invLogRegWeight = invLogRegWeight / totalWeight;
 
             double t = (DateOnly.FromDateTime(DateTime.Now)).ToDouble() + n;
             double expRegEstimate = ExponentialRegressionModel.GetEstimate(t);
-            double pcagrEstimate = ProjectingCAGRmodel.GetEstimate(t);
             double invLogEstimate = InverseLogRegressionModel.GetEstimate(t);
 
             double weighted_expRegEstimate = normalized_expRegWeight * expRegEstimate;
-            double weighted_pcagrWeight = normalized_pcagrWeight * pcagrEstimate;
             double weighted_invLogRegWeight = normalized_invLogRegWeight * invLogEstimate;
 
-            double estimate = weighted_expRegEstimate + weighted_pcagrWeight + weighted_invLogRegWeight;
+            double estimate = weighted_expRegEstimate + weighted_invLogRegWeight;
 
             return estimate + dividends;
         }
