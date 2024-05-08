@@ -1,8 +1,8 @@
-﻿using Charty.Chart;
-using Charty.Chart.Api;
-using Charty.Chart.ChartAnalysis;
-using Charty.CustomConfiguration;
-using Charty.Menu;
+﻿using Qlarissa.Chart;
+using Qlarissa.Chart.Api;
+using Qlarissa.Chart.ChartAnalysis;
+using Qlarissa.CustomConfiguration;
+using Qlarissa.Menu;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 
-namespace Charty
+namespace Qlarissa
 {
     internal class Program
     {

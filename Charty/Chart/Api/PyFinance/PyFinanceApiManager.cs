@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Charty.Chart.Api.PYfinance
+namespace Qlarissa.Chart.Api.PYfinance
 {
     /// <summary>
     /// TODO: Uses a local python API to query yfinance with the relevant python package

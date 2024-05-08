@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Charty.Chart.ExcludedTimePeriods
+namespace Qlarissa.Chart.ExcludedTimePeriods
 {
     public class ExcludedTimePeriod
     {

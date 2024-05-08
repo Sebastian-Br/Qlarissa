@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Charty.Chart.Enums
+namespace Qlarissa.Chart.Enums
 {
     public enum TimePeriod
     {

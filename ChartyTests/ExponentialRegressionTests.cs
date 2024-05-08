@@ -1,5 +1,5 @@
-﻿using Charty.Chart;
-using Charty.Chart.Analysis.ExponentialRegression;
+﻿using Qlarissa.Chart;
+using Qlarissa.Chart.Analysis.ExponentialRegression;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,6 +1,6 @@
-﻿using Charty.Chart.Analysis.GrowthVolatilityAnalyses;
-using Charty.Chart.Enums;
-using Charty.CustomConfiguration;
+﻿using Qlarissa.Chart.Analysis.GrowthVolatilityAnalyses;
+using Qlarissa.Chart.Enums;
+using Qlarissa.CustomConfiguration;
 using MathNet.Numerics;
 using ScottPlot;
 using ScottPlot.Plottables;
@@ -13,7 +13,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
+namespace Qlarissa.Chart.ChartAnalysis.GrowthVolatilityAnalysis
 {
     public class GrowthVolatilityAnalysis
     {

@@ -4,20 +4,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Charty.Chart.ExcludedTimePeriods;
+using Qlarissa.Chart.ExcludedTimePeriods;
 using System.Runtime.CompilerServices;
-using Charty.Chart.Analysis.ExponentialRegression;
+using Qlarissa.Chart.Analysis.ExponentialRegression;
 using ScottPlot;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using ScottPlot.TickGenerators.TimeUnits;
-using Charty.Chart.Api;
-using Charty.Chart.Api.PYfinance;
+using Qlarissa.Chart.Api;
+using Qlarissa.Chart.Api.PYfinance;
 using ScottPlot.AxisPanels;
 using ScottPlot.TickGenerators;
 using MathNet.Numerics;
-using Charty.CustomConfiguration;
+using Qlarissa.CustomConfiguration;
 
-namespace Charty.Chart
+namespace Qlarissa.Chart
 {
     public class SymbolManager
     {

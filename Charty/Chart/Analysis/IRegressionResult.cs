@@ -1,11 +1,11 @@
-﻿using Charty.Chart.Enums;
+﻿using Qlarissa.Chart.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Charty.Chart.Analysis
+namespace Qlarissa.Chart.Analysis
 {
     public interface IRegressionResult
     {

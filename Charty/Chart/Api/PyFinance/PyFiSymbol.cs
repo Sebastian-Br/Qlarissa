@@ -1,4 +1,4 @@
-﻿using Charty.Chart.Api.PyFinance;
+﻿using Qlarissa.Chart.Api.PyFinance;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Charty.Chart.Api.PYfinance
+namespace Qlarissa.Chart.Api.PYfinance
 {
     internal class PyFiSymbol
     {

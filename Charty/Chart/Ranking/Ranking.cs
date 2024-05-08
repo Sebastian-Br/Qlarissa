@@ -1,4 +1,4 @@
-﻿using Charty.Chart.Analysis.ExponentialRegression;
+﻿using Qlarissa.Chart.Analysis.ExponentialRegression;
 using MathNet.Numerics;
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Charty.Chart.Ranking
+namespace Qlarissa.Chart.Ranking
 {
     public class Ranking
     {

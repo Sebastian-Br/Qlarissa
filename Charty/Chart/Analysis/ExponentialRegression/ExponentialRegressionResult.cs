@@ -1,4 +1,4 @@
-﻿using Charty.Chart.Enums;
+﻿using Qlarissa.Chart.Enums;
 using MathNet.Numerics;
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using static ScottPlot.Generate;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using DateTime = System.DateTime;
 
-namespace Charty.Chart.Analysis.ExponentialRegression
+namespace Qlarissa.Chart.Analysis.ExponentialRegression
 {
     public class ExponentialRegressionResult : IRegressionResult
     {

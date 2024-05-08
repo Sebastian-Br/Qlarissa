@@ -1,12 +1,12 @@
-﻿using Charty.Chart;
-using Charty.Chart.ExcludedTimePeriods;
+﻿using Qlarissa.Chart;
+using Qlarissa.Chart.ExcludedTimePeriods;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Charty.CustomConfiguration
+namespace Qlarissa.CustomConfiguration
 {
     public class CustomConfiguration
     {

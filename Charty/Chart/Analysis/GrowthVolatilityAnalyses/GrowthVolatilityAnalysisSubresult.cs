@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
+namespace Qlarissa.Chart.ChartAnalysis.GrowthVolatilityAnalysis
 {
     public class GrowthVolatilityAnalysisSubresult
     {

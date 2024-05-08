@@ -10,7 +10,7 @@ using MathNet.Numerics.Optimization;
 using ScottPlot;
 using System.Collections.Concurrent;
 
-namespace Charty.Chart.Analysis.ExponentialRegression
+namespace Qlarissa.Chart.Analysis.ExponentialRegression
 {
     /// <summary>
     /// y = a * b^x

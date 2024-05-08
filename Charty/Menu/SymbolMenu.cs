@@ -1,6 +1,6 @@
-﻿using Charty.Chart;
+﻿using Qlarissa.Chart;
 
-namespace Charty.Menu
+namespace Qlarissa.Menu
 {
     public class SymbolMenu : IMenu
     {

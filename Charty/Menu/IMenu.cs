@@ -1,11 +1,11 @@
-﻿using Charty.Chart;
+﻿using Qlarissa.Chart;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Charty.Menu
+namespace Qlarissa.Menu
 {
     public interface IMenu
     {

@@ -1,8 +1,8 @@
-﻿using Charty.Chart.Analysis;
-using Charty.Chart.Analysis.ExponentialRegression;
-using Charty.Chart.Analysis.InverseLogRegression;
-using Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis;
-using Charty.Chart.ExcludedTimePeriods;
+﻿using Qlarissa.Chart.Analysis;
+using Qlarissa.Chart.Analysis.ExponentialRegression;
+using Qlarissa.Chart.Analysis.InverseLogRegression;
+using Qlarissa.Chart.ChartAnalysis.GrowthVolatilityAnalysis;
+using Qlarissa.Chart.ExcludedTimePeriods;
 using Newtonsoft.Json.Linq;
 using ScottPlot;
 using System;
@@ -15,7 +15,7 @@ using static ScottPlot.Generate;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using DateTime = System.DateTime;
 
-namespace Charty.Chart
+namespace Qlarissa.Chart
 {
     public class Symbol
     {

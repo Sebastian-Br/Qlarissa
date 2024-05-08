@@ -1,7 +1,7 @@
-﻿using Charty.Chart.Analysis.BaseRegressions;
-using Charty.Chart.Analysis.ExponentialRegression;
-using Charty.Chart.Enums;
-using Charty.CustomConfiguration;
+﻿using Qlarissa.Chart.Analysis.BaseRegressions;
+using Qlarissa.Chart.Analysis.ExponentialRegression;
+using Qlarissa.Chart.Enums;
+using Qlarissa.CustomConfiguration;
 using MathNet.Numerics;
 using ScottPlot;
 using ScottPlot.Plottables;
@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Charty.Chart.Analysis.InverseLogRegression
+namespace Qlarissa.Chart.Analysis.InverseLogRegression
 {
     public class InverseLogRegressionResult : IRegressionResult
     {

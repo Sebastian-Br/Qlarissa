@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Charty.Chart.Api
+namespace Qlarissa.Chart.Api
 {
     internal interface IApiManager
     {

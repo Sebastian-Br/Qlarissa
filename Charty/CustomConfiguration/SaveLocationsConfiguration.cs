@@ -1,12 +1,12 @@
-﻿using Charty.Chart;
-using Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis;
+﻿using Qlarissa.Chart;
+using Qlarissa.Chart.ChartAnalysis.GrowthVolatilityAnalysis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Charty.CustomConfiguration
+namespace Qlarissa.CustomConfiguration
 {
     public static class SaveLocationsConfiguration
     {

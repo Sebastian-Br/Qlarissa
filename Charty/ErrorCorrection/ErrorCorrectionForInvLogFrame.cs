@@ -1,14 +1,14 @@
-﻿using Charty.Chart;
-using Charty.Chart.Analysis;
-using Charty.Chart.Analysis.InverseLogRegression;
-using Charty.Chart.Enums;
+﻿using Qlarissa.Chart;
+using Qlarissa.Chart.Analysis;
+using Qlarissa.Chart.Analysis.InverseLogRegression;
+using Qlarissa.Chart.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Charty.ErrorCorrection
+namespace Qlarissa.ErrorCorrection
 {
     public class ErrorCorrectionForInvLogFrame
     {

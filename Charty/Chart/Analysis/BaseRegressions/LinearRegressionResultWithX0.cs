@@ -1,4 +1,4 @@
-﻿using Charty.Chart.Enums;
+﻿using Qlarissa.Chart.Enums;
 using MathNet.Numerics;
 using MathNet.Numerics.Integration;
 using System;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Charty.Chart.Analysis.BaseRegressions
+namespace Qlarissa.Chart.Analysis.BaseRegressions
 {
     internal class LinearRegressionResultWithX0 : IRegressionResult
     {
