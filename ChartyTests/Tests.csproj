@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Charty\Charty.csproj" />
+    <ProjectReference Include="..\Charty\Qlarissa.csproj" />
   </ItemGroup>
 
   <ItemGroup>
