@@ -137,7 +137,7 @@ namespace Charty.Chart
             return false;
         }
 
-        public bool IsDateRangeExcluded(DateOnly startDate, DateOnly endDate)
+        private bool IsDateRangeExcluded(DateOnly startDate, DateOnly endDate)
         {
             if(endDate < startDate)
                 throw new Exception("endDate can not be before the startDate!");
@@ -187,6 +187,25 @@ namespace Charty.Chart
             return result.ToArray();
         }
 
+        public SymbolDataPoint[] GetDataPointsNotInExcludedTimePeriods_UntilDate(DateOnly date)
+        {
+            List<SymbolDataPoint> result = new List<SymbolDataPoint>();
+            for (int i = 0; i < DataPoints.Length; i++)
+            {
+                if (DataPoints[i].Date > date)
+                {
+                    break;
+                }
+
+                if (!IsDataPointInExcludedTimePeriods(DataPoints[i]))
+                {
+                    result.Add(DataPoints[i]);
+                }
+            }
+
+            return result.ToArray();
+        }
+
         public bool WasStockBelowPrice(double price, DateOnly start, DateOnly end)
         {
             for(int i = 0; i < DataPoints.Length; i++)
@@ -213,7 +232,7 @@ namespace Charty.Chart
             return GetMinimum(startDate, endDate);
         }
 
-        public double GetMinimum(DateOnly startDate, DateOnly endDate)
+        private double GetMinimum(DateOnly startDate, DateOnly endDate)
         {
             int startIndex = DataPointDateToIndexMap[startDate];
             int endIndex = DataPointDateToIndexMap[endDate];
@@ -236,9 +255,9 @@ namespace Charty.Chart
             return minimum;
         }
 
-        public double GetNYearForecastAbsolute(double n)
+        public double GetNYearForecastAbsolute(double nYearsFromNow)
         {
-            double dividends = n * Overview.DividendPerShareYearly;
+            double dividends = nYearsFromNow * Overview.DividendPerShareYearly;
 
             double expRegWeight = ExponentialRegressionModel.GetWeight();
             double invLogRegWeight = InverseLogRegressionModel.GetWeight();
@@ -248,7 +267,7 @@ namespace Charty.Chart
             double normalized_expRegWeight = expRegWeight / totalWeight;
             double normalized_invLogRegWeight = invLogRegWeight / totalWeight;
 
-            double t = (DateOnly.FromDateTime(DateTime.Now)).ToDouble() + n;
+            double t = (DateOnly.FromDateTime(DateTime.Now)).ToDouble() + nYearsFromNow;
             double expRegEstimate = ExponentialRegressionModel.GetEstimate(t);
             double invLogEstimate = InverseLogRegressionModel.GetEstimate(t);
 

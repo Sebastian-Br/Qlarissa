@@ -33,11 +33,12 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
                 {
                     SymbolDataPoint fwdDataPoint = dataPoints.First(x => x.Date >= dataPoint.Date.AddMonths(monthsToLookAhead));
                     double? minimum = symbol.GetMinimum_NotInExcludedTimePeriods(dataPoint.Date, fwdDataPoint.Date);
-                    if (minimum == null) // Date range is excluded
+                    if (minimum is null) // Date range is excluded
                         continue;
 
                     double temp_LowestPricePercent = ((minimum.Value / dataPoint.HighPrice) - 1.0) * 100.0;
-                    if(temp_LowestPricePercent < LowestMinimumPercentage)
+
+                    if(temp_LowestPricePercent < LowestMinimumPercentage) // these are set to know the upper/lower boundaries between which to draw the max-unrealized-loss graph
                     {
                         LowestMinimumPercentage = temp_LowestPricePercent;
                     }
@@ -52,7 +53,7 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
                     Subresults.Add(
                         new GrowthVolatilityAnalysisSubresult(
                             growthPercent: growthPercent,
-                            lowestPricePercent: temp_LowestPricePercent,
+                            maximumUnrealizedLoss: temp_LowestPricePercent,
                             startDataPoint: dataPoint,
                             fwdDataPoint: fwdDataPoint)
                         );
@@ -81,12 +82,12 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
         /// </summary>
         /// <param name="percentage"></param>
         /// <returns></returns>
-        private double GetHistoricLikelihoodOfPercentageDrop(double percentage)
+        private double GetHistoricLikelihoodOfMaximumUnrealizedLoss_GreaterThanOrEqualTo(double percentage)
         {
             int count = 0;
             foreach(GrowthVolatilityAnalysisSubresult subResult in  Subresults)
             {
-                if(subResult.LowestPricePercent <= percentage)
+                if(subResult.MaximumUnrealizedLoss >= percentage)
                 {
                     count++;
                 }
@@ -239,10 +240,10 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
                 (
                 2.0
                 /
-                1 + Math.Exp(0.1 * subResult.LowestPricePercent)
+                1 + Math.Exp(0.1 * subResult.MaximumUnrealizedLoss)
                 )
                 *
-                Math.Exp(-0.03 * subResult.LowestPricePercent)
+                Math.Exp(-0.03 * subResult.MaximumUnrealizedLoss)
                 ;
         }
 
@@ -256,10 +257,10 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
         private void DrawMaxLossGraph()
         {
             ScottPlot.Plot myPlot = new();
-            myPlot.Title(Symbol.Overview.ToString() + " Max Loss [%] - " + (int)TimePeriod + " months"
-                + "\n" + "P(-10%)=" + GetHistoricLikelihoodOfPercentageDrop(-10).Round(2) + "% P(-20%)=" + GetHistoricLikelihoodOfPercentageDrop(-20).Round(2) 
-                + "% P(-30%)=" + GetHistoricLikelihoodOfPercentageDrop(-30).Round(2) + "% P(-40%)=" + GetHistoricLikelihoodOfPercentageDrop(-40).Round(2)
-                + "% P(-50%)=" + GetHistoricLikelihoodOfPercentageDrop(-50).Round(2)
+            myPlot.Title(Symbol.Overview.ToString() + " Minimum Sustained Value [%] - " + (int)TimePeriod + " months. P(-X%) = Chance of MSV being >= -X%"
+                + "\n" + "P(-10%)=" + GetHistoricLikelihoodOfMaximumUnrealizedLoss_GreaterThanOrEqualTo(-10).Round(2) + "% P(-20%)=" + GetHistoricLikelihoodOfMaximumUnrealizedLoss_GreaterThanOrEqualTo(-20).Round(2) 
+                + "% P(-30%)=" + GetHistoricLikelihoodOfMaximumUnrealizedLoss_GreaterThanOrEqualTo(-30).Round(2) + "% P(-40%)=" + GetHistoricLikelihoodOfMaximumUnrealizedLoss_GreaterThanOrEqualTo(-40).Round(2)
+                + "% P(-50%)=" + GetHistoricLikelihoodOfMaximumUnrealizedLoss_GreaterThanOrEqualTo(-50).Round(2)
                 +"%");
             myPlot.Axes.Title.Label.OffsetY = -35;
             int numberOfBars = (int)(HighestMinimumPercentage - LowestMinimumPercentage);
@@ -268,7 +269,7 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
             {
                 double barCenter = 0.5 + i + LowestMinimumPercentage;
                 double rightLimit = barCenter + 0.5;
-                double historicLikelihoodOfPercentageDrop = GetHistoricLikelihoodOfPercentageDrop(rightLimit); // considers all events to the left of rightLimit
+                double historicLikelihoodOfPercentageDrop = GetHistoricLikelihoodOfMaximumUnrealizedLoss_GreaterThanOrEqualTo(rightLimit); // considers all events to the left of rightLimit
                 ScottPlot.Bar myBar = new ScottPlot.Bar() { Position = barCenter, FillColor = Colors.Azure, Value = historicLikelihoodOfPercentageDrop };
                 myBar.Label = myBar.Value.Round(2).ToString();
                 lock(bars)
@@ -280,8 +281,8 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
             var barPlot = myPlot.Add.Bars(bars.ToArray());
             barPlot.ValueLabelStyle.FontSize = 10;
 
-            myPlot.Axes.Bottom.Label.Text = "Maximum Unrealized Loss [%] with regards to initial Asset Value over " + (int)TimePeriod + " Month Period";
-            myPlot.Axes.Left.Label.Text = "Likelihood of that Loss [%]";
+            myPlot.Axes.Bottom.Label.Text = "Minimum Sustained Value [%] with regards to initial Asset Value over " + (int)TimePeriod + " Month Period";
+            myPlot.Axes.Left.Label.Text = "Likelihood of the Asset never depreciating below that value [%]";
             myPlot.SavePng(SaveLocationsConfiguration.GetMaxLossAnalysisSaveFileLocation(Symbol, this), numberOfBars * 30, 600);
         }
 

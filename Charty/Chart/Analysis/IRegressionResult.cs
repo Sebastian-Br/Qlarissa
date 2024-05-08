@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Charty.Chart.Analysis
 {
-    internal interface IRegressionResult
+    public interface IRegressionResult
     {
         public List<double> GetParameters();
 

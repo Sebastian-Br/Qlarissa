@@ -8,10 +8,10 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
 {
     public class GrowthVolatilityAnalysisSubresult
     {
-        public GrowthVolatilityAnalysisSubresult(double growthPercent, double lowestPricePercent, SymbolDataPoint startDataPoint, SymbolDataPoint fwdDataPoint) 
+        public GrowthVolatilityAnalysisSubresult(double growthPercent, double maximumUnrealizedLoss, SymbolDataPoint startDataPoint, SymbolDataPoint fwdDataPoint) 
         {
             GrowthPercent = growthPercent;
-            LowestPricePercent = lowestPricePercent;
+            MaximumUnrealizedLoss = maximumUnrealizedLoss;
             StartDataPoint = startDataPoint;
             FwdDataPoint = fwdDataPoint;
         }
@@ -22,9 +22,9 @@ namespace Charty.Chart.ChartAnalysis.GrowthVolatilityAnalysis
         /// E.g. if the starting price was 100 in a time frame, and the lowest recorded price within that time frame is 50,
         /// and the end price is 110, then
         /// GrowthPercent = 10
-        /// LowestPricePercent = -50
+        /// MaximumUnrealizedLoss = -50
         /// </summary>
-        public double LowestPricePercent { get; private set; }
+        public double MaximumUnrealizedLoss { get; private set; }
 
         public SymbolDataPoint StartDataPoint { get; private set; }
 

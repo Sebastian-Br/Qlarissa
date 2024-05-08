@@ -28,18 +28,18 @@ namespace Charty.Chart.Analysis.InverseLogRegression
             double[] preProcessedXs = dataPoints.Select(dataPoint => dataPoint.Date.ToDouble() + PreprocessingX0).ToArray();
             double[] logYs = dataPoints.Select(dataPoint => Math.Log(dataPoint.MediumPrice)).ToArray();
 
-            RegressionsForLogYs = new();
+            InnerRegressions = new();
             LogisticRegressionResult = GetLogisticRegression_ExpWalk_ChatGPTed(preProcessedXs, logYs);
-            RegressionsForLogYs.Add(LogisticRegressionResult);
+            InnerRegressions.Add(LogisticRegressionResult);
 
             LinearRegressionResultWithX0 linearRegression = new(preProcessedXs, logYs, PreprocessingX0);
-            RegressionsForLogYs.Add(linearRegression);
+            InnerRegressions.Add(linearRegression);
 
             ExponentialRegression.ExponentialRegression expReg = new ExponentialRegression.ExponentialRegression(Xs, logYs, -PreprocessingX0); // does preprocessing internally
             ExponentialRegression.ExponentialRegressionResult exponentialRegression = new(expReg, Xs, logYs);
-            RegressionsForLogYs.Add(exponentialRegression);
+            InnerRegressions.Add(exponentialRegression);
 
-            RegressionsForLogYs.Sort((a, b) => b.GetRsquared().CompareTo(a.GetRsquared())); // sorts regressions in descending order with respect to R²
+            InnerRegressions.Sort((a, b) => b.GetRsquared().CompareTo(a.GetRsquared())); // sorts regressions in descending order with respect to R²
 
             DrawWithLogReg(Xs, logYs, symbol);
 
@@ -60,7 +60,7 @@ namespace Charty.Chart.Analysis.InverseLogRegression
 
         LogisticRegressionResult LogisticRegressionResult { get; set; }
 
-        List<IRegressionResult> RegressionsForLogYs { get; set; }
+        List<IRegressionResult> InnerRegressions { get; set; }
 
         public DateOnly GetCreationDate()
         {
@@ -74,7 +74,7 @@ namespace Charty.Chart.Analysis.InverseLogRegression
 
         public double GetEstimate(double t)
         {
-            IRegressionResult bestRegression = RegressionsForLogYs[0];
+            IRegressionResult bestRegression = InnerRegressions[0];
             if(bestRegression is LogisticRegressionResult)
             {
                 t += PreprocessingX0;
@@ -127,9 +127,9 @@ namespace Charty.Chart.Analysis.InverseLogRegression
             List<double> listLinRegYs = new();
             List<double> listExpRegYs = new();
 
-            LogisticRegressionResult logisticRegression = (LogisticRegressionResult)RegressionsForLogYs.Find(regression => regression.GetRegressionResultType() == RegressionResultType.Logistic);
-            LinearRegressionResultWithX0 linearRegression = (LinearRegressionResultWithX0)RegressionsForLogYs.Find(regression => regression.GetRegressionResultType() == RegressionResultType.Linear);
-            ExponentialRegressionResult exponentialRegression = (ExponentialRegressionResult)RegressionsForLogYs.Find(regression => regression.GetRegressionResultType() == RegressionResultType.Exponential);
+            LogisticRegressionResult logisticRegression = (LogisticRegressionResult)InnerRegressions.Find(regression => regression.GetRegressionResultType() == RegressionResultType.Logistic);
+            LinearRegressionResultWithX0 linearRegression = (LinearRegressionResultWithX0)InnerRegressions.Find(regression => regression.GetRegressionResultType() == RegressionResultType.Linear);
+            ExponentialRegressionResult exponentialRegression = (ExponentialRegressionResult)InnerRegressions.Find(regression => regression.GetRegressionResultType() == RegressionResultType.Exponential);
 
             for (double d = Xs.First(); d <= Xs.Last(); d += 0.01)
             {
@@ -244,6 +244,11 @@ namespace Charty.Chart.Analysis.InverseLogRegression
             //Console.WriteLine("Finished Logistic Regression Exp Walk. Iterations: " + iteration);
             LogisticRegressionResult result = new LogisticRegressionResult(bestRSquared, A: bestB, B: bestA, _x0: firstDateIndex + lastValid_xDelta0, Xs.First());
             return result;
+        }
+
+        public IRegressionResult GetEffectiveInnerRegression()
+        {
+            return InnerRegressions[0];
         }
     }
 }
