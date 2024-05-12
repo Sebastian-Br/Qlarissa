@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34622.214
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Qlarissa", "Charty\Qlarissa.csproj", "{B13388BE-4A8C-496F-8496-E4243CDC8F4E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Qlarissa", "Qlarissa\Qlarissa.csproj", "{B13388BE-4A8C-496F-8496-E4243CDC8F4E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "ChartyTests\Tests.csproj", "{BA06DAC6-D441-4747-8E92-4B798A7C01E6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{BA06DAC6-D441-4747-8E92-4B798A7C01E6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

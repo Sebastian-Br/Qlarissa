@@ -10,11 +10,13 @@ namespace Qlarissa.CustomConfiguration
 {
     public static class SaveLocationsConfiguration
     {
-        private static string BaseDirectory = "ChartyData/";
+        private static string BaseDirectory = "_Data/";
 
         private static string ChartsDirectory = BaseDirectory + "Charts/";
 
         private static string VolatilityAnalysisDirectory = BaseDirectory + "VolatilityAnalysis/";
+
+        private static string ErrorAnalysisDirectory = BaseDirectory + "ErrorCorrection/";
 
         public static string GetSymbolChartSaveFileLocation(Symbol symbol)
         {
@@ -53,6 +55,14 @@ namespace Qlarissa.CustomConfiguration
             string Directory = VolatilityAnalysisDirectory + symbol.Overview.Symbol + "/";
             CreateDirectoryIfNotExists(Directory);
             string FileName = symbol.Overview.Symbol + "_MaxLoss" + (int)gva.TimePeriod + ".png";
+            return Directory + FileName;
+        }
+
+        public static string GetErrorAnalysisHeatmapSaveFileLocation(Symbol symbol)
+        {
+            string Directory = ErrorAnalysisDirectory + symbol.Overview.Symbol + "/";
+            CreateDirectoryIfNotExists(Directory);
+            string FileName = symbol.Overview.Symbol + "_ErrorHeatmap" + ".png";
             return Directory + FileName;
         }
 

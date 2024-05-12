@@ -17,8 +17,9 @@ namespace Qlarissa.ErrorCorrection
             RSquared = inverseLogModel.GetRsquared();
             IRegressionResult innerRegression = inverseLogModel.GetEffectiveInnerRegression();
             InnerRegressionType = innerRegression.GetRegressionResultType();
+            SlopeOfOuterFunctionAtEndOfTrainingPeriod = GetSlopeAtDate(inverseLogModel, lastDataPointInTrainingPeriod.Date);
 
-            EstimateDifferencePercentage = 100.0 * ((expected.MediumPrice / actual.MediumPrice) - 1.0);
+            EstimateDeviationPercentage = 100.0 * ((expected.MediumPrice / actual.MediumPrice) - 1.0);
             DaysSinceEndOfTrainingPeriod = GetExactDaysDifference(lastDataPointInTrainingPeriod.Date, actual.Date);
         }
 
@@ -26,12 +27,14 @@ namespace Qlarissa.ErrorCorrection
 
         public RegressionResultType InnerRegressionType { get; private set; }
 
+        public double SlopeOfOuterFunctionAtEndOfTrainingPeriod { get; private set; }
+
         public int DaysSinceEndOfTrainingPeriod { get; private set; }
 
         /// <summary>
         /// If the model overestimates the actual data by 10%, this value would be 10.
         /// </summary>
-        public double EstimateDifferencePercentage { get; private set; }
+        public double EstimateDeviationPercentage { get; private set; }
 
         static int GetExactDaysDifference(DateOnly startDate, DateOnly endDate)
         {
@@ -47,6 +50,21 @@ namespace Qlarissa.ErrorCorrection
 
             daysDifference += endDate.DayOfYear - startDate.DayOfYear;
             return daysDifference;
+        }
+
+        double GetSlopeAtDate(InverseLogRegressionResult model, DateOnly date)
+        {
+            double epsilon = 1e-3;
+            double slope = 0;
+            double dateAsDouble = date.ToDouble();
+
+            double dateMinusEpsilon = dateAsDouble - epsilon;
+            double datePlusEpsilon = dateAsDouble + epsilon;
+            double dx = 2 * epsilon;
+            double dy = model.GetEstimate(datePlusEpsilon) / model.GetEstimate(dateMinusEpsilon);
+            slope = dy / dx;
+
+            return slope;
         }
     }
 }

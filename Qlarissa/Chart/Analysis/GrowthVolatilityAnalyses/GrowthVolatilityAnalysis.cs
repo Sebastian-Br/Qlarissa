@@ -20,7 +20,7 @@ namespace Qlarissa.Chart.ChartAnalysis.GrowthVolatilityAnalysis
         public GrowthVolatilityAnalysis(Symbol symbol, TimePeriod timePeriod) 
         {
             Symbol = symbol;
-            SymbolDataPoint[] dataPoints = symbol.GetDataPointsNotInExcludedTimePeriods();
+            SymbolDataPoint[] dataPoints = symbol.GetDataPointsForAnalysis();
             TimePeriod = timePeriod;
             int monthsToLookAhead = (int)TimePeriod;
             Subresults = new();

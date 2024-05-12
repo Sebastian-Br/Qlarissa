@@ -14,7 +14,7 @@ namespace Qlarissa.Chart.ExcludedTimePeriods
         {
             StartDate = startDate;
             EndDate = endDate;
-            if(StartDate == null && EndDate == null)
+            if(StartDate is null && EndDate is null)
             {
                 throw new Exception("The Start- and EndDate for an ExcludedTimePeriod can not both be null");
             }
@@ -29,5 +29,19 @@ namespace Qlarissa.Chart.ExcludedTimePeriods
         /// If the EndDate is null, excludes all data points back to and including the StartDate
         /// </summary>
         public DateOnly? EndDate { get; set; }
+
+        public override string ToString()
+        {
+            if(StartDate is null)
+            {
+                return "[-infinity;" + EndDate + "]";
+            }
+            if(EndDate is null)
+            {
+                return "[" + StartDate +";+infinity]";
+            }
+
+            return "[" + StartDate + ";" + EndDate + "]";
+        }
     }
 }

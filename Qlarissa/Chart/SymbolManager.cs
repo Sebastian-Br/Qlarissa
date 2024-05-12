@@ -23,7 +23,7 @@ namespace Qlarissa.Chart
     {
         public SymbolManager(IConfiguration configuration, CustomConfiguration.CustomConfiguration customConfiguration)
         {
-            DefaultExcludedTimePeriods = customConfiguration.DefaultExcludedTimePeriods ?? throw new ArgumentNullException("DefaultExcludedTimePeriods is null");
+            DefaultTimePeriodsExcludedFromAnalysis = customConfiguration.DefaultTimePeriodsExcludedFromAnalysis ?? throw new ArgumentNullException("DefaultExcludedTimePeriods is null");
             ConfigurationSymbols = customConfiguration.SymbolsToBeAnalyzed;
             CustomConfiguration = customConfiguration;
 
@@ -38,7 +38,8 @@ namespace Qlarissa.Chart
 
         private Dictionary <string, Symbol> SymbolDictionary { get; set; }
 
-        private Dictionary<string, ExcludedTimePeriod> DefaultExcludedTimePeriods {  get; set; }
+        private Dictionary<string, ExcludedTimePeriod> DefaultTimePeriodsExcludedFromAnalysis {  get; set; }
+        private Dictionary<string, ExcludedTimePeriod> DefaultTimePeriodsExcludedFromPredictionTargets {  get; set; }
 
         private Dictionary<string,string> ConfigurationSymbols { get; set; }
 
@@ -78,9 +79,14 @@ namespace Qlarissa.Chart
 
         private void AddDefaultExcludedTimePeriodsToSymbol(Symbol symbol)
         {
-            foreach (KeyValuePair<string, ExcludedTimePeriod> entry in DefaultExcludedTimePeriods)
+            foreach (KeyValuePair<string, ExcludedTimePeriod> entry in DefaultTimePeriodsExcludedFromAnalysis)
             {
-                symbol.AddExcludedTimePeriod(entry.Key, entry.Value);
+                symbol.AddTimePeriodExcludedFromAnalysis(entry.Key, entry.Value);
+            }
+
+            foreach (KeyValuePair<string, ExcludedTimePeriod> entry in DefaultTimePeriodsExcludedFromPredictionTargets)
+            {
+                symbol.AddTimePeriodExcludedFromPredictionTargets(entry.Key, entry.Value);
             }
         }
 
@@ -187,6 +193,7 @@ namespace Qlarissa.Chart
         {
             foreach(string symbol in SymbolDictionary.Keys)
             {
+                Console.WriteLine("Drawing: " + symbol);
                 Draw(symbol);
             }
 
@@ -196,7 +203,7 @@ namespace Qlarissa.Chart
 
         private void DrawSymbolChartWithRegressions_LogScale(Symbol symbol)
         {
-            SymbolDataPoint[] dataPoints = symbol.GetDataPointsNotInExcludedTimePeriods();
+            SymbolDataPoint[] dataPoints = symbol.GetDataPointsForAnalysis();
             double[] x = dataPoints.Select(point => point.Date.ToDouble()).ToArray();
             double[] y = dataPoints.Select(point => point.MediumPrice).ToArray();
             //int numberOfDataPoints = mediumPrices.Length;
@@ -226,7 +233,7 @@ namespace Qlarissa.Chart
             ScottPlot.Plot myPlot = new();
             myPlot.Axes.SetLimitsX(AxisLimits.HorizontalOnly(startYear, endYear));
 
-            foreach(ExcludedTimePeriod excludedTimePeriod in symbol.GetExcludedTimePeriods().Values)
+            foreach(ExcludedTimePeriod excludedTimePeriod in symbol.GetTimePeriodsExcludedFromAnalysis().Values)
             {
                 if(excludedTimePeriod.StartDate == null)
                 {

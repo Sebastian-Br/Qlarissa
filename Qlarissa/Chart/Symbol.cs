@@ -36,7 +36,8 @@ namespace Qlarissa.Chart
             }
 
             Overview = overview ?? throw new ArgumentNullException(nameof(overview));
-            ExcludedTimePeriods = new();
+            TimePeriodsExcludedFromAnalysis = new();
+            TimePeriodsExcludedFromPredictionTargets = new();
             ExponentialRegressionModel = exponentialRegressionResult;
         }
 
@@ -53,7 +54,16 @@ namespace Qlarissa.Chart
         public GrowthVolatilityAnalysis GVA_2Years { get; private set; }
         public GrowthVolatilityAnalysis GVA_1Year { get; private set; }
 
-        Dictionary<string,ExcludedTimePeriod> ExcludedTimePeriods { get; set; }
+        Dictionary<string,ExcludedTimePeriod> TimePeriodsExcludedFromAnalysis { get; set; }
+
+        /// <summary>
+        /// When analyzing a model's prediction errors,
+        /// for asset classes where a sudden change in price does not affect the end result - e.g. by virtue of a barrier being hit -
+        /// it makes sense to exclude certain unpredictable events, such as Covid,
+        /// such that these events don't yield prediction errors during error correction analysis.
+        /// These datapoints can still be used to build a model, but will be skipped when they're the target for error analysis.
+        /// </summary>
+        Dictionary<string,ExcludedTimePeriod> TimePeriodsExcludedFromPredictionTargets { get; set; }
 
         bool Analyzed { get; set; }
 
@@ -77,19 +87,38 @@ namespace Qlarissa.Chart
             return Overview.Name + " (" + Overview.Symbol + ") - " + Math.Round(DataPoints.Last().MediumPrice, 2) + " " + Overview.Currency.ToString();
         }
 
-        public bool AddExcludedTimePeriod(string key, ExcludedTimePeriod excludedTimePeriod)
+        public bool AddTimePeriodExcludedFromAnalysis(string key, ExcludedTimePeriod excludedTimePeriod)
         {
-            return ExcludedTimePeriods.TryAdd(key, excludedTimePeriod);
+            return TimePeriodsExcludedFromAnalysis.TryAdd(key, excludedTimePeriod);
         }
 
-        public Dictionary<string, ExcludedTimePeriod> GetExcludedTimePeriods()
+        public bool AddTimePeriodExcludedFromPredictionTargets(string key, ExcludedTimePeriod excludedTimePeriod)
         {
-            return ExcludedTimePeriods;
+            return TimePeriodsExcludedFromPredictionTargets.TryAdd(key, excludedTimePeriod);
+        }
+
+        public Dictionary<string, ExcludedTimePeriod> GetTimePeriodsExcludedFromAnalysis()
+        {
+            return TimePeriodsExcludedFromAnalysis;
         }
 
         private bool IsDateInExcludedTimePeriod(DateOnly date, ExcludedTimePeriod excludedTimePeriod)
         {
-            if(date <= excludedTimePeriod.EndDate && date >= excludedTimePeriod.StartDate)
+            if (excludedTimePeriod.StartDate == null)
+            {
+                if (date <= excludedTimePeriod.EndDate)
+                {
+                    return true;
+                }
+            }
+            else if (excludedTimePeriod.EndDate == null)
+            {
+                if (date >= excludedTimePeriod.StartDate)
+                {
+                    return true;
+                }
+            }
+            else if (date <= excludedTimePeriod.EndDate && date >= excludedTimePeriod.StartDate)
             {
                 return true;
             }
@@ -97,25 +126,24 @@ namespace Qlarissa.Chart
             return false;
         }
 
+        public bool IsDateValidTargetDateForErrorAnalysis(DateOnly date)
+        {
+            foreach(var entry in TimePeriodsExcludedFromPredictionTargets.Values)
+            {
+                if(IsDateInExcludedTimePeriod(date, entry))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         private bool IsDataPointInExcludedTimePeriods(SymbolDataPoint dataPoint)
         {
-            foreach(ExcludedTimePeriod excludedTimePeriod in ExcludedTimePeriods.Values)
+            foreach(ExcludedTimePeriod excludedTimePeriod in TimePeriodsExcludedFromAnalysis.Values)
             {
-                if(excludedTimePeriod.StartDate == null)
-                {
-                    if (dataPoint.Date <= excludedTimePeriod.EndDate)
-                    {
-                        return true;
-                    }
-                }
-                else if (excludedTimePeriod.EndDate == null)
-                {
-                    if (dataPoint.Date >= excludedTimePeriod.StartDate)
-                    {
-                        return true;
-                    }
-                }
-                else if (dataPoint.Date <= excludedTimePeriod.EndDate && dataPoint.Date >= excludedTimePeriod.StartDate)
+                if(IsDateInExcludedTimePeriod(dataPoint.Date, excludedTimePeriod))
                 {
                     return true;
                 }
@@ -142,38 +170,20 @@ namespace Qlarissa.Chart
             if(endDate < startDate)
                 throw new Exception("endDate can not be before the startDate!");
 
-            foreach(ExcludedTimePeriod excludedTimePeriod in ExcludedTimePeriods.Values)
+            foreach(ExcludedTimePeriod excludedTimePeriod in TimePeriodsExcludedFromAnalysis.Values)
             {
-                if(excludedTimePeriod.StartDate == null)
+                if (IsDateInExcludedTimePeriod(startDate, excludedTimePeriod) || // t1 S E t2 + t1 S t2 E
+                    IsDateInExcludedTimePeriod(endDate, excludedTimePeriod) ||  // S t1 E t2
+                    IsDateRangeIncludingExcludedTimePeriod(startDate, endDate, excludedTimePeriod)) // S t1 t2 E
                 {
-                    if(startDate <= excludedTimePeriod.EndDate)
-                    {
-                        return true;
-                    }
-                }
-                else if(excludedTimePeriod.EndDate == null)
-                {
-                    if(endDate >=  excludedTimePeriod.StartDate)
-                    {
-                        return true;
-                    }
-                }
-                else
-                {
-                    
-                    if (IsDateInExcludedTimePeriod(startDate, excludedTimePeriod) || // t1 S E t2 + t1 S t2 E
-                        IsDateInExcludedTimePeriod(endDate, excludedTimePeriod) ||  // S t1 E t2
-                        IsDateRangeIncludingExcludedTimePeriod(startDate, endDate, excludedTimePeriod)) // S t1 t2 E
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
             return false;
         }
 
-        public SymbolDataPoint[] GetDataPointsNotInExcludedTimePeriods()
+        public SymbolDataPoint[] GetDataPointsForAnalysis()
         {
             List<SymbolDataPoint> result = new List<SymbolDataPoint>();
             for(int i = 0; i < DataPoints.Length; i++)
@@ -187,7 +197,7 @@ namespace Qlarissa.Chart
             return result.ToArray();
         }
 
-        public SymbolDataPoint[] GetDataPointsNotInExcludedTimePeriods_UntilDate(DateOnly date)
+        public SymbolDataPoint[] GetDataPointsForAnalysis_UntilDate(DateOnly date)
         {
             List<SymbolDataPoint> result = new List<SymbolDataPoint>();
             for (int i = 0; i < DataPoints.Length; i++)

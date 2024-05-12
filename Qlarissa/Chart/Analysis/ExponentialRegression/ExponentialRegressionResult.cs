@@ -20,7 +20,7 @@ namespace Qlarissa.Chart.Analysis.ExponentialRegression
             X0 = e.X0;
             Overview = symbol.Overview;
 
-            SymbolDataPoint[] dataPoints = symbol.GetDataPointsNotInExcludedTimePeriods();
+            SymbolDataPoint[] dataPoints = symbol.GetDataPointsForAnalysis();
             double[] Xs = dataPoints.Select(x => x.Date.ToDouble()).ToArray();
             double[] Ys = dataPoints.Select(x => x.MediumPrice).ToArray();
             Rsquared = GoodnessOfFit.RSquared(Xs.Select(x => GetEstimate(x)), Ys);

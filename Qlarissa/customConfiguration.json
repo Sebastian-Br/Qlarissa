@@ -1,8 +1,14 @@
 ﻿{
-  "DefaultExcludedTimePeriods": {
+  "DefaultTimePeriodsExcludedFromAnalysis": {
     "2008FinancialCrisisAndAftermath": {
       "StartDate": null,
       "EndDate": "2009-06-30"
+    }
+  },
+  "DefaultExcludedTimePeriodsForPredictionTargets": {
+    "Covid19": {
+      "StartDate": "2020-02-18",
+      "EndDate": "2022-06-21"
     }
   },
   "SymbolsToBeAnalyzed": {
@@ -51,6 +57,7 @@
     "PLD": "Prologis",
     "CDNS": "Cadence",
     "GC=F": "Gold",
+    "HNR1.DE": "Hannover Re",
 
     "ADS.DE": "Adidas",
     "MC.PA": "Luis Vuitton / LVMH",

@@ -16,12 +16,12 @@ namespace Qlarissa.Chart.Analysis.InverseLogRegression
     public class InverseLogRegressionResult : IRegressionResult
     {
         /// <summary>
-        /// y(t) = e^(p0 * Math.Log(t - X0) + p1)
+        /// y(t) = e^(g(t)), where g is the best regression (log, linear, exp) for log(data)
         /// </summary>
         /// <param name="symbol"></param>
         public InverseLogRegressionResult(Symbol symbol)
         {
-            SymbolDataPoint[] dataPoints = symbol.GetDataPointsNotInExcludedTimePeriods();
+            SymbolDataPoint[] dataPoints = symbol.GetDataPointsForAnalysis();
             PreprocessingX0 = - 2000.0;
             double[] Xs = dataPoints.Select(dataPoint => dataPoint.Date.ToDouble()).ToArray();
 
@@ -42,6 +42,38 @@ namespace Qlarissa.Chart.Analysis.InverseLogRegression
             InnerRegressions.Sort((a, b) => b.GetRsquared().CompareTo(a.GetRsquared())); // sorts regressions in descending order with respect to R²
 
             DrawWithLogReg(Xs, logYs, symbol);
+
+            double[] Ys = dataPoints.Select(dataPoint => dataPoint.MediumPrice).ToArray();
+            Rsquared = GoodnessOfFit.RSquared(Xs.Select(x => GetEstimate(x)), Ys);
+            DateCreated = DateOnly.FromDateTime(DateTime.Now);
+        }
+
+        /// <summary>
+        /// Used when analyzing a subset of datapoints
+        /// </summary>
+        /// <param name="dataPoints"></param>
+        public InverseLogRegressionResult(SymbolDataPoint[] dataPoints)
+        {
+            PreprocessingX0 = -2000.0;
+            double[] Xs = dataPoints.Select(dataPoint => dataPoint.Date.ToDouble()).ToArray();
+
+            double[] preProcessedXs = dataPoints.Select(dataPoint => dataPoint.Date.ToDouble() + PreprocessingX0).ToArray();
+            double[] logYs = dataPoints.Select(dataPoint => Math.Log(dataPoint.MediumPrice)).ToArray();
+
+            InnerRegressions = new();
+            LogisticRegressionResult = GetLogisticRegression_ExpWalk_ChatGPTed(preProcessedXs, logYs);
+            InnerRegressions.Add(LogisticRegressionResult);
+
+            LinearRegressionResultWithX0 linearRegression = new(preProcessedXs, logYs, PreprocessingX0);
+            InnerRegressions.Add(linearRegression);
+
+            ExponentialRegression.ExponentialRegression expReg = new ExponentialRegression.ExponentialRegression(Xs, logYs, -PreprocessingX0); // does preprocessing internally
+            ExponentialRegression.ExponentialRegressionResult exponentialRegression = new(expReg, Xs, logYs);
+            InnerRegressions.Add(exponentialRegression);
+
+            InnerRegressions.Sort((a, b) => b.GetRsquared().CompareTo(a.GetRsquared())); // sorts regressions in descending order with respect to R²
+
+            //DrawWithLogReg(Xs, logYs, symbol);
 
             double[] Ys = dataPoints.Select(dataPoint => dataPoint.MediumPrice).ToArray();
             Rsquared = GoodnessOfFit.RSquared(Xs.Select(x => GetEstimate(x)), Ys);
@@ -100,9 +132,7 @@ namespace Qlarissa.Chart.Analysis.InverseLogRegression
 
         public override string ToString()
         {
-            // y(t) = e^(p0 * Math.Log(t - X0) + p1)
-            return "y(t) = e^(" + LogisticRegressionResult.GetParameters()[0] + " * ln(t - " + LogisticRegressionResult.X0 + ") + " + LogisticRegressionResult.GetParameters()[1] + ")" 
-                + "[R²=" + Rsquared + "]";
+            throw new NotImplementedException();
         }
 
         public double GetWeight()

@@ -19,6 +19,7 @@ namespace Qlarissa
             IHost host = CreateHostBuilder().Build();
             IConfiguration baseConfiguration = host.Services.GetRequiredService<IConfiguration>();
             CustomConfiguration.CustomConfiguration customConfiguration = BuildCustomConfiguration();
+            customConfiguration.Print();
 
             SymbolManager symbolManager = new(baseConfiguration, customConfiguration);
 

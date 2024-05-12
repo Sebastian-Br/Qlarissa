@@ -19,7 +19,7 @@ namespace Qlarissa.Chart.Analysis.ExponentialRegression
     {
         public ExponentialRegression(Symbol symbol, double initialA = 1.0, double initialB = 1.0, double initialX0 = 2000.0)
         {
-            SymbolDataPoint[] dataPoints = symbol.GetDataPointsNotInExcludedTimePeriods();
+            SymbolDataPoint[] dataPoints = symbol.GetDataPointsForAnalysis();
 
             if (dataPoints == null || dataPoints.Length == 0)
                 throw new ArgumentException("No Data Points");
