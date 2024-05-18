@@ -176,7 +176,6 @@ namespace Qlarissa.Chart.ChartAnalysis.GrowthVolatilityAnalysis
 
                 if (!WasBarrierHit(initialKObarrier, subResult)) // KO barrier has not been touched
                 {
-                    //double leveragedOutcome = 1.0 + (leverage * subResult.GrowthPercent) / 100.0; // e.g. 1.4 for leverage := 2
                     // TODO: The above calculation is incorrect. The price of a KO certificate is equal to (Underlying Price - KO-Barrier) * 0.1
                     double initialPriceOfCertificate = (subResult.StartDataPoint.MediumPrice - initialKObarrier) * 0.1;
                     double fwdKoBarrier = GetAdjustedKObarrier(initialKObarrier, subResult.StartDataPoint.Date, subResult.FwdDataPoint.Date);
@@ -257,12 +256,13 @@ namespace Qlarissa.Chart.ChartAnalysis.GrowthVolatilityAnalysis
         private void DrawMaxLossGraph()
         {
             ScottPlot.Plot myPlot = new();
-            myPlot.Title(Symbol.Overview.ToString() + " Minimum Sustained Value [%] - " + (int)TimePeriod + " months. P(-X%) = Chance of MSV being >= -X%"
+            myPlot.Title(Symbol.Overview.ToString() + " Minimum Sustained Value [%] - " + (int)TimePeriod + " months." +
+                "\nP(-X%) = Chance of MSV being >= -X%"
                 + "\n" + "P(-10%)=" + GetHistoricLikelihoodOfMaximumUnrealizedLoss_GreaterThanOrEqualTo(-10).Round(2) + "% P(-20%)=" + GetHistoricLikelihoodOfMaximumUnrealizedLoss_GreaterThanOrEqualTo(-20).Round(2) 
                 + "% P(-30%)=" + GetHistoricLikelihoodOfMaximumUnrealizedLoss_GreaterThanOrEqualTo(-30).Round(2) + "% P(-40%)=" + GetHistoricLikelihoodOfMaximumUnrealizedLoss_GreaterThanOrEqualTo(-40).Round(2)
                 + "% P(-50%)=" + GetHistoricLikelihoodOfMaximumUnrealizedLoss_GreaterThanOrEqualTo(-50).Round(2)
                 +"%");
-            myPlot.Axes.Title.Label.OffsetY = -35;
+            myPlot.Axes.Title.Label.OffsetY = -40;
             int numberOfBars = (int)(HighestMinimumPercentage - LowestMinimumPercentage);
             List<ScottPlot.Bar> bars = new();
             for (int i = 0; i < numberOfBars; i++)
@@ -283,7 +283,7 @@ namespace Qlarissa.Chart.ChartAnalysis.GrowthVolatilityAnalysis
 
             myPlot.Axes.Bottom.Label.Text = "Minimum Sustained Value [%] with regards to initial Asset Value over " + (int)TimePeriod + " Month Period";
             myPlot.Axes.Left.Label.Text = "Likelihood of the Asset never depreciating below that value [%]";
-            myPlot.SavePng(SaveLocationsConfiguration.GetMaxLossAnalysisSaveFileLocation(Symbol, this), numberOfBars * 30, 600);
+            myPlot.SavePng(SaveLocationsConfiguration.GetMaxLossAnalysisSaveFileLocation(Symbol, this), numberOfBars * 35, 620);
         }
 
         /// <summary>
@@ -344,8 +344,10 @@ namespace Qlarissa.Chart.ChartAnalysis.GrowthVolatilityAnalysis
             });
 
             myPlot.Title(Symbol.Overview.ToString() + " Leveraged Overperformance Analysis over " + (int)TimePeriod + " months." +
-                " Barrier adjusted by " + AdjustmentPercentagePA + "% p.a." +
+                "\nBarrier adjusted by " + AdjustmentPercentagePA + "% p.a." +
                 " Average Annual Non-Leveraged Growth: " + annualizedNonLeveragedPerformance.Round(2) + "%");
+
+            myPlot.Axes.Title.Label.OffsetY = -15;
 
             var barPlot = myPlot.Add.Bars(bars.ToArray());
             barPlot.ValueLabelStyle.FontSize = 12f;
@@ -369,7 +371,7 @@ namespace Qlarissa.Chart.ChartAnalysis.GrowthVolatilityAnalysis
 
             myPlot.Axes.Bottom.Label.Text = "Leverage";
             myPlot.Axes.Left.Label.Text = "Overperformance vs Underlying Asset [%]";
-            myPlot.SavePng(SaveLocationsConfiguration.GetLeveragedOverperformanceAnalysisSaveFileLocation(Symbol, this), numberOfBars * 50, 800);
+            myPlot.SavePng(SaveLocationsConfiguration.GetLeveragedOverperformanceAnalysisSaveFileLocation(Symbol, this), numberOfBars * 50, 875);
         }
 
         private double Annualize(double percentage)
@@ -547,7 +549,7 @@ namespace Qlarissa.Chart.ChartAnalysis.GrowthVolatilityAnalysis
 
             myPlot.Axes.Bottom.Label.Text = "Annualized Growth [%] over " + (int)TimePeriod + " month period";
             myPlot.Axes.Left.Label.Text = "Likelihood of Growth [%]";
-            myPlot.SavePng(SaveLocationsConfiguration.GetGrowthAnalysisSaveFileLocation(Symbol, this), numberOfBars * 45, 500);
+            myPlot.SavePng(SaveLocationsConfiguration.GetGrowthAnalysisSaveFileLocation(Symbol, this), numberOfBars * 50, 525);
         }
 
         /*

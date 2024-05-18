@@ -58,11 +58,35 @@ namespace Qlarissa.CustomConfiguration
             return Directory + FileName;
         }
 
-        public static string GetErrorAnalysisHeatmapSaveFileLocation(Symbol symbol)
+        public static string GetErrorAnalysisCombinedHeatmapSaveFileLocation(Symbol symbol)
         {
             string Directory = ErrorAnalysisDirectory + symbol.Overview.Symbol + "/";
             CreateDirectoryIfNotExists(Directory);
-            string FileName = symbol.Overview.Symbol + "_ErrorHeatmap" + ".png";
+            string FileName = symbol.Overview.Symbol + "_Combined_ErrorHeatmap" + ".png";
+            return Directory + FileName;
+        }
+
+        public static string GetErrorAnalysis_ExpBaseRegression_HeatmapSaveFileLocation(Symbol symbol)
+        {
+            string Directory = ErrorAnalysisDirectory + symbol.Overview.Symbol + "/";
+            CreateDirectoryIfNotExists(Directory);
+            string FileName = symbol.Overview.Symbol + "_ExpBaseReg_ErrorHeatmap" + ".png";
+            return Directory + FileName;
+        }
+
+        public static string GetErrorAnalysis_LinBaseRegression_HeatmapSaveFileLocation(Symbol symbol)
+        {
+            string Directory = ErrorAnalysisDirectory + symbol.Overview.Symbol + "/";
+            CreateDirectoryIfNotExists(Directory);
+            string FileName = symbol.Overview.Symbol + "_LinBaseReg_ErrorHeatmap" + ".png";
+            return Directory + FileName;
+        }
+
+        public static string GetErrorAnalysis_LogBaseRegression_HeatmapSaveFileLocation(Symbol symbol)
+        {
+            string Directory = ErrorAnalysisDirectory + symbol.Overview.Symbol + "/";
+            CreateDirectoryIfNotExists(Directory);
+            string FileName = symbol.Overview.Symbol + "_LogBaseReg_ErrorHeatmap" + ".png";
             return Directory + FileName;
         }
 

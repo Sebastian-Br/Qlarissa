@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MathNet.Numerics.LinearRegression;
 
 namespace Qlarissa.Chart.Analysis.InverseLogRegression
 {
@@ -221,7 +222,7 @@ namespace Qlarissa.Chart.Analysis.InverseLogRegression
         {
             double min_xDelta0 = -0.001;
             double xDelta0 = min_xDelta0;
-            double firstDateIndex = Xs.First();
+            double firstDateIndex = Xs[0];
             double currentX0 = firstDateIndex - xDelta0;
 
             int maxIterations = 200000;
@@ -231,18 +232,23 @@ namespace Qlarissa.Chart.Analysis.InverseLogRegression
             double stepSize = -0.001;
             double exitStepSize = 1e-308; // Exit condition based on step size
             double lastValid_xDelta0 = xDelta0;
-            double bestA = 0, bestB = 0, bestRSquared = 0;
+            double bestA = 1.0, bestB = 0, bestRSquared = 0;
 
             while (iteration < maxIterations && Math.Abs(stepSize) >= exitStepSize)
             {
                 currentX0 = firstDateIndex + xDelta0;
 
-                double[] x = Xs.Select(xx => (xx - currentX0)).ToArray();
-                double[] y = Ys;
-                var p = Fit.Logarithm(x, y);
+                //double[] x = Xs.Select(xx => (xx - currentX0)).ToArray();
+                double[] x = new double[Xs.Length];
+                for (int i = 0; i < Xs.Length; i++)
+                {
+                    x[i] = Xs[i] - currentX0;
+                }
+
+                var p = Fit.Logarithm(x, Ys);
                 double a = p.Item1;
                 double b = p.Item2;
-                double rSquared = GoodnessOfFit.RSquared(x.Select(x => a + b * Math.Log(x)), y);
+                double rSquared = GoodnessOfFit.RSquared(x.Select(x => a + b * Math.Log(x)), Ys);
 
                 if (rSquared > currentBest_rSquared)
                 {
@@ -253,7 +259,7 @@ namespace Qlarissa.Chart.Analysis.InverseLogRegression
                     bestRSquared = rSquared;
 
                     // Adjust step size for the next iteration using an exponential-walk approach
-                    stepSize *= 1.1; // Increase step size exponentially
+                    stepSize *= 1.5; // Increase step size exponentially
                     lastValid_xDelta0 = xDelta0;
                 }
                 else
@@ -272,7 +278,7 @@ namespace Qlarissa.Chart.Analysis.InverseLogRegression
             }
 
             //Console.WriteLine("Finished Logistic Regression Exp Walk. Iterations: " + iteration);
-            LogisticRegressionResult result = new LogisticRegressionResult(bestRSquared, A: bestB, B: bestA, _x0: firstDateIndex + lastValid_xDelta0, Xs.First());
+            LogisticRegressionResult result = new LogisticRegressionResult(bestRSquared, A: bestB, B: bestA, _x0: firstDateIndex + lastValid_xDelta0, Xs[0]);
             return result;
         }
 

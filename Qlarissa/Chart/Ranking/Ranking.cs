@@ -80,8 +80,8 @@ namespace Qlarissa.Chart.Ranking
             foreach (var symbol in Symbols)
             {
                 result += ("Rank " + rank + ": " + symbol.ToString() + "\n");
+                result += ("3YE(annualized): " + AnnualizeNYearEstimate(symbol.GetNYearForecastPercent(3), 3).Round(3) + " %\n");
                 result += ("3YE: " + symbol.GetNYearForecastPercent(3).Round(3) + " % (Target Price: " + symbol.GetNYearForecastAbsolute(3).Round(2) + ")\n");
-                result += ("3YE(annualized): " + AnnualizeNYearEstimate(symbol.GetNYearForecastPercent(3), 3).Round(3) + "\n");
                 rank++;
             }
             result += ("****************************************\n");

@@ -23,7 +23,8 @@ namespace Qlarissa.Chart
     {
         public SymbolManager(IConfiguration configuration, CustomConfiguration.CustomConfiguration customConfiguration)
         {
-            DefaultTimePeriodsExcludedFromAnalysis = customConfiguration.DefaultTimePeriodsExcludedFromAnalysis ?? throw new ArgumentNullException("DefaultExcludedTimePeriods is null");
+            DefaultTimePeriodsExcludedFromAnalysis = customConfiguration.DefaultTimePeriodsExcludedFromAnalysis ?? throw new ArgumentNullException("DefaultTimePeriodsExcludedFromAnalysis is null");
+            DefaultTimePeriodsExcludedFromPredictionTargets = customConfiguration.DefaultExcludedTimePeriodsForPredictionTargets ?? throw new ArgumentNullException("DefaultExcludedTimePeriodsForPredictionTargets is null");
             ConfigurationSymbols = customConfiguration.SymbolsToBeAnalyzed;
             CustomConfiguration = customConfiguration;
 
@@ -347,6 +348,36 @@ namespace Qlarissa.Chart
             myPlot.Add.Plottable(marker3YE);
 
             myPlot.SavePng(SaveLocationsConfiguration.GetSymbolChartSaveFileLocation(symbol), 1350, 575);
+        }
+
+        public void CollateINVLOGpredictionErrorDataByBaseRegressionType_AndSaveToCSV_AndDraw()
+        {
+
+        }
+
+        public void SaveINVLOGpredictionErrorDataByBaseRegressionTypeToCSV()
+        {
+
+        }
+
+        public void DrawINVLOGpredictionErrorData_ForAll_BaseRegressionTypes()
+        {
+
+        }
+
+        public void DrawINVLOGpredictionErrorDataFor_LOG_BaseRegressions()
+        {
+
+        }
+
+        public void DrawINVLOGpredictionErrorDataFor_LIN_BaseRegressions()
+        {
+
+        }
+
+        public void DrawINVLOGpredictionErrorDataFor_EXP_BaseRegressions()
+        {
+
         }
     }
 }

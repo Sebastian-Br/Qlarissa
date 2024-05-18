@@ -23,11 +23,7 @@ namespace Qlarissa.ErrorCorrection
             double red = GetRednessFromColorSlide(colorSlide);
             double green = GetGreennessFromColorSlide(colorSlide);
             double blue = GetBluenessFromColorSlide(colorSlide);
-            Z_Color = new();
-            Z_Color.WithAlpha(120);
-            Z_Color.WithRed((byte)red);
-            Z_Color.WithGreen((byte)green);
-            Z_Color.WithBlue((byte)blue);
+            Z_Color = new((byte)red, (byte)green, (byte)blue, 120);
             MarkerSize = 5.0f;
         }
 
@@ -44,7 +40,7 @@ namespace Qlarissa.ErrorCorrection
             return
                 (1.0)
                 /
-                (1.0 * Math.Exp(-deviationPercentage * 0.075));
+                (1.0 + Math.Exp(-deviationPercentage * 0.075));
         }
 
         private double GetGreennessFromColorSlide(double colorSlide)

@@ -61,7 +61,7 @@ namespace Qlarissa.ErrorCorrection
             double dateMinusEpsilon = dateAsDouble - epsilon;
             double datePlusEpsilon = dateAsDouble + epsilon;
             double dx = 2 * epsilon;
-            double dy = model.GetEstimate(datePlusEpsilon) / model.GetEstimate(dateMinusEpsilon);
+            double dy = model.GetEstimate(datePlusEpsilon) - model.GetEstimate(dateMinusEpsilon);
             slope = dy / dx;
 
             return slope;
