@@ -16,6 +16,8 @@ using ScottPlot.AxisPanels;
 using ScottPlot.TickGenerators;
 using MathNet.Numerics;
 using Qlarissa.CustomConfiguration;
+using Qlarissa.ErrorCorrection;
+using Qlarissa.Chart.Enums;
 
 namespace Qlarissa.Chart
 {
@@ -352,32 +354,101 @@ namespace Qlarissa.Chart
 
         public void CollateINVLOGpredictionErrorDataByBaseRegressionType_AndSaveToCSV_AndDraw()
         {
+            foreach(Symbol symbol in SymbolDictionary.Values)
+            {
+                Console.WriteLine("Quantifying Prediction Errors for: " + symbol.Overview);
+                symbol.QuantifyPredictionErrors();
+            }
 
+            SavePredictionErrorDataToCSV_ByBaseRegressionType(RegressionResultType.Exponential);
+            SavePredictionErrorDataToCSV_ByBaseRegressionType(RegressionResultType.Linear);
+            SavePredictionErrorDataToCSV_ByBaseRegressionType(RegressionResultType.Logistic);
+
+            DrawINVLOGpredictionErrorData_ForAll_BaseRegressionTypes();
+            DrawINVLOGpredictionErrorData_ByBaseRegression(RegressionResultType.Exponential);
+            DrawINVLOGpredictionErrorData_ByBaseRegression(RegressionResultType.Linear);
+            DrawINVLOGpredictionErrorData_ByBaseRegression(RegressionResultType.Logistic);
         }
 
-        public void SaveINVLOGpredictionErrorDataByBaseRegressionTypeToCSV()
+        private void SavePredictionErrorDataToCSV_ByBaseRegressionType(RegressionResultType baseRegression)
         {
+            StringBuilder csvContent = new StringBuilder();
+            csvContent.Append(ErrorCorrectionForInvLogFrame.GetCsvHeader());
+            foreach (Symbol symbol in SymbolDictionary.Values)
+            {
+                if (symbol.ECforINVLOG is not null)
+                {
+                    foreach (ErrorCorrectionForInvLogFrame frame in symbol.ECforINVLOG.Frames)
+                    {
+                        if (frame.InnerRegressionType == baseRegression)
+                        {
+                            csvContent.Append(frame.AsCsvRow());
+                        }
+                    }
+                }
+            }
 
+            string saveFileLocation = SaveLocationsConfiguration.GetPredictionErrorCSV_SaveFileLocation_ForINVLOG_ByBaseRegressionType(baseRegression);
+            Console.WriteLine("Saving ML training data to " + saveFileLocation);
+            File.WriteAllText(saveFileLocation, csvContent.ToString());
         }
 
-        public void DrawINVLOGpredictionErrorData_ForAll_BaseRegressionTypes()
+        private void DrawINVLOGpredictionErrorData_ForAll_BaseRegressionTypes()
         {
+            ScottPlot.Plot myPlot = new();
+            myPlot.Title("Combined Error Heatmap (all Symbols) by R² and Slope at the end of training period." +
+                "\nBlue = Overestimation. Red = Underestimation. Green = Good Estimate.");
 
+            myPlot.Axes.Title.Label.OffsetY = -25;
+
+            foreach (Symbol symbol in SymbolDictionary.Values)
+            {
+                if (symbol.ECforINVLOG is not null)
+                {
+                    foreach (ErrorCorrectionForInvLogFrame frame in symbol.ECforINVLOG.Frames)
+                    {
+                        InvLogFrameAsHeatmapPoint heatmapPoint = new(frame);
+                        myPlot.Add.Marker(x: heatmapPoint.X_RSquared, y: heatmapPoint.Y_Slope, size: heatmapPoint.MarkerSize, color: heatmapPoint.Z_Color);
+                    }
+                }
+            }
+
+            myPlot.Axes.Bottom.Label.Text = "R²";
+            myPlot.Axes.Left.Label.Text = "Slope";
+            string saveFileLocation = SaveLocationsConfiguration.GetPredictionErrorPNG_SaveFileLocation_ForINVLOG_AllRegressionTypes();
+            Console.WriteLine("Saving Heatmap to " + saveFileLocation);
+            myPlot.SavePng(saveFileLocation, 800, 800 - (int)myPlot.Axes.Title.Label.OffsetY);
         }
 
-        public void DrawINVLOGpredictionErrorDataFor_LOG_BaseRegressions()
+        private void DrawINVLOGpredictionErrorData_ByBaseRegression(RegressionResultType baseRegression)
         {
+            ScottPlot.Plot myPlot = new();
+            myPlot.Title("Error Heatmap (all Symbols) by R² and Slope at the end of training period." +
+                "\nFor Base Regression type: " + baseRegression +
+                "\nBlue = Overestimation. Red = Underestimation. Green = Good Estimate.");
 
-        }
+            myPlot.Axes.Title.Label.OffsetY = -40;
 
-        public void DrawINVLOGpredictionErrorDataFor_LIN_BaseRegressions()
-        {
+            foreach (Symbol symbol in SymbolDictionary.Values)
+            {
+                if (symbol.ECforINVLOG is not null)
+                {
+                    foreach (ErrorCorrectionForInvLogFrame frame in symbol.ECforINVLOG.Frames)
+                    {
+                        if(frame.InnerRegressionType == baseRegression)
+                        {
+                            InvLogFrameAsHeatmapPoint heatmapPoint = new(frame);
+                            myPlot.Add.Marker(x: heatmapPoint.X_RSquared, y: heatmapPoint.Y_Slope, size: heatmapPoint.MarkerSize, color: heatmapPoint.Z_Color);
+                        }
+                    }
+                }
+            }
 
-        }
-
-        public void DrawINVLOGpredictionErrorDataFor_EXP_BaseRegressions()
-        {
-
+            myPlot.Axes.Bottom.Label.Text = "R²";
+            myPlot.Axes.Left.Label.Text = "Slope";
+            string saveFileLocation = SaveLocationsConfiguration.GetPredictionErrorPNG_SaveFileLocation_ForINVLOG_ByBaseRegressionType(baseRegression);
+            Console.WriteLine("Saving Heatmap to " + saveFileLocation);
+            myPlot.SavePng(saveFileLocation, 800, 800 - (int)myPlot.Axes.Title.Label.OffsetY);
         }
     }
 }

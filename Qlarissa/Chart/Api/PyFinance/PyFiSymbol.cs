@@ -21,6 +21,8 @@ namespace Qlarissa.Chart.Api.PYfinance
         public double DividendPerShareYearly { get; set; }
         public Dictionary<string, PyFiDataPoint> HistoricalData { get; set; }
 
+        public Dictionary<string, double> DividendHistory { get; set; }
+
         public Symbol ToBusinessEntity()
         {
             SymbolOverview overview = new();
@@ -45,7 +47,15 @@ namespace Qlarissa.Chart.Api.PYfinance
                 symbolDataPointList.Add(symbolDataPoint);
             }
 
-            Symbol symbol = new(symbolDataPointList.ToArray(), overview);
+            Dictionary<DateOnly, double> dividendHistory = new();
+
+            foreach (KeyValuePair<string, double> dividendPayout in DividendHistory)
+            {
+                DateOnly dividendPayoutDate = DateOnly.ParseExact(dividendPayout.Key, "yyyy-MM-dd", null);
+                dividendHistory.Add(dividendPayoutDate, dividendPayout.Value);
+            }
+
+            Symbol symbol = new(symbolDataPointList.ToArray(), overview, dividendHistory);
             return symbol;
         }
     }

@@ -66,5 +66,17 @@ namespace Qlarissa.ErrorCorrection
 
             return slope;
         }
+
+        public static string GetCsvHeader()
+        {
+            string csvHeader = nameof(RSquared) + "," + nameof(SlopeOfOuterFunctionAtEndOfTrainingPeriod) + "," + nameof(EstimateDeviationPercentage) + "\n";
+            return csvHeader;
+        }
+
+        public string AsCsvRow()
+        {
+            string csvRow = RSquared + "," + SlopeOfOuterFunctionAtEndOfTrainingPeriod + "," + EstimateDeviationPercentage + "\n";
+            return csvRow;
+        }
     }
 }

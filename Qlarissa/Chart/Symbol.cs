@@ -20,9 +20,10 @@ namespace Qlarissa.Chart
 {
     public class Symbol
     {
-        public Symbol(SymbolDataPoint[] dataPoints, SymbolOverview overview, ExponentialRegressionResult exponentialRegressionResult = null)
+        public Symbol(SymbolDataPoint[] dataPoints, SymbolOverview overview, Dictionary<DateOnly, double> dividendHistory, ExponentialRegressionResult exponentialRegressionResult = null)
         {
             DataPoints = dataPoints ?? throw new ArgumentNullException(nameof(dataPoints));
+            DividendHistory = dividendHistory ?? throw new ArgumentNullException(nameof(dividendHistory));
             if (DataPoints.Length == 0)
             {
                 throw new ArgumentException("chartDataPoints does not contain any elements!");
@@ -48,6 +49,8 @@ namespace Qlarissa.Chart
 
         public Dictionary<DateOnly, int> DataPointDateToIndexMap { get; private set; }
 
+        public Dictionary<DateOnly, double> DividendHistory { get; private set; }
+
         public ExponentialRegressionResult ExponentialRegressionModel { get; private set; }
 
         public InverseLogRegressionResult InverseLogRegressionModel { get; private set; }
@@ -55,7 +58,7 @@ namespace Qlarissa.Chart
         public GrowthVolatilityAnalysis GVA_2Years { get; private set; }
         public GrowthVolatilityAnalysis GVA_1Year { get; private set; }
 
-        ErrorCorrectionProfileForINVLOGRegression ECforINVLOG { get; set; }
+        public ErrorCorrectionProfileForINVLOGRegression ECforINVLOG { get; private set; }
 
         Dictionary<string,ExcludedTimePeriod> TimePeriodsExcludedFromAnalysis { get; set; }
 
@@ -81,16 +84,21 @@ namespace Qlarissa.Chart
                 InverseLogRegressionModel = new(this);
                 GVA_2Years = new(this, Enums.TimePeriod.TwoYears);
                 GVA_1Year = new(this, Enums.TimePeriod.OneYear);
-                try
-                {
-                    ECforINVLOG = new(this);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.ToString());
-                }
+                
 
                 Analyzed = true;
+            }
+        }
+
+        public void QuantifyPredictionErrors()
+        {
+            try
+            {
+                ECforINVLOG = new(this);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
             }
         }
 

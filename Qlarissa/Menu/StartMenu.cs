@@ -35,7 +35,8 @@ namespace Qlarissa.Menu
                 "Rank3Year - Ranks all Symbols according to their expected 3-year performance\n" +
                 "RankAggregate - Ranks all Symbols according an aggregated score\n" +
                 "Draw SYMBOL - Draws a symbol's chart\n" +
-                "DrawAll - Draws all symbols' charts\n"
+                "DrawAll - Draws all symbols' charts\n" +
+                "GetMLData - Gathers prediction-error data for machine learning"
                 ;
         }
 
@@ -149,6 +150,12 @@ namespace Qlarissa.Menu
             if (string.Equals(text, "RankAggregate", comparer))
             {
                 Console.WriteLine(SymbolManager.RankByAggregateScore());
+                return this;
+            }
+
+            if (string.Equals(text, "GetMLData", comparer))
+            {
+                SymbolManager.CollateINVLOGpredictionErrorDataByBaseRegressionType_AndSaveToCSV_AndDraw();
                 return this;
             }
 

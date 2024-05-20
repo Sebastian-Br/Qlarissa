@@ -49,7 +49,7 @@ namespace Qlarissa.ErrorCorrection
 
             ParallelOptions parallelOptions = new ParallelOptions
             {
-                MaxDegreeOfParallelism = 7
+                MaxDegreeOfParallelism = 5
             };
 
             Parallel.ForEach(trainingPeriodEndOffsets, parallelOptions, trainingPeriodEndOffset =>
@@ -106,6 +106,14 @@ namespace Qlarissa.ErrorCorrection
             //clock.Stop();
             //Console.WriteLine(clock.Elapsed.TotalSeconds);
             /* max concurrency (using physical cores) | exec time [s]
+             * Data for:
+             * double minTrainingPeriodYears = 5.0;
+            double maxTrainingPeriodYears = 13.5;
+
+            double minLookAheadDurationYears = 1.0;
+            double maxLookAheadDurationYears = 1.0;
+            double lookAheadStepSize = 0.025;
+            double trainingPeriodIncrement = 0.02;
              * 1 | 119
              * 2 | 90
              * 3 | 77
@@ -123,7 +131,7 @@ namespace Qlarissa.ErrorCorrection
 
         Symbol Symbol { get; set; }
 
-        List<ErrorCorrectionForInvLogFrame> Frames { get; set; }
+        public List<ErrorCorrectionForInvLogFrame> Frames { get; private set; }
 
         public void DrawAllFrames()
         {

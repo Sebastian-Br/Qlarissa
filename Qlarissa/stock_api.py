@@ -19,6 +19,9 @@ def get_stock_data():
             data.index = data.index.strftime('%Y-%m-%d')
             # Get the P/E ratio information
             ticker_info = yf.Ticker(ticker).info
+            # Get/format dividend history
+            ticker_dividend_history = yf.Ticker(ticker).dividends
+            ticker_dividend_history.index = ticker_dividend_history.index.strftime('%Y-%m-%d')
             # Exclude keys from historical data
             data_filtered = data.drop(columns=["Adj Close", "Close", "Open", "Volume"])
             # Construct JSON response including SymbolOverview fields and filtered historical stock data
@@ -30,7 +33,8 @@ def get_stock_data():
                 "TrailingPE": ticker_info.get('trailingPE', '0'),
                 "ForwardPE": ticker_info.get('forwardPE', '0'),
                 "DividendPerShareYearly": ticker_info.get('dividendRate', '0'),
-                "HistoricalData": data_filtered.to_dict(orient='index')
+                "HistoricalData": data_filtered.to_dict(orient='index'),
+                "DividendHistory": ticker_dividend_history.to_dict()
             }
             return jsonify(response)
         else:
