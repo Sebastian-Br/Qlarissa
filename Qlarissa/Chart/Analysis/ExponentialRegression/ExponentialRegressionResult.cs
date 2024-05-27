@@ -15,9 +15,10 @@ namespace Qlarissa.Chart.Analysis.ExponentialRegression
     {
         public ExponentialRegressionResult(ExponentialRegression e, Symbol symbol)
         {
-            A = e.A;
-            B = e.B;
-            X0 = e.X0;
+            Parameters = new();
+            Parameters.Add(e.A);
+            Parameters.Add(e.B);
+            Parameters.Add(e.X0);
             Overview = symbol.Overview;
 
             SymbolDataPoint[] dataPoints = symbol.GetDataPointsForAnalysis();
@@ -29,19 +30,16 @@ namespace Qlarissa.Chart.Analysis.ExponentialRegression
 
         public ExponentialRegressionResult(ExponentialRegression e, double[] Xs, double[] Ys)
         {
-            A = e.A;
-            B = e.B;
-            X0 = e.X0;
+            Parameters = new();
+            Parameters.Add(e.A);
+            Parameters.Add(e.B);
+            Parameters.Add(e.X0);
             Overview = null;
             Rsquared = GoodnessOfFit.RSquared(Xs.Select(x => GetEstimate(x)), Ys);
             DateCreated = DateOnly.FromDateTime(DateTime.Today);
         }
 
-        public double A { get; private set; }
-
-        public double B { get; private set; }
-
-        public double X0 { get; private set; }
+        List<double> Parameters { get; set; }
 
         public SymbolOverview Overview { get; private set; }
 
@@ -53,7 +51,7 @@ namespace Qlarissa.Chart.Analysis.ExponentialRegression
 
         public double GetEstimate(double t)
         {
-            return A * Math.Pow(B, t - X0);
+            return Parameters[0] * Math.Pow(Parameters[1], t - Parameters[2]);
         }
 
         public double GetEstimate(DateOnly date)
@@ -63,12 +61,12 @@ namespace Qlarissa.Chart.Analysis.ExponentialRegression
 
         public override string ToString()
         {
-            return "y(t) = " + A + " * " + B + " ^ (t - " + X0 + ") [R²=" + Rsquared + "]";
+            return "y(t) = " + Parameters[0] + " * " + Parameters[1] + " ^ (t - " + Parameters[2] + ") [R²=" + Rsquared + "]";
         }
 
         public List<double> GetParameters()
         {
-            throw new NotImplementedException();
+            return Parameters;
         }
 
         public double GetRsquared()

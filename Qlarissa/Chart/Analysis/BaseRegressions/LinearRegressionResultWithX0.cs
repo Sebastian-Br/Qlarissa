@@ -40,8 +40,6 @@ namespace Qlarissa.Chart.Analysis.BaseRegressions
 
         double Rsquared { get; set; }
 
-        RegressionResultType RegressionResult { get; set; } = RegressionResultType.Linear;
-
         DateOnly DateCreated { get; set; }
 
         public DateOnly GetCreationDate()
@@ -67,7 +65,7 @@ namespace Qlarissa.Chart.Analysis.BaseRegressions
 
         public RegressionResultType GetRegressionResultType()
         {
-            return RegressionResult;
+            return RegressionResultType.Linear;
         }
 
         public double GetRsquared()

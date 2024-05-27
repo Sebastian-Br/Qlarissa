@@ -22,7 +22,7 @@ namespace Qlarissa.ErrorCorrection
             Symbol = symbol;
             Frames = new();
 
-            double minTrainingPeriodYears = 5.0;
+            double minTrainingPeriodYears = 6.0;
             double maxTrainingPeriodYears = 13.5;
 
             double minLookAheadDurationYears = 1.0; // the data point for which a prediction is made is at least 1 year after the training period
@@ -70,7 +70,7 @@ namespace Qlarissa.ErrorCorrection
                     ErrorCorrectionForInvLogFrame Frame = new(inverseLogModel: model,
                         expected: expected,
                         actual: lookAheadDataPoint,
-                        lastDataPointInTrainingPeriod: trainingPeriodDataPoints.Last());
+                        trainingPeriodDataPoints: trainingPeriodDataPoints);
 
                     lock(Frames)
                     {

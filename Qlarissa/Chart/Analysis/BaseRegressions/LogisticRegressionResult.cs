@@ -19,7 +19,7 @@ namespace Qlarissa.Chart.Analysis.BaseRegressions
             Rsquared = rSquared;
             Parameters.Add(A);
             Parameters.Add(B);
-            X0 = _x0;
+            Parameters.Add(_x0);
             DateCreated = DateOnly.FromDateTime(DateTime.Now);
             ConstantT = constantT;
         }
@@ -38,10 +38,10 @@ namespace Qlarissa.Chart.Analysis.BaseRegressions
         {
             if (t < ConstantT) // ln(t) is only defined for t > 0
             {
-                return Parameters[0] * Math.Log(ConstantT - X0) + Parameters[1];
+                return Parameters[0] * Math.Log(ConstantT - Parameters[2]) + Parameters[1];
             }
 
-            return Parameters[0] * Math.Log(t - X0) + Parameters[1];
+            return Parameters[0] * Math.Log(t - Parameters[2]) + Parameters[1];
         }
 
         public double GetEstimate(DateOnly date)
@@ -49,8 +49,6 @@ namespace Qlarissa.Chart.Analysis.BaseRegressions
             double t = date.ToDouble();
             return GetEstimate(t);
         }
-
-        public double X0 { get; private set; }
 
         public List<double> GetParameters()
         {
@@ -64,7 +62,7 @@ namespace Qlarissa.Chart.Analysis.BaseRegressions
 
         public override string ToString()
         {
-            return "y(t) = " + Parameters[0] + " * ln(t - " + X0 + ") + " + Parameters[1] + " [R²=" + Rsquared + "]";
+            return "y(t) = " + Parameters[0] + " * ln(t - " + Parameters[2] + ") + " + Parameters[1] + " [R²=" + Rsquared + "]";
         }
 
         public DateOnly GetCreationDate()

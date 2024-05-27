@@ -12,15 +12,18 @@ namespace Qlarissa.ErrorCorrection
 {
     public class ErrorCorrectionForInvLogFrame
     {
-        public ErrorCorrectionForInvLogFrame(InverseLogRegressionResult inverseLogModel, SymbolDataPoint expected, SymbolDataPoint actual, SymbolDataPoint lastDataPointInTrainingPeriod)
+        public ErrorCorrectionForInvLogFrame(InverseLogRegressionResult inverseLogModel, SymbolDataPoint expected, SymbolDataPoint actual, SymbolDataPoint[] trainingPeriodDataPoints)
         {
             RSquared = inverseLogModel.GetRsquared();
             IRegressionResult innerRegression = inverseLogModel.GetEffectiveInnerRegression();
             InnerRegressionType = innerRegression.GetRegressionResultType();
-            SlopeOfOuterFunctionAtEndOfTrainingPeriod = GetSlopeAtDate(inverseLogModel, lastDataPointInTrainingPeriod.Date);
+            SlopeOfOuterFunctionAtEndOfTrainingPeriod = GetSlopeAtDate(inverseLogModel, trainingPeriodDataPoints.Last().Date);
+
+            OuterModel = inverseLogModel;
 
             EstimateDeviationPercentage = 100.0 * ((expected.MediumPrice / actual.MediumPrice) - 1.0);
-            DaysSinceEndOfTrainingPeriod = GetExactDaysDifference(lastDataPointInTrainingPeriod.Date, actual.Date);
+            DaysSinceEndOfTrainingPeriod = GetExactDaysDifference(trainingPeriodDataPoints.Last().Date, actual.Date);
+            TrainingPeriodDays = GetExactDaysDifference(trainingPeriodDataPoints[0].Date, trainingPeriodDataPoints.Last().Date);
         }
 
         public double RSquared { get; private set; }
@@ -29,7 +32,11 @@ namespace Qlarissa.ErrorCorrection
 
         public double SlopeOfOuterFunctionAtEndOfTrainingPeriod { get; private set; }
 
+        public int TrainingPeriodDays { get; private set; }
+
         public int DaysSinceEndOfTrainingPeriod { get; private set; }
+
+        private InverseLogRegressionResult OuterModel { get; set; }
 
         /// <summary>
         /// If the model overestimates the actual data by 10%, this value would be 10.
@@ -67,15 +74,24 @@ namespace Qlarissa.ErrorCorrection
             return slope;
         }
 
-        public static string GetCsvHeader()
+        public static string GetCsvHeader(RegressionResultType regressionResultType)
         {
-            string csvHeader = nameof(RSquared) + "," + nameof(SlopeOfOuterFunctionAtEndOfTrainingPeriod) + "," + nameof(EstimateDeviationPercentage) + "\n";
+            string csvHeader = nameof(RSquared) + "," + nameof(SlopeOfOuterFunctionAtEndOfTrainingPeriod) + 
+                ","  + nameof(TrainingPeriodDays);
+
+            // at the moment, all 3 base regression types have 3 Parameters. Otherwise the below line would have to be specific to the number of parameters used in that base regression.
+            csvHeader += ",P0,P1,P2";
+
+            csvHeader += "," + nameof(EstimateDeviationPercentage) + "\n";
             return csvHeader;
         }
 
         public string AsCsvRow()
         {
-            string csvRow = RSquared + "," + SlopeOfOuterFunctionAtEndOfTrainingPeriod + "," + EstimateDeviationPercentage + "\n";
+            List<double> baseModelParameters = OuterModel.GetEffectiveInnerRegression().GetParameters();
+            string csvRow = RSquared + "," + SlopeOfOuterFunctionAtEndOfTrainingPeriod +
+                "," + TrainingPeriodDays + "," + baseModelParameters[0] + "," + baseModelParameters[1] + "," + baseModelParameters[2] +
+                "," + EstimateDeviationPercentage + "\n";
             return csvRow;
         }
     }

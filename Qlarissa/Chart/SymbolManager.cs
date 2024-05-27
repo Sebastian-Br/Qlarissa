@@ -373,7 +373,7 @@ namespace Qlarissa.Chart
         private void SavePredictionErrorDataToCSV_ByBaseRegressionType(RegressionResultType baseRegression)
         {
             StringBuilder csvContent = new StringBuilder();
-            csvContent.Append(ErrorCorrectionForInvLogFrame.GetCsvHeader());
+            csvContent.Append(ErrorCorrectionForInvLogFrame.GetCsvHeader(baseRegression));
             foreach (Symbol symbol in SymbolDictionary.Values)
             {
                 if (symbol.ECforINVLOG is not null)

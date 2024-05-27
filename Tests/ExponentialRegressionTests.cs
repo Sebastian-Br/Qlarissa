@@ -50,7 +50,7 @@ namespace ChartyTests
                     new SymbolDataPoint(){ HighPrice = 208, LowPrice = 207, MediumPrice = 207.5, Date = new DateOnly ( 2024, 1, 1 )},
                     ];
 
-                Symbol expectedChart = new(expectedChartDataPoints, new SymbolOverview());
+                Symbol expectedChart = new(expectedChartDataPoints, new SymbolOverview(), new Dictionary<DateOnly, double>());
                 yield return new object[] { expectedChart };
             }
         }
@@ -74,7 +74,7 @@ namespace ChartyTests
                     new SymbolDataPoint(){ HighPrice = 0, LowPrice = 0, MediumPrice = 619, Date = new DateOnly ( 2024, 1, 1 )},
                     ];
 
-                Symbol expectedChart = new(expectedChartDataPoints, new SymbolOverview());
+                Symbol expectedChart = new(expectedChartDataPoints, new SymbolOverview(), new Dictionary<DateOnly, double>());
                 yield return new object[] { expectedChart };
             }
         }
@@ -95,7 +95,7 @@ namespace ChartyTests
                     new SymbolDataPoint(){ HighPrice = 0, LowPrice = 0, MediumPrice = 133.54, Date = new DateOnly ( 2019, 1, 1 )},
                     ];
 
-                Symbol expectedChart = new(expectedChartDataPoints, new SymbolOverview());
+                Symbol expectedChart = new(expectedChartDataPoints, new SymbolOverview(), new Dictionary<DateOnly, double>());
                 yield return new object[] { expectedChart };
             }
         }

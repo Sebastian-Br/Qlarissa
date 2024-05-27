@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using MathNet.Numerics;
 
 
 namespace Qlarissa
@@ -54,7 +55,6 @@ namespace Qlarissa
                 config.AddJsonFile($"appsettings.Development.json", optional: true, reloadOnChange: true);
                 //config.AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", optional: true, reloadOnChange: true);
             });
-
             return hostBuilder;
         }
     }

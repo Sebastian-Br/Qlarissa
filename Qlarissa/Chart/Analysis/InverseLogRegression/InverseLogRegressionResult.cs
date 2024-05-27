@@ -30,8 +30,8 @@ namespace Qlarissa.Chart.Analysis.InverseLogRegression
             double[] logYs = dataPoints.Select(dataPoint => Math.Log(dataPoint.MediumPrice)).ToArray();
 
             InnerRegressions = new();
-            LogisticRegressionResult = GetLogisticRegression_ExpWalk_ChatGPTed(preProcessedXs, logYs);
-            InnerRegressions.Add(LogisticRegressionResult);
+            LogisticRegressionResult logisticRegressionResult = GetLogisticRegression_ExpWalk_ChatGPTed(preProcessedXs, logYs);
+            InnerRegressions.Add(logisticRegressionResult);
 
             LinearRegressionResultWithX0 linearRegression = new(preProcessedXs, logYs, PreprocessingX0);
             InnerRegressions.Add(linearRegression);
@@ -47,6 +47,9 @@ namespace Qlarissa.Chart.Analysis.InverseLogRegression
             double[] Ys = dataPoints.Select(dataPoint => dataPoint.MediumPrice).ToArray();
             Rsquared = GoodnessOfFit.RSquared(Xs.Select(x => GetEstimate(x)), Ys);
             DateCreated = DateOnly.FromDateTime(DateTime.Now);
+
+            TrainingPeriodDays = GetExactDaysDifference(dataPoints[0].Date, dataPoints.Last().Date);
+            SlopeAtEndOfTrainingPeriod = GetSlopeAtDate(dataPoints.Last().Date);
         }
 
         /// <summary>
@@ -62,8 +65,8 @@ namespace Qlarissa.Chart.Analysis.InverseLogRegression
             double[] logYs = dataPoints.Select(dataPoint => Math.Log(dataPoint.MediumPrice)).ToArray();
 
             InnerRegressions = new();
-            LogisticRegressionResult = GetLogisticRegression_ExpWalk_ChatGPTed(preProcessedXs, logYs);
-            InnerRegressions.Add(LogisticRegressionResult);
+            LogisticRegressionResult logisticRegressionResult = GetLogisticRegression_ExpWalk_ChatGPTed(preProcessedXs, logYs);
+            InnerRegressions.Add(logisticRegressionResult);
 
             LinearRegressionResultWithX0 linearRegression = new(preProcessedXs, logYs, PreprocessingX0);
             InnerRegressions.Add(linearRegression);
@@ -90,8 +93,6 @@ namespace Qlarissa.Chart.Analysis.InverseLogRegression
         double PreprocessingX0 { get; set; }
 
         RegressionResultType RegressionResult { get; set; } = RegressionResultType.InverseLogistic;
-
-        LogisticRegressionResult LogisticRegressionResult { get; set; }
 
         List<IRegressionResult> InnerRegressions { get; set; }
 
@@ -285,6 +286,83 @@ namespace Qlarissa.Chart.Analysis.InverseLogRegression
         public IRegressionResult GetEffectiveInnerRegression()
         {
             return InnerRegressions[0];
+        }
+
+        int TrainingPeriodDays { get; set; }
+
+        double SlopeAtEndOfTrainingPeriod { get; set; }
+
+        public MLModel_INVLOG_LogBase.ModelInput GetMLModelInput_LogBaseRegression()
+        {
+            MLModel_INVLOG_LogBase.ModelInput modelInput = new();
+            modelInput.EstimateDeviationPercentage = 0;
+            modelInput.RSquared = (float)GetRsquared();
+            modelInput.TrainingPeriodDays = TrainingPeriodDays;
+            modelInput.SlopeOfOuterFunctionAtEndOfTrainingPeriod = (float)SlopeAtEndOfTrainingPeriod;
+            List<double> baseModelParameters = GetEffectiveInnerRegression().GetParameters();
+            modelInput.P0 = (float)baseModelParameters[0];
+            modelInput.P1 = (float)baseModelParameters[1];
+            modelInput.P2 = (float)baseModelParameters[2];
+            return modelInput;
+        }
+
+        public MLModel_INVLOG_ExpBase.ModelInput GetMLModelInput_ExpBaseRegression()
+        {
+            MLModel_INVLOG_ExpBase.ModelInput modelInput = new();
+            modelInput.EstimateDeviationPercentage = 0;
+            modelInput.RSquared = (float)GetRsquared();
+            modelInput.TrainingPeriodDays = TrainingPeriodDays;
+            modelInput.SlopeOfOuterFunctionAtEndOfTrainingPeriod = (float)SlopeAtEndOfTrainingPeriod;
+            List<double> baseModelParameters = GetEffectiveInnerRegression().GetParameters();
+            modelInput.P0 = (float)baseModelParameters[0];
+            modelInput.P1 = (float)baseModelParameters[1];
+            modelInput.P2 = (float)baseModelParameters[2];
+            return modelInput;
+        }
+
+        public MLModel_INVLOG_LinBase.ModelInput GetMLModelInput_LinearBaseRegression()
+        {
+            MLModel_INVLOG_LinBase.ModelInput modelInput = new();
+            modelInput.EstimateDeviationPercentage = 0;
+            modelInput.RSquared = (float)GetRsquared();
+            modelInput.TrainingPeriodDays = TrainingPeriodDays;
+            modelInput.SlopeOfOuterFunctionAtEndOfTrainingPeriod = (float)SlopeAtEndOfTrainingPeriod;
+            List<double> baseModelParameters = GetEffectiveInnerRegression().GetParameters();
+            modelInput.P0 = (float)baseModelParameters[0];
+            modelInput.P1 = (float)baseModelParameters[1];
+            modelInput.P2 = (float)baseModelParameters[2];
+            return modelInput;
+        }
+
+        double GetSlopeAtDate(DateOnly date)
+        {
+            double epsilon = 1e-3;
+            double slope = 0;
+            double dateAsDouble = date.ToDouble();
+
+            double dateMinusEpsilon = dateAsDouble - epsilon;
+            double datePlusEpsilon = dateAsDouble + epsilon;
+            double dx = 2 * epsilon;
+            double dy = GetEstimate(datePlusEpsilon) - GetEstimate(dateMinusEpsilon);
+            slope = dy / dx;
+
+            return slope;
+        }
+
+        static int GetExactDaysDifference(DateOnly startDate, DateOnly endDate)
+        {
+            int daysDifference = 0;
+
+            int startYear = startDate.Year;
+            int endYear = endDate.Year;
+
+            for (int year = startYear; year < endYear; year++)
+            {
+                daysDifference += DateTime.IsLeapYear(year) ? 366 : 365;
+            }
+
+            daysDifference += endDate.DayOfYear - startDate.DayOfYear;
+            return daysDifference;
         }
     }
 }
