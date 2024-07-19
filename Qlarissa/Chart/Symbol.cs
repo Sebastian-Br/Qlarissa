@@ -55,6 +55,8 @@ namespace Qlarissa.Chart
 
         public InverseLogRegressionResult InverseLogRegressionModel { get; private set; }
 
+        public InverseLogRegressionWithML InverseLogRegressionWithML { get; private set; }
+
         public GrowthVolatilityAnalysis GVA_2Years { get; private set; }
         public GrowthVolatilityAnalysis GVA_1Year { get; private set; }
 
@@ -84,7 +86,7 @@ namespace Qlarissa.Chart
                 InverseLogRegressionModel = new(this);
                 GVA_2Years = new(this, Enums.TimePeriod.TwoYears);
                 GVA_1Year = new(this, Enums.TimePeriod.OneYear);
-                
+                InverseLogRegressionWithML = new(this);
 
                 Analyzed = true;
             }

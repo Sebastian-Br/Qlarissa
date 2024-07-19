@@ -84,7 +84,7 @@ namespace Qlarissa
 
         #endregion
 
-        private static string MLNetModelPath = Path.GetFullPath("MLModel_INVLOG_LinBase.mlnet");
+        private static string MLNetModelPath = Path.GetFullPath("MachineLearningModels/INVLOG/MLModel_INVLOG_LinBase.mlnet");
 
         public static readonly Lazy<PredictionEngine<ModelInput, ModelOutput>> PredictEngine = new Lazy<PredictionEngine<ModelInput, ModelOutput>>(() => CreatePredictEngine(), true);
 

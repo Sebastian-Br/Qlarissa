@@ -8,6 +8,26 @@
         double yearIndex = year + dayOfYear / (double)daysInYear;
         return yearIndex;
     }
+
+    public static DateOnly FromDouble(double yearIndex)
+    {
+        int year = (int)Math.Floor(yearIndex);
+        double fractionOfYear = yearIndex - year;
+        int daysInYear = DateTime.IsLeapYear(year) ? 366 : 365;
+        int dayOfYear = (int)Math.Round(fractionOfYear * daysInYear);
+
+        // Ensure dayOfYear is within the valid range
+        if (dayOfYear < 1)
+        {
+            dayOfYear = 1;
+        }
+        else if (dayOfYear > daysInYear)
+        {
+            dayOfYear = daysInYear;
+        }
+
+        return new DateOnly(year, 1, 1).AddDays(dayOfYear - 1);
+    }
 }
 
 public static class GoodnessOfFitExtensions

@@ -24,6 +24,11 @@ namespace Qlarissa.ErrorCorrection
             EstimateDeviationPercentage = 100.0 * ((expected.MediumPrice / actual.MediumPrice) - 1.0);
             DaysSinceEndOfTrainingPeriod = GetExactDaysDifference(trainingPeriodDataPoints.Last().Date, actual.Date);
             TrainingPeriodDays = GetExactDaysDifference(trainingPeriodDataPoints[0].Date, trainingPeriodDataPoints.Last().Date);
+
+            List<double> baseModelParameters = OuterModel.GetEffectiveInnerRegression().GetParameters();
+            P0 = baseModelParameters[0];
+            P1 = baseModelParameters[1];
+            P2 = baseModelParameters[2];
         }
 
         public double RSquared { get; private set; }
@@ -38,6 +43,10 @@ namespace Qlarissa.ErrorCorrection
 
         private InverseLogRegressionResult OuterModel { get; set; }
 
+        public double P0 { get; private set; }
+        public double P1 { get; private set; }
+        public double P2 { get; private set; }
+
         /// <summary>
         /// If the model overestimates the actual data by 10%, this value would be 10.
         /// </summary>
@@ -45,6 +54,11 @@ namespace Qlarissa.ErrorCorrection
 
         static int GetExactDaysDifference(DateOnly startDate, DateOnly endDate)
         {
+            if(endDate < startDate)
+            {
+                return -GetExactDaysDifference(startDate: endDate, endDate: startDate);
+            }
+
             int daysDifference = 0;
 
             int startYear = startDate.Year;
@@ -88,9 +102,8 @@ namespace Qlarissa.ErrorCorrection
 
         public string AsCsvRow()
         {
-            List<double> baseModelParameters = OuterModel.GetEffectiveInnerRegression().GetParameters();
             string csvRow = RSquared + "," + SlopeOfOuterFunctionAtEndOfTrainingPeriod +
-                "," + TrainingPeriodDays + "," + baseModelParameters[0] + "," + baseModelParameters[1] + "," + baseModelParameters[2] +
+                "," + TrainingPeriodDays + "," + P0 + "," + P1 + "," + P2 +
                 "," + EstimateDeviationPercentage + "\n";
             return csvRow;
         }

@@ -29,5 +29,14 @@
     <None Update="customConfiguration.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="MachineLearningModels\INVLOG\MLModel_INVLOG_ExpBase.mlnet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="MachineLearningModels\INVLOG\MLModel_INVLOG_LinBase.mlnet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="MachineLearningModels\INVLOG\MLModel_INVLOG_LogBase.mlnet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

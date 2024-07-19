@@ -217,20 +217,20 @@ namespace Qlarissa.Chart
             DateOnly xDateForExpRegression = dataPoints.First().Date;
             double xDateIndexForExpReg = xDateForExpRegression.ToDouble();
 
-            List<double> expRegXs = new();
+            List<double> regressionFunctions_Xs = new();
             List<double> expRegYs = new();
 
-            List<double> inverseLogXs = new();
             List<double> inverseLogYs = new();
+            List<double> invLogWithML_Ys = new();
 
             double startYear = symbol.DataPoints[0].Date.ToDouble();
             double endYear = DateOnly.FromDateTime(DateTime.Now.AddYears(3)).ToDouble() + 0.08;
-            for(double d = startYear; d < endYear; d+= 0.01)
+            for(double t_time = startYear; t_time < endYear; t_time+= 0.01)
             {
-                expRegXs.Add(d);
-                expRegYs.Add(symbol.ExponentialRegressionModel.GetEstimate(d));
-                inverseLogXs.Add(d);
-                inverseLogYs.Add(symbol.InverseLogRegressionModel.GetEstimate(d));
+                regressionFunctions_Xs.Add(t_time);
+                expRegYs.Add(symbol.ExponentialRegressionModel.GetEstimate(t_time));
+                inverseLogYs.Add(symbol.InverseLogRegressionModel.GetEstimate(t_time));
+                invLogWithML_Ys.Add(symbol.InverseLogRegressionWithML.GetEstimate(t_time));
             }
 
             ScottPlot.Plot myPlot = new();
@@ -265,7 +265,7 @@ namespace Qlarissa.Chart
             //chart.Color = Colors.DarkSlateGray;
 
             ScottPlot.Palettes.Category20 palette = new();
-            var expRegScatter = myPlot.Add.Scatter(expRegXs.ToArray(), expRegYs.ToArray().Select(y => Math.Log(y)).ToArray());
+            var expRegScatter = myPlot.Add.Scatter(regressionFunctions_Xs.ToArray(), expRegYs.ToArray().Select(y => Math.Log(y)).ToArray());
             expRegScatter.Color = palette.Colors[2];
             expRegScatter.MarkerSize = 0.5f;
             expRegScatter.Label = "EXP";
@@ -280,10 +280,15 @@ namespace Qlarissa.Chart
                 throw new Exception("y < 0");
             }
 
-            var inverseLogScatter = myPlot.Add.Scatter(inverseLogXs.ToArray(), inverseLogYs.ToArray().Select(y => Math.Log(y)).ToArray());
+            var inverseLogScatter = myPlot.Add.Scatter(regressionFunctions_Xs.ToArray(), inverseLogYs.ToArray().Select(y => Math.Log(y)).ToArray());
             inverseLogScatter.Color = Colors.Black;
             inverseLogScatter.MarkerSize = 0.75f;
             inverseLogScatter.Label = "INVLOG";
+
+            var inverseLogWithML_Scatter = myPlot.Add.Scatter(regressionFunctions_Xs.ToArray(), invLogWithML_Ys.ToArray().Select(y => Math.Log(y)).ToArray());
+            inverseLogWithML_Scatter.Color = Colors.Green;
+            inverseLogWithML_Scatter.MarkerSize = 0.5f;
+            inverseLogWithML_Scatter.Label = "INVLOG-ML";
 
             // Use a custom formatter to control the label for each tick mark
             static string logTickLabels(double y) => Math.Pow(double.E, y).ToString("N0");
@@ -299,7 +304,8 @@ namespace Qlarissa.Chart
 
             int rsquaredDecimals = 9;
             myPlot.Title(symbol.ToString() + "\nEXPR²=" + symbol.ExponentialRegressionModel.GetRsquared().Round(rsquaredDecimals)
-                + " INVLOGR²=" + symbol.InverseLogRegressionModel.GetRsquared().Round(rsquaredDecimals));
+                + " INVLOGR²=" + symbol.InverseLogRegressionModel.GetRsquared().Round(rsquaredDecimals) +
+                " INVLOG-MLR²=" + symbol.InverseLogRegressionWithML.GetRsquared().Round(rsquaredDecimals));
             myPlot.Axes.Bottom.Label.Text = "Time [years]";
             myPlot.Axes.Left.Label.Text = "Price [" + symbol.Overview.Currency.ToString() + "]";
 
@@ -349,7 +355,7 @@ namespace Qlarissa.Chart
 
             myPlot.Add.Plottable(marker3YE);
 
-            myPlot.SavePng(SaveLocationsConfiguration.GetSymbolChartSaveFileLocation(symbol), 1350, 575);
+            myPlot.SavePng(SaveLocationsConfiguration.GetSymbolChartSaveFileLocation(symbol), 1380, 600);
         }
 
         public void CollateINVLOGpredictionErrorDataByBaseRegressionType_AndSaveToCSV_AndDraw()
