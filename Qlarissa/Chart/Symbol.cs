@@ -16,312 +16,307 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 using DateTime = System.DateTime;
 using Qlarissa.ErrorCorrection;
 
-namespace Qlarissa.Chart
+namespace Qlarissa.Chart;
+
+public class Symbol
 {
-    public class Symbol
+    public Symbol(SymbolDataPoint[] dataPoints, SymbolOverview overview, Dictionary<DateOnly, double> dividendHistory, ExponentialRegressionResult exponentialRegressionResult = null)
     {
-        public Symbol(SymbolDataPoint[] dataPoints, SymbolOverview overview, Dictionary<DateOnly, double> dividendHistory, ExponentialRegressionResult exponentialRegressionResult = null)
+        DataPoints = dataPoints ?? throw new ArgumentNullException(nameof(dataPoints));
+        DividendHistory = dividendHistory ?? throw new ArgumentNullException(nameof(dividendHistory));
+        if (DataPoints.Length == 0)
         {
-            DataPoints = dataPoints ?? throw new ArgumentNullException(nameof(dataPoints));
-            DividendHistory = dividendHistory ?? throw new ArgumentNullException(nameof(dividendHistory));
-            if (DataPoints.Length == 0)
-            {
-                throw new ArgumentException("chartDataPoints does not contain any elements!");
-            }
-
-            DataPointDateToIndexMap = new();
-            int index = 0;
-            foreach (SymbolDataPoint dataPoint in DataPoints)
-            {
-                DataPointDateToIndexMap.Add(dataPoint.Date, index);
-                index++;
-            }
-
-            Overview = overview ?? throw new ArgumentNullException(nameof(overview));
-            TimePeriodsExcludedFromAnalysis = new();
-            TimePeriodsExcludedFromPredictionTargets = new();
-            ExponentialRegressionModel = exponentialRegressionResult;
+            throw new ArgumentException("chartDataPoints does not contain any elements!");
         }
 
-        public SymbolOverview Overview { get; private set; }
-
-        public SymbolDataPoint[] DataPoints {  get; private set; }
-
-        public Dictionary<DateOnly, int> DataPointDateToIndexMap { get; private set; }
-
-        public Dictionary<DateOnly, double> DividendHistory { get; private set; }
-
-        public ExponentialRegressionResult ExponentialRegressionModel { get; private set; }
-
-        public InverseLogRegressionResult InverseLogRegressionModel { get; private set; }
-
-        public InverseLogRegressionWithML InverseLogRegressionWithML { get; private set; }
-
-        public GrowthVolatilityAnalysis GVA_2Years { get; private set; }
-        public GrowthVolatilityAnalysis GVA_1Year { get; private set; }
-
-        public ErrorCorrectionProfileForINVLOGRegression ECforINVLOG { get; private set; }
-
-        Dictionary<string,ExcludedTimePeriod> TimePeriodsExcludedFromAnalysis { get; set; }
-
-        /// <summary>
-        /// When analyzing a model's prediction errors,
-        /// for asset classes where a sudden change in price does not affect the end result - e.g. by virtue of a barrier being hit -
-        /// it makes sense to exclude certain unpredictable events, such as Covid,
-        /// such that these events don't yield prediction errors during error correction analysis.
-        /// These datapoints can still be used to build a model, but will be skipped when they're the target for error analysis.
-        /// </summary>
-        Dictionary<string,ExcludedTimePeriod> TimePeriodsExcludedFromPredictionTargets { get; set; }
-
-        bool Analyzed { get; set; }
-
-        public CustomConfiguration.CustomConfiguration CustomConfiguration { get; set; }
-
-        public void RunRegressions_IfNotExists()
+        DataPointDateToIndexMap = new();
+        int index = 0;
+        foreach (SymbolDataPoint dataPoint in DataPoints)
         {
-            if (!Analyzed)
-            {
-                ExponentialRegression expR = new ExponentialRegression(this);
-                ExponentialRegressionModel = new ExponentialRegressionResult(expR, this);
-                InverseLogRegressionModel = new(this);
-                GVA_2Years = new(this, Enums.TimePeriod.TwoYears);
-                GVA_1Year = new(this, Enums.TimePeriod.OneYear);
-                InverseLogRegressionWithML = new(this);
-
-                Analyzed = true;
-            }
+            DataPointDateToIndexMap.Add(dataPoint.Date, index);
+            index++;
         }
 
-        public void QuantifyPredictionErrors()
-        {
-            try
-            {
-                ECforINVLOG = new(this);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-            }
-        }
+        Overview = overview ?? throw new ArgumentNullException(nameof(overview));
+        TimePeriodsExcludedFromAnalysis = new();
+        TimePeriodsExcludedFromPredictionTargets = new();
+        ExponentialRegressionModel = exponentialRegressionResult;
+    }
 
-        public override string ToString()
-        {
-            return Overview.Name + " (" + Overview.Symbol + ") - " + Math.Round(DataPoints.Last().MediumPrice, 2) + " " + Overview.Currency.ToString();
-        }
+    public SymbolOverview Overview { get; private set; }
 
-        public bool AddTimePeriodExcludedFromAnalysis(string key, ExcludedTimePeriod excludedTimePeriod)
-        {
-            return TimePeriodsExcludedFromAnalysis.TryAdd(key, excludedTimePeriod);
-        }
+    public SymbolDataPoint[] DataPoints {  get; private set; }
 
-        public bool AddTimePeriodExcludedFromPredictionTargets(string key, ExcludedTimePeriod excludedTimePeriod)
-        {
-            return TimePeriodsExcludedFromPredictionTargets.TryAdd(key, excludedTimePeriod);
-        }
+    public Dictionary<DateOnly, int> DataPointDateToIndexMap { get; private set; }
 
-        public Dictionary<string, ExcludedTimePeriod> GetTimePeriodsExcludedFromAnalysis()
-        {
-            return TimePeriodsExcludedFromAnalysis;
-        }
+    public Dictionary<DateOnly, double> DividendHistory { get; private set; }
 
-        private bool IsDateInExcludedTimePeriod(DateOnly date, ExcludedTimePeriod excludedTimePeriod)
+    public ExponentialRegressionResult ExponentialRegressionModel { get; private set; }
+
+    public InverseLogRegressionResult InverseLogRegressionModel { get; private set; }
+
+    public GrowthVolatilityAnalysis GVA_2Years { get; private set; }
+    public GrowthVolatilityAnalysis GVA_1Year { get; private set; }
+
+    public ErrorCorrectionProfileForINVLOGRegression ECforINVLOG { get; private set; }
+
+    Dictionary<string,ExcludedTimePeriod> TimePeriodsExcludedFromAnalysis { get; set; }
+
+    /// <summary>
+    /// When analyzing a model's prediction errors,
+    /// for asset classes where a sudden change in price does not affect the end result - e.g. by virtue of a barrier being hit -
+    /// it makes sense to exclude certain unpredictable events, such as Covid,
+    /// such that these events don't yield prediction errors during error correction analysis.
+    /// These datapoints can still be used to build a model, but will be skipped when they're the target for error analysis.
+    /// </summary>
+    Dictionary<string,ExcludedTimePeriod> TimePeriodsExcludedFromPredictionTargets { get; set; }
+
+    bool Analyzed { get; set; }
+
+    public CustomConfiguration.CustomConfiguration CustomConfiguration { get; set; }
+
+    public void RunRegressions_IfNotExists()
+    {
+        if (!Analyzed)
         {
-            if (excludedTimePeriod.StartDate == null)
-            {
-                if (date <= excludedTimePeriod.EndDate)
-                {
-                    return true;
-                }
-            }
-            else if (excludedTimePeriod.EndDate == null)
-            {
-                if (date >= excludedTimePeriod.StartDate)
-                {
-                    return true;
-                }
-            }
-            else if (date <= excludedTimePeriod.EndDate && date >= excludedTimePeriod.StartDate)
+            ExponentialRegression expR = new ExponentialRegression(this);
+            ExponentialRegressionModel = new ExponentialRegressionResult(expR, this);
+            InverseLogRegressionModel = new(this);
+            GVA_2Years = new(this, Enums.TimePeriod.TwoYears);
+            GVA_1Year = new(this, Enums.TimePeriod.OneYear);
+            Analyzed = true;
+        }
+    }
+
+    public void QuantifyPredictionErrors()
+    {
+        try
+        {
+            ECforINVLOG = new(this);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+    }
+
+    public override string ToString()
+    {
+        return Overview.Name + " (" + Overview.Symbol + ") - " + Math.Round(DataPoints.Last().MediumPrice, 2) + " " + Overview.Currency.ToString();
+    }
+
+    public bool AddTimePeriodExcludedFromAnalysis(string key, ExcludedTimePeriod excludedTimePeriod)
+    {
+        return TimePeriodsExcludedFromAnalysis.TryAdd(key, excludedTimePeriod);
+    }
+
+    public bool AddTimePeriodExcludedFromPredictionTargets(string key, ExcludedTimePeriod excludedTimePeriod)
+    {
+        return TimePeriodsExcludedFromPredictionTargets.TryAdd(key, excludedTimePeriod);
+    }
+
+    public Dictionary<string, ExcludedTimePeriod> GetTimePeriodsExcludedFromAnalysis()
+    {
+        return TimePeriodsExcludedFromAnalysis;
+    }
+
+    private bool IsDateInExcludedTimePeriod(DateOnly date, ExcludedTimePeriod excludedTimePeriod)
+    {
+        if (excludedTimePeriod.StartDate == null)
+        {
+            if (date <= excludedTimePeriod.EndDate)
             {
                 return true;
             }
-
-            return false;
         }
-
-        public bool IsDateValidTargetDateForErrorAnalysis(DateOnly date)
+        else if (excludedTimePeriod.EndDate == null)
         {
-            foreach(var entry in TimePeriodsExcludedFromPredictionTargets.Values)
+            if (date >= excludedTimePeriod.StartDate)
             {
-                if(IsDateInExcludedTimePeriod(date, entry))
-                {
-                    return false;
-                }
+                return true;
             }
-
+        }
+        else if (date <= excludedTimePeriod.EndDate && date >= excludedTimePeriod.StartDate)
+        {
             return true;
         }
 
-        private bool IsDataPointInExcludedTimePeriods(SymbolDataPoint dataPoint)
-        {
-            foreach(ExcludedTimePeriod excludedTimePeriod in TimePeriodsExcludedFromAnalysis.Values)
-            {
-                if(IsDateInExcludedTimePeriod(dataPoint.Date, excludedTimePeriod))
-                {
-                    return true;
-                }
-            }
+        return false;
+    }
 
-            return false;
+    public bool IsDateValidTargetDateForErrorAnalysis(DateOnly date)
+    {
+        foreach(var entry in TimePeriodsExcludedFromPredictionTargets.Values)
+        {
+            if(IsDateInExcludedTimePeriod(date, entry))
+            {
+                return false;
+            }
         }
 
-        private bool IsDateRangeIncludingExcludedTimePeriod(DateOnly startDate, DateOnly endDate, ExcludedTimePeriod excludedTimePeriod)
-        {
-            if (endDate < startDate)
-                throw new Exception("endDate can not be before the startDate!");
+        return true;
+    }
 
-            if (startDate < excludedTimePeriod.StartDate && endDate > excludedTimePeriod.EndDate)
+    private bool IsDataPointInExcludedTimePeriods(SymbolDataPoint dataPoint)
+    {
+        foreach(ExcludedTimePeriod excludedTimePeriod in TimePeriodsExcludedFromAnalysis.Values)
+        {
+            if(IsDateInExcludedTimePeriod(dataPoint.Date, excludedTimePeriod))
             {
                 return true;
             }
-
-            return false;
         }
 
-        private bool IsDateRangeExcluded(DateOnly startDate, DateOnly endDate)
-        {
-            if(endDate < startDate)
-                throw new Exception("endDate can not be before the startDate!");
+        return false;
+    }
 
-            foreach(ExcludedTimePeriod excludedTimePeriod in TimePeriodsExcludedFromAnalysis.Values)
+    private bool IsDateRangeIncludingExcludedTimePeriod(DateOnly startDate, DateOnly endDate, ExcludedTimePeriod excludedTimePeriod)
+    {
+        if (endDate < startDate)
+            throw new Exception("endDate can not be before the startDate!");
+
+        if (startDate < excludedTimePeriod.StartDate && endDate > excludedTimePeriod.EndDate)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool IsDateRangeExcluded(DateOnly startDate, DateOnly endDate)
+    {
+        if(endDate < startDate)
+            throw new Exception("endDate can not be before the startDate!");
+
+        foreach(ExcludedTimePeriod excludedTimePeriod in TimePeriodsExcludedFromAnalysis.Values)
+        {
+            if (IsDateInExcludedTimePeriod(startDate, excludedTimePeriod) || // t1 S E t2 + t1 S t2 E
+                IsDateInExcludedTimePeriod(endDate, excludedTimePeriod) ||  // S t1 E t2
+                IsDateRangeIncludingExcludedTimePeriod(startDate, endDate, excludedTimePeriod)) // S t1 t2 E
             {
-                if (IsDateInExcludedTimePeriod(startDate, excludedTimePeriod) || // t1 S E t2 + t1 S t2 E
-                    IsDateInExcludedTimePeriod(endDate, excludedTimePeriod) ||  // S t1 E t2
-                    IsDateRangeIncludingExcludedTimePeriod(startDate, endDate, excludedTimePeriod)) // S t1 t2 E
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public SymbolDataPoint[] GetDataPointsForAnalysis()
+    {
+        List<SymbolDataPoint> result = new List<SymbolDataPoint>();
+        for(int i = 0; i < DataPoints.Length; i++)
+        {
+            if (!IsDataPointInExcludedTimePeriods(DataPoints[i]))
+            {
+                result.Add(DataPoints[i]);
+            }
+        }
+
+        return result.ToArray();
+    }
+
+    public SymbolDataPoint[] GetDataPointsForAnalysis_UntilDate(DateOnly date)
+    {
+        List<SymbolDataPoint> result = new List<SymbolDataPoint>();
+        for (int i = 0; i < DataPoints.Length; i++)
+        {
+            if (DataPoints[i].Date > date)
+            {
+                break;
+            }
+
+            if (!IsDataPointInExcludedTimePeriods(DataPoints[i]))
+            {
+                result.Add(DataPoints[i]);
+            }
+        }
+
+        return result.ToArray();
+    }
+
+    public bool WasStockBelowPrice(double price, DateOnly start, DateOnly end)
+    {
+        for(int i = 0; i < DataPoints.Length; i++)
+        {
+            if (DataPoints[i].Date >= start && DataPoints[i].Date <= end)
+            {
+                if (DataPoints[i].LowPrice < price)
                 {
                     return true;
                 }
             }
-
-            return false;
         }
 
-        public SymbolDataPoint[] GetDataPointsForAnalysis()
+        return false;
+    }
+
+    public double? GetMinimum_NotInExcludedTimePeriods(DateOnly startDate, DateOnly endDate)
+    {
+        if(IsDateRangeExcluded(startDate, endDate))
         {
-            List<SymbolDataPoint> result = new List<SymbolDataPoint>();
-            for(int i = 0; i < DataPoints.Length; i++)
+            return null;
+        }
+
+        return GetMinimum(startDate, endDate);
+    }
+
+    private double GetMinimum(DateOnly startDate, DateOnly endDate)
+    {
+        int startIndex = DataPointDateToIndexMap[startDate];
+        int endIndex = DataPointDateToIndexMap[endDate];
+
+        if(endIndex <= startIndex + 1)
+        {
+            throw new InvalidOperationException("endDate must be at least 2 days after startDate");
+        }
+
+        double minimum = DataPoints[startIndex].LowPrice;
+
+        for(int i = startIndex + 1; i <= endIndex; i++)
+        {
+            if (DataPoints[i].LowPrice < minimum)
             {
-                if (!IsDataPointInExcludedTimePeriods(DataPoints[i]))
-                {
-                    result.Add(DataPoints[i]);
-                }
+                minimum = DataPoints[i].LowPrice;
             }
-
-            return result.ToArray();
         }
 
-        public SymbolDataPoint[] GetDataPointsForAnalysis_UntilDate(DateOnly date)
+        return minimum;
+    }
+
+    public double GetNYearForecastAbsolute(double nYearsFromNow)
+    {
+        double dividends = nYearsFromNow * Overview.DividendPerShareYearly;
+
+        double expRegWeight = ExponentialRegressionModel.GetWeight();
+        double invLogRegWeight = InverseLogRegressionModel.GetWeight();
+
+        double totalWeight = expRegWeight + invLogRegWeight;
+
+        double normalized_expRegWeight = expRegWeight / totalWeight;
+        double normalized_invLogRegWeight = invLogRegWeight / totalWeight;
+
+        double t = (DateOnly.FromDateTime(DateTime.Now)).ToDouble() + nYearsFromNow;
+        double expRegEstimate = ExponentialRegressionModel.GetEstimate(t);
+        double invLogEstimate = InverseLogRegressionModel.GetEstimate(t);
+
+        double weighted_expRegEstimate = normalized_expRegWeight * expRegEstimate;
+        double weighted_invLogRegWeight = normalized_invLogRegWeight * invLogEstimate;
+
+        double estimate = weighted_expRegEstimate + weighted_invLogRegWeight;
+
+        return estimate + dividends;
+    }
+
+    public double GetNYearForecastPercent(double n)
+    {
+        return ((GetNYearForecastAbsolute(n) / (DataPoints.Last().MediumPrice)) -1)*100.0;
+    }
+
+    public void DbgPrintDataPoints()
+    {
+        foreach(SymbolDataPoint point in DataPoints)
         {
-            List<SymbolDataPoint> result = new List<SymbolDataPoint>();
-            for (int i = 0; i < DataPoints.Length; i++)
-            {
-                if (DataPoints[i].Date > date)
-                {
-                    break;
-                }
-
-                if (!IsDataPointInExcludedTimePeriods(DataPoints[i]))
-                {
-                    result.Add(DataPoints[i]);
-                }
-            }
-
-            return result.ToArray();
-        }
-
-        public bool WasStockBelowPrice(double price, DateOnly start, DateOnly end)
-        {
-            for(int i = 0; i < DataPoints.Length; i++)
-            {
-                if (DataPoints[i].Date >= start && DataPoints[i].Date <= end)
-                {
-                    if (DataPoints[i].LowPrice < price)
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        public double? GetMinimum_NotInExcludedTimePeriods(DateOnly startDate, DateOnly endDate)
-        {
-            if(IsDateRangeExcluded(startDate, endDate))
-            {
-                return null;
-            }
-
-            return GetMinimum(startDate, endDate);
-        }
-
-        private double GetMinimum(DateOnly startDate, DateOnly endDate)
-        {
-            int startIndex = DataPointDateToIndexMap[startDate];
-            int endIndex = DataPointDateToIndexMap[endDate];
-
-            if(endIndex <= startIndex + 1)
-            {
-                throw new InvalidOperationException("endDate must be at least 2 days after startDate");
-            }
-
-            double minimum = DataPoints[startIndex].LowPrice;
-
-            for(int i = startIndex + 1; i <= endIndex; i++)
-            {
-                if (DataPoints[i].LowPrice < minimum)
-                {
-                    minimum = DataPoints[i].LowPrice;
-                }
-            }
-
-            return minimum;
-        }
-
-        public double GetNYearForecastAbsolute(double nYearsFromNow)
-        {
-            double dividends = nYearsFromNow * Overview.DividendPerShareYearly;
-
-            double expRegWeight = ExponentialRegressionModel.GetWeight();
-            double invLogRegWeight = InverseLogRegressionModel.GetWeight();
-
-            double totalWeight = expRegWeight + invLogRegWeight;
-
-            double normalized_expRegWeight = expRegWeight / totalWeight;
-            double normalized_invLogRegWeight = invLogRegWeight / totalWeight;
-
-            double t = (DateOnly.FromDateTime(DateTime.Now)).ToDouble() + nYearsFromNow;
-            double expRegEstimate = ExponentialRegressionModel.GetEstimate(t);
-            double invLogEstimate = InverseLogRegressionModel.GetEstimate(t);
-
-            double weighted_expRegEstimate = normalized_expRegWeight * expRegEstimate;
-            double weighted_invLogRegWeight = normalized_invLogRegWeight * invLogEstimate;
-
-            double estimate = weighted_expRegEstimate + weighted_invLogRegWeight;
-
-            return estimate + dividends;
-        }
-
-        public double GetNYearForecastPercent(double n)
-        {
-            return ((GetNYearForecastAbsolute(n) / (DataPoints.Last().MediumPrice)) -1)*100.0;
-        }
-
-        public void DbgPrintDataPoints()
-        {
-            foreach(SymbolDataPoint point in DataPoints)
-            {
-                Console.WriteLine("Date:" + point.Date + " High:" + point.HighPrice + " Low:" + point.LowPrice + " Medium:" + point.MediumPrice);
-            }
+            Console.WriteLine("Date:" + point.Date + " High:" + point.HighPrice + " Low:" + point.LowPrice + " Medium:" + point.MediumPrice);
         }
     }
 }

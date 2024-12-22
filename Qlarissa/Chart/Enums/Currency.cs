@@ -14,6 +14,7 @@ namespace Qlarissa.Chart.Enums
         GBP = 3,
         AUD = 4,
         CAD = 5,
+        KRW = 6,
     }
 }
 
@@ -28,7 +29,6 @@ public static class CurrencyExtensions
         else
         {
             throw new ArgumentException(currencyString + " is unsupported.");
-            //return Currency.USD;
         }
     }
 }
