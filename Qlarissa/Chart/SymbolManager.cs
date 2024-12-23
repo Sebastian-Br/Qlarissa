@@ -31,7 +31,7 @@ public class SymbolManager
         CustomConfiguration = customConfiguration;
 
         SymbolDictionary = new();
-        PyFinanceAPI = new PyFinanceApiManager(configuration);
+        PyFinanceAPI = new PyFinanceApiManager(configuration, customConfiguration);
         Ranking = new(this);
     }
 
@@ -73,7 +73,6 @@ public class SymbolManager
 
         Symbol result = await PyFinanceAPI.RetrieveSymbol(symbol);
         AddDefaultExcludedTimePeriodsToSymbol(result);
-        result.CustomConfiguration = CustomConfiguration; // redundant?
 
         //SymbolDictionary.Add(symbol, result);
         SymbolDictionary[symbol] = result;

@@ -20,6 +20,12 @@ namespace Qlarissa.CustomConfiguration
         public Dictionary<string, ExcludedTimePeriod> DefaultExcludedTimePeriodsForPredictionTargets { get; set; }
 
         /// <summary>
+        /// The value is e.g. 1.1 for a forecast of +10%
+        /// This is used for ETFs where the API does not return analyst forecasts
+        /// </summary>
+        public Dictionary<string, double> SymbolToMissing1YearForecastMap { get; set; }
+
+        /// <summary>
         /// Keys = Symbols
         /// Values = Company names (just make the json easier to understand)
         /// </summary>

@@ -20,9 +20,7 @@ namespace Qlarissa.Chart
 
         public long MarketCapitalization { get; set; }
 
-        public double TrailingPE { get; set; }
-
-        public double ForwardPE { get; set; }
+        public string InvestorRelationsWebsite { get; set; }
 
         public double DividendPerShareYearly { get; set; }
 

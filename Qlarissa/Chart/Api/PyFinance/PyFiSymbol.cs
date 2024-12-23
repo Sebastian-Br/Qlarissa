@@ -32,16 +32,15 @@ internal class PyFiSymbol
 
     public Dictionary<string, double> DividendHistory { get; set; }
 
-    public Symbol ToBusinessEntity()
+    public Symbol ToBusinessEntity(CustomConfiguration.CustomConfiguration customConfiguration)
     {
         SymbolOverview overview = new();
         overview.Symbol = Symbol;
         overview.Name = Name;
         overview.Currency = CurrencyExtensions.ToEnum(Currency);
         overview.DividendPerShareYearly = DividendPerShareYearly;
-        overview.TrailingPE = TrailingPE;
-        overview.ForwardPE = ForwardPE;
         overview.MarketCapitalization = MarketCapitalization;
+        overview.InvestorRelationsWebsite = InvestorRelationsWebsite;
 
         List <SymbolDataPoint> symbolDataPointList = new();
 
@@ -64,7 +63,26 @@ internal class PyFiSymbol
             dividendHistory.Add(dividendPayoutDate, dividendPayout.Value);
         }
 
-        Symbol symbol = new(symbolDataPointList.ToArray(), overview, dividendHistory);
+        SymbolInfoEx symbolInfoEx = new();
+        symbolInfoEx.ForwardPE = ForwardPE;
+        symbolInfoEx.TrailingPE = TrailingPE;
+        symbolInfoEx.NumberOfAnalystOpinions = NumberOfAnalystOpinions;
+        symbolInfoEx.TargetMeanPrice = TargetMeanPrice;
+        if(TargetMeanPrice == 0)
+        {
+            if(customConfiguration.SymbolToMissing1YearForecastMap.TryGetValue(Symbol, out double forecast))
+            {
+                Console.WriteLine("Retrieved forecast for " + Symbol + " from the configuration (" + forecast + ")");
+                symbolInfoEx.TargetMeanPrice = forecast * symbolDataPointList.Last().MediumPrice;
+                symbolInfoEx.NumberOfAnalystOpinions = 20;
+            }
+            else
+            {
+                throw new MissingMemberException(nameof(TargetMeanPrice));
+            }
+        }
+
+        Symbol symbol = new(symbolDataPointList.ToArray(), overview, dividendHistory, symbolInfoEx);
         return symbol;
     }
 }

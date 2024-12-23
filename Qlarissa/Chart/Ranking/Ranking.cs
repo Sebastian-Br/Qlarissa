@@ -153,19 +153,47 @@ public class Ranking
         }
 
         currentScore = currentScore * Sigmoidal_MarketCap_Weight(marketCapUSDequivalent); // prefer larger/more diversified corporations
-        currentScore = currentScore * GetMaxRsquared(symbol); // prefer corporations that are more predictable/stable
+        currentScore = currentScore * GetMaxRsquared(symbol); // prefer assets that are more predictable/stable
+        currentScore = currentScore * Linear_AnalystTarget_Weight(symbol); // factor in analyst sentiment
 
         return currentScore;
     }
 
-    private double Sigmoidal_MarketCap_Weight(double marketCap)
+    private double Sigmoidal_MarketCap_Weight(double marketCapInUSD)
     {
         double k = 0.25;
-        double marketCap_inBillionDollars = marketCap / 1e9;
+        double marketCap_inBillionDollars = marketCapInUSD / 1e9;
         return 
             (1.0) 
             /
             (1.0 + Math.Exp(-k * (marketCap_inBillionDollars - 12)));
+    }
+
+    private double Linear_AnalystTarget_Weight(Symbol symbol)
+    {
+        if (symbol.SymbolInformationExtended.NumberOfAnalystOpinions < 3) return 1.0;
+        if (symbol.SymbolInformationExtended.TargetMeanPrice <= 0) return 1.0;
+        double analystTargetAsPercentageChange = 100.0d * ((symbol.SymbolInformationExtended.TargetMeanPrice / symbol.GetCurrentPrice()) - 1.0d);
+        
+
+        double deviation; double maximumDeviation = 0.3;
+        int analystOpinionsRequiredForMaximumDeviation = 20;
+        if (symbol.SymbolInformationExtended.NumberOfAnalystOpinions >= analystOpinionsRequiredForMaximumDeviation) deviation = maximumDeviation;
+        else
+        {
+            deviation = (maximumDeviation / analystOpinionsRequiredForMaximumDeviation) * symbol.SymbolInformationExtended.NumberOfAnalystOpinions;
+        }
+
+        return GetLinearInterpolation(1.0 + deviation, 1.0 - deviation, 100.0, -100.0, analystTargetAsPercentageChange);
+    }
+
+    private double GetLinearInterpolation(double maxY, double minY, double maxX, double minX, double x)
+    {
+        if (x < minX) x = minX;
+        if (x > maxX) x = maxX;
+        double m = (maxY - minY) / (maxX - minX);
+        double b = minY;
+        return m * (x - minX) + b;
     }
 
     private double GetMaxRsquared(Symbol symbol)

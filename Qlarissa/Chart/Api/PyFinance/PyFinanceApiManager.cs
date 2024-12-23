@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Qlarissa.CustomConfiguration;
 
 namespace Qlarissa.Chart.Api.PYfinance;
 
@@ -13,13 +14,16 @@ namespace Qlarissa.Chart.Api.PYfinance;
 /// </summary>
 internal class PyFinanceApiManager : IApiManager
 {
-    public PyFinanceApiManager(IConfiguration configuration)
+    public PyFinanceApiManager(IConfiguration configuration, CustomConfiguration.CustomConfiguration customConfiguration)
     {
         DefaultStartDate = DateOnly.Parse(configuration.GetValue<string>("DefaultStartDate") ?? throw new ArgumentException(nameof(DefaultStartDate)));
         HttpClient = new();
+        CustomConfiguration = customConfiguration;
     }
 
     private DateOnly DefaultStartDate { get; set; }
+
+    private CustomConfiguration.CustomConfiguration CustomConfiguration { get; set; }
 
     private HttpClient HttpClient { get; set; }
 
@@ -32,7 +36,7 @@ internal class PyFinanceApiManager : IApiManager
         {
             var jsonResponse = await response.Content.ReadAsStringAsync();
             PyFiSymbol pyFiSymbol = JsonConvert.DeserializeObject<PyFiSymbol>(jsonResponse);
-            return pyFiSymbol.ToBusinessEntity();
+            return pyFiSymbol.ToBusinessEntity(CustomConfiguration);
         }
         else
         {

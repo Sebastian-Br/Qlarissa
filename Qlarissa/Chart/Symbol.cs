@@ -20,10 +20,11 @@ namespace Qlarissa.Chart;
 
 public class Symbol
 {
-    public Symbol(SymbolDataPoint[] dataPoints, SymbolOverview overview, Dictionary<DateOnly, double> dividendHistory, ExponentialRegressionResult exponentialRegressionResult = null)
+    public Symbol(SymbolDataPoint[] dataPoints, SymbolOverview overview, Dictionary<DateOnly, double> dividendHistory, SymbolInfoEx symbolInformationExtended, ExponentialRegressionResult exponentialRegressionResult = null)
     {
         DataPoints = dataPoints ?? throw new ArgumentNullException(nameof(dataPoints));
         DividendHistory = dividendHistory ?? throw new ArgumentNullException(nameof(dividendHistory));
+        SymbolInformationExtended = symbolInformationExtended ?? throw new ArgumentNullException(nameof(symbolInformationExtended));
         if (DataPoints.Length == 0)
         {
             throw new ArgumentException("chartDataPoints does not contain any elements!");
@@ -44,6 +45,8 @@ public class Symbol
     }
 
     public SymbolOverview Overview { get; private set; }
+
+    public SymbolInfoEx SymbolInformationExtended { get; private set; }
 
     public SymbolDataPoint[] DataPoints {  get; private set; }
 
@@ -73,8 +76,6 @@ public class Symbol
 
     bool Analyzed { get; set; }
 
-    public CustomConfiguration.CustomConfiguration CustomConfiguration { get; set; }
-
     public void RunRegressions_IfNotExists()
     {
         if (!Analyzed)
@@ -100,9 +101,14 @@ public class Symbol
         }
     }
 
+    public double GetCurrentPrice()
+    {
+        return DataPoints.Last().MediumPrice;
+    }
+
     public override string ToString()
     {
-        return Overview.Name + " (" + Overview.Symbol + ") - " + Math.Round(DataPoints.Last().MediumPrice, 2) + " " + Overview.Currency.ToString();
+        return Overview.Name + " (" + Overview.Symbol + ") - " + Math.Round(GetCurrentPrice(), 2) + " " + Overview.Currency.ToString();
     }
 
     public bool AddTimePeriodExcludedFromAnalysis(string key, ExcludedTimePeriod excludedTimePeriod)
