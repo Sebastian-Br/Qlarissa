@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify
 import yfinance as yf
 import pandas as pd
+import numpy as np
+import scipy
 
 app = Flask(__name__)
 
@@ -12,6 +14,7 @@ def get_stock_data():
 
     if ticker:
         if start_date and end_date:
+            #GetPEData(ticker)
             data = yf.download(ticker, start=start_date, end=end_date)
 
         if isinstance(data, pd.DataFrame) and not data.empty:
@@ -20,6 +23,7 @@ def get_stock_data():
             # Get the P/E ratio information
             ticker_info = yf.Ticker(ticker).info
             #print(ticker_info)
+            #print(jsonify(yf.Ticker(ticker)))
             # Get/format dividend history
             ticker_dividend_history = yf.Ticker(ticker).dividends
             ticker_dividend_history.index = ticker_dividend_history.index.strftime('%Y-%m-%d')
@@ -30,7 +34,7 @@ def get_stock_data():
             quarterly_income_statement_df = yf.Ticker(ticker).quarterly_income_stmt
             tmp = quarterly_income_statement_df.to_dict(orient='dict')
             quarterly_income_statement_dictionary = {str(date): tmp[date] for date in sorted(tmp)}
-            print(quarterly_income_statement_dictionary)
+            #print(quarterly_income_statement_dictionary)
             #earnings.index = earnings.index.strftime('%Y-%m-%d')
             #print(earnings)
             # Format earnings data for JSON
@@ -62,6 +66,22 @@ def get_stock_data():
             return jsonify({"error": "No data available for the specified parameters"})
     else:
         return jsonify({"error": "Ticker symbol not provided"})
+
+    #https://medium.com/@tballz/retrieving-historical-p-e-data-with-python-d09198335984
+def GetPEData(symbol):
+    data = pd.read_html(f'http://macrotrends.net/stocks/charts/MSFT/microsoft/pe-ratio', skiprows=1)
+    df = pd.DataFrame(data[0])
+    df = df.columns.to_frame().T.append(df, ignore_index=True)
+    df.columns = range(len(df.columns))
+    df = df[1:]
+    df = df.rename(columns={0: 'Date', 1: 'Price', 2: 'EPS', 3: 'PE'})
+    df['EPS'][1] = ''
+    df.set_index('Date', inplace = True)
+    df = df.sort_index()
+    df['trend'] = ""
+    df['PE'] = df['PE'].astype(float)
+    print(df['PE'].mean())
+    return df['PE'].mean()
 
 if __name__ == '__main__':
     app.run(debug=True)

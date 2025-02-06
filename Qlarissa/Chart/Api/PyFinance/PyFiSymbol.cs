@@ -39,9 +39,24 @@ internal class PyFiSymbol
         overview.Name = Name;
         overview.Currency = CurrencyExtensions.ToEnum(Currency);
         overview.DividendPerShareYearly = DividendPerShareYearly;
-        overview.MarketCapitalization = MarketCapitalization;
-        overview.InvestorRelationsWebsite = InvestorRelationsWebsite;
+        if (MarketCapitalization == 0)
+        {
+            if (customConfiguration.SymbolToMissingMarketCapInBillions.TryGetValue(Symbol, out double marketCapitalizationInBillions))
+            {
+                Console.WriteLine("Retrieved market cap [billion USD] for " + Symbol + " from the configuration (" + marketCapitalizationInBillions + ")");
+                overview.MarketCapitalization = (long)(marketCapitalizationInBillions * 1e9);
+            }
+            else
+            {
+                throw new MissingMemberException(nameof(MarketCapitalization));
+            }
+        }
+        else
+        {
+            overview.MarketCapitalization = MarketCapitalization;
+        }
 
+        overview.InvestorRelationsWebsite = InvestorRelationsWebsite;
         List <SymbolDataPoint> symbolDataPointList = new();
 
         foreach (KeyValuePair<string,PyFiDataPoint> entry in HistoricalData)

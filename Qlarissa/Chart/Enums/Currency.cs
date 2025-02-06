@@ -9,12 +9,15 @@ namespace Qlarissa.Chart.Enums
 {
     public enum Currency
     {
-        USD = 1,
-        EUR = 2,
-        GBP = 3,
-        AUD = 4,
-        CAD = 5,
-        KRW = 6,
+        USD = 1,    // US Dollar
+        EUR = 2,    // Euro
+        GBP = 3,    // British Pound
+        AUD = 4,    // Australian Dollar
+        CAD = 5,    // Canadian Dollar
+        KRW = 6,    // Korean Won
+        CHF = 7,    // Swiss Frank
+        JPY = 8,    // Japense Yen
+        SGD = 9,    // Singapore Dollar
     }
 }
 

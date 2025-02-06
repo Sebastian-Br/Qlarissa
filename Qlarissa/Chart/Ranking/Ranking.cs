@@ -93,11 +93,11 @@ public class Ranking
     {
         (double, double) doubleTrouble = new();
         doubleTrouble.Item1 = symbol.DataPoints.Last().Date.ToDouble() + 3.0;
-        doubleTrouble.Item2 = symbol.DataPoints.Last().MediumPrice * Math.Pow(1.0 + GetWeighted1YearEquivalentForecast(symbol) / 100.0, N);
+        doubleTrouble.Item2 = symbol.DataPoints.Last().MediumPrice * Math.Pow(1.0 + GetWeighted1YearEquivalentForecastPercent(symbol) / 100.0, N);
         return doubleTrouble;
     }
 
-    private double GetWeighted1YearEquivalentForecast(Symbol symbol) // [%]
+    private double GetWeighted1YearEquivalentForecastPercent(Symbol symbol) // [%]
     {
         double _1YE = symbol.GetNYearForecastPercent(1);
         double _3YEa = AnnualizeNYearEstimate(symbol.GetNYearForecastPercent(3), 3); // Three-Year-annualized
@@ -118,7 +118,16 @@ public class Ranking
 
     private double GetAggregatedScore(Symbol symbol)
     {
-        double currentScore = GetWeighted1YearEquivalentForecast(symbol) * 10.0;
+        double analystForecastPercentage = 100.0 * ((symbol.SymbolInformationExtended.TargetMeanPrice / symbol.GetCurrentPrice()) - 1.0);
+        double weighted1YearEquivalentForecastPercent = GetWeighted1YearEquivalentForecastPercent(symbol);
+        double maximumAdmissibleGrowthPercentage = 60;
+        if (weighted1YearEquivalentForecastPercent > maximumAdmissibleGrowthPercentage)
+        {
+            weighted1YearEquivalentForecastPercent = maximumAdmissibleGrowthPercentage;
+        }
+
+        double baseScore = (weighted1YearEquivalentForecastPercent + analystForecastPercentage) / 2.0;
+        double currentScore = baseScore * 10.0;
 
         double marketCap = symbol.Overview.MarketCapitalization;
         double marketCapUSDequivalent;
@@ -129,7 +138,7 @@ public class Ranking
         }
         else if (symbol.Overview.Currency == Enums.Currency.EUR)
         {
-            marketCapUSDequivalent = marketCap * 1.05; // TODO: Get forex values automatically
+            marketCapUSDequivalent = marketCap * 1.05; // TODO: Get foreign exchange values automatically
         }
         else if (symbol.Overview.Currency == Enums.Currency.GBP)
         {
@@ -147,14 +156,26 @@ public class Ranking
         {
             marketCapUSDequivalent = marketCap * 0.00069;
         }
+        else if (symbol.Overview.Currency == Enums.Currency.CHF)
+        {
+            marketCapUSDequivalent = marketCap * 1.1;
+        }
+        else if (symbol.Overview.Currency == Enums.Currency.JPY)
+        {
+            marketCapUSDequivalent = marketCap * 0.0064;
+        }
+        else if (symbol.Overview.Currency == Enums.Currency.SGD)
+        {
+            marketCapUSDequivalent = marketCap * 0.73;
+        }
         else
         {
             throw new NotImplementedException(nameof(symbol.Overview.Currency));
         }
 
         currentScore = currentScore * Sigmoidal_MarketCap_Weight(marketCapUSDequivalent); // prefer larger/more diversified corporations
-        currentScore = currentScore * GetMaxRsquared(symbol); // prefer assets that are more predictable/stable
-        currentScore = currentScore * Linear_AnalystTarget_Weight(symbol); // factor in analyst sentiment
+        double maxRsquared = GetMaxRsquared(symbol);
+        currentScore = currentScore * maxRsquared;// * maxRsquared; // prefer assets that are more predictable/stable
 
         return currentScore;
     }
@@ -173,18 +194,30 @@ public class Ranking
     {
         if (symbol.SymbolInformationExtended.NumberOfAnalystOpinions < 3) return 1.0;
         if (symbol.SymbolInformationExtended.TargetMeanPrice <= 0) return 1.0;
-        double analystTargetAsPercentageChange = 100.0d * ((symbol.SymbolInformationExtended.TargetMeanPrice / symbol.GetCurrentPrice()) - 1.0d);
-        
+        double analystTargetAsFactor = symbol.SymbolInformationExtended.TargetMeanPrice / symbol.GetCurrentPrice();
+        double targetDeviation = analystTargetAsFactor - 1.0; // the targetDeviation would be 0.5 for a 50% expected appreciation
+        if (targetDeviation > 0.5) targetDeviation = 0.5; // set upper limit of +50%
 
-        double deviation; double maximumDeviation = 0.3;
-        int analystOpinionsRequiredForMaximumDeviation = 20;
-        if (symbol.SymbolInformationExtended.NumberOfAnalystOpinions >= analystOpinionsRequiredForMaximumDeviation) deviation = maximumDeviation;
+        double confidence;
+        double minConfidence = 0.5;
+        double maxConfidence = 1.0;
+        double effectiveDeviation;
+        if(targetDeviation < 0)
+        {
+            int analystOpinionsForMaxConfidenceNegativeForecast = 10;
+            confidence = minConfidence + ((maxConfidence - minConfidence) / analystOpinionsForMaxConfidenceNegativeForecast) * symbol.SymbolInformationExtended.NumberOfAnalystOpinions;
+            if (confidence > 1) confidence = 1;
+            effectiveDeviation = confidence * targetDeviation;
+        }
         else
         {
-            deviation = (maximumDeviation / analystOpinionsRequiredForMaximumDeviation) * symbol.SymbolInformationExtended.NumberOfAnalystOpinions;
+            int analystOpinionsForMaxConfidencePositiveForecast = 20;
+            confidence = minConfidence + ((maxConfidence - minConfidence) / analystOpinionsForMaxConfidencePositiveForecast) * symbol.SymbolInformationExtended.NumberOfAnalystOpinions;
+            if (confidence > 1) confidence = 1;
+            effectiveDeviation = confidence * targetDeviation;
         }
 
-        return GetLinearInterpolation(1.0 + deviation, 1.0 - deviation, 100.0, -100.0, analystTargetAsPercentageChange);
+        return effectiveDeviation + 1.0;
     }
 
     private double GetLinearInterpolation(double maxY, double minY, double maxX, double minX, double x)

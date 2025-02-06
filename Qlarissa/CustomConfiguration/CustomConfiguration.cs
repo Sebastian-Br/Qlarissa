@@ -26,6 +26,12 @@ namespace Qlarissa.CustomConfiguration
         public Dictionary<string, double> SymbolToMissing1YearForecastMap { get; set; }
 
         /// <summary>
+        /// For ETFs, this is manually set to some very high number (e.g. 10^6) so we can still throw if for some reason this isn't set
+        /// for a stock
+        /// </summary>
+        public Dictionary<string, double> SymbolToMissingMarketCapInBillions { get; set; }
+
+        /// <summary>
         /// Keys = Symbols
         /// Values = Company names (just make the json easier to understand)
         /// </summary>
