@@ -29,7 +29,20 @@ Trends are one, but far from the only factor that the tool considers when rankin
 
 </br>
 </br>
+
 Qlarissa quantifies growth-profiles of assets. From this image for instance, the user may observe that a 5-10% annualized growth rate had historically been the most likely outcome (at 29.4%) for Johnson & Johnson over all analyzed 24-month intervals.
 </br>
 
 ![JNJ_Growth24](https://github.com/user-attachments/assets/0d52cad8-2bdb-46f2-a5fc-c6e39e83d93c)
+
+</br>
+
+Qlarissa can quantify risk profiles of assets. From the below graph, users may ascertain that, for an arbitrary 24-month period, the likelihood of Johnson & Johnson stock not falling below 20% of its initial value (at the time it had been purchased) had been 83.92%.
+
+![JNJ_MaxLoss24](https://github.com/user-attachments/assets/656a99b4-36f6-45ff-a90d-d6c473262153)
+
+
+</br>
+Qlarissa quantifies the risk-reward profile of leveraged certificates vs. the underlying asset. A user may observe from the below graph that there is no leveraged certificate of any leverage between 1.1 and 4 that had historically outperformed the stock.
+
+![JNJ_LeveragedOverperformance24](https://github.com/user-attachments/assets/d6f5f9c0-4bc2-4514-b564-9c2813ccc897)
