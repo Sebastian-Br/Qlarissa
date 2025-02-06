@@ -30,7 +30,7 @@ namespace Qlarissa.Chart.Analysis.InverseLogRegression
             double[] logYs = dataPoints.Select(dataPoint => Math.Log(dataPoint.MediumPrice)).ToArray();
 
             InnerRegressions = new();
-            LogisticRegressionResult logisticRegressionResult = GetLogisticRegression_ExpWalk_ChatGPTed(preProcessedXs, logYs);
+            LogisticRegressionResult logisticRegressionResult = GetLogisticRegression_ExpWalk(preProcessedXs, logYs);
             InnerRegressions.Add(logisticRegressionResult);
 
             LinearRegressionResultWithX0 linearRegression = new(preProcessedXs, logYs, PreprocessingX0);
@@ -65,7 +65,7 @@ namespace Qlarissa.Chart.Analysis.InverseLogRegression
             double[] logYs = dataPoints.Select(dataPoint => Math.Log(dataPoint.MediumPrice)).ToArray();
 
             InnerRegressions = new();
-            LogisticRegressionResult logisticRegressionResult = GetLogisticRegression_ExpWalk_ChatGPTed(preProcessedXs, logYs);
+            LogisticRegressionResult logisticRegressionResult = GetLogisticRegression_ExpWalk(preProcessedXs, logYs);
             InnerRegressions.Add(logisticRegressionResult);
 
             LinearRegressionResultWithX0 linearRegression = new(preProcessedXs, logYs, PreprocessingX0);
@@ -219,7 +219,7 @@ namespace Qlarissa.Chart.Analysis.InverseLogRegression
             myPlot.SavePng(SaveLocationsConfiguration.GetLogRegressionsSaveFileLocation(symbol), 1100, 600);
         }
 
-        private LogisticRegressionResult GetLogisticRegression_ExpWalk_ChatGPTed(double[] Xs, double[] Ys)
+        private LogisticRegressionResult GetLogisticRegression_ExpWalk(double[] Xs, double[] Ys)
         {
             double min_xDelta0 = -0.001;
             double xDelta0 = min_xDelta0;
