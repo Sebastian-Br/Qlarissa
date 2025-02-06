@@ -1,15 +1,11 @@
 # Qlarissa - The Quantitative Finance Assistant
-</br>
-This tool enables its users to rapidly:
-</br>
 
+## This tool enables its users to rapidly:
 - Screen assets such as stocks or ETFs
 - Quantify their risk-reward profile
 - Visualize and store analysis results
-</br>
-By:
-</br>
 
+## By:
 - Retrieving up-to-date asset data via a local Python/yFinance API (script contained in repository)
 - Performing regression analyses to model long-term trends
   - Includes a custom-made regression function to more accurately reflect changes in growth
@@ -18,11 +14,11 @@ By:
 - Ranking assets based on long term growth, fundamental data, and analyst sentiment
 
 </br>
-This image showcases how the tool displays stock data and the regression functions it uses to quantify long-term trends.
+The below image showcases how Qlarissa graphs stock data and the regression functions it uses to quantify long-term trends.
 </br>
 It projects the long-term trend into the future, adding dividend payouts, to reflect the 1-year and 3-year growth expectation.
 </br>
-Trends are one, but far from the only factor that the tool considers when ranking assets.
+Trends are one, but far from the only factor that the tool considers when ranking assets. The graph is logarithmic to make exponential growth more comprehensible.
 </br>
 
 ![JNJ](https://github.com/user-attachments/assets/61b0e81d-099a-4294-bbed-a92000594870)
@@ -30,7 +26,7 @@ Trends are one, but far from the only factor that the tool considers when rankin
 </br>
 </br>
 
-Qlarissa quantifies growth-profiles of assets. From this image for instance, the user may observe that a 5-10% annualized growth rate had historically been the most likely outcome (at 29.4%) for Johnson & Johnson over all analyzed 24-month intervals.
+Qlarissa generates growth-profiles for assets. From this image for instance, the user may observe that a 5-10% annualized growth rate had historically been the most likely outcome (at 29.4%) for Johnson & Johnson over all analyzed 24-month intervals.
 </br>
 
 ![JNJ_Growth24](https://github.com/user-attachments/assets/0d52cad8-2bdb-46f2-a5fc-c6e39e83d93c)
