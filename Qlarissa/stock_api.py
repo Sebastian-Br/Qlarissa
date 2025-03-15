@@ -28,7 +28,15 @@ def get_stock_data():
             ticker_dividend_history = yf.Ticker(ticker).dividends
             ticker_dividend_history.index = ticker_dividend_history.index.strftime('%Y-%m-%d')
             # Exclude keys from historical data
-            data_filtered = data.drop(columns=["Adj Close", "Volume"])
+            #print(list(data.columns))
+            # Drop "Volume" and flatten MultiIndex columns
+            data_filtered = data.droplevel(axis=1, level=1) if isinstance(data.columns, pd.MultiIndex) else data
+            data_filtered = data_filtered.drop(columns=["Volume"], errors="ignore")
+
+            # Convert to dictionary with correct format
+            data_filtered_dict = data_filtered.to_dict(orient='index')
+            #print(type(data_filtered.index))
+            #print(data_filtered.to_dict(orient='index'))
             #earnings_history = yf.Ticker(ticker).earnings_history
             #earnings_history.index = earnings_history.index.strftime('%Y-%m-%d')
             quarterly_income_statement_df = yf.Ticker(ticker).quarterly_income_stmt
@@ -53,7 +61,7 @@ def get_stock_data():
                 "TrailingPE": ticker_info.get('trailingPE', '0'),
                 "ForwardPE": ticker_info.get('forwardPE', '0'),
                 "DividendPerShareYearly": ticker_info.get('dividendRate', '0'),
-                "HistoricalData": data_filtered.to_dict(orient='index'),
+                "HistoricalData": data_filtered_dict,
                 "DividendHistory": ticker_dividend_history.to_dict(),
                 "TargetMeanPrice": ticker_info.get('targetMeanPrice', '0'),
                 "NumberOfAnalystOpinions": ticker_info.get('numberOfAnalystOpinions', '0'),
