@@ -36,7 +36,7 @@ public class InverseLogRegressionResult : IRegressionResult
         LinearRegressionResultWithX0 linearRegression = new(preProcessedXs, logYs, PreprocessingX0);
         InnerRegressions.Add(linearRegression);
 
-        ExponentialRegression.ExponentialRegression expReg = new ExponentialRegression.ExponentialRegression(Xs, logYs, -PreprocessingX0); // does preprocessing internally
+        ExponentialRegression.ExponentialRegression expReg = new(Xs, logYs, -PreprocessingX0); // does preprocessing internally
         ExponentialRegression.ExponentialRegressionResult exponentialRegression = new(expReg, Xs, logYs);
         InnerRegressions.Add(exponentialRegression);
 
