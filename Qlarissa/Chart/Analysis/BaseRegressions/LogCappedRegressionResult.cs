@@ -138,15 +138,40 @@ class LogCappedRegressionResult : IRegressionResult
         int currentIteration = 0;
         int maxIterations = 200000;
 
-        Queue<bool> operations = new();
-
         double db = 0.001; // initial step sizes for b or k
         double dk = 0.001;
 
-        double dRsquared_db, dRsquared_dk; // changes to Rsquared when b or k changes
         double currentBestRsquared = GoodnessOfFit.RSquared(originalXs.Select(t => GetInternalEstimate(t, k, b, C)), Ys);
+
+        double recentBestB = b;
+        double recentBestK = k;
+
         while(currentIteration < maxIterations)
         {
+            double testB = b + db;
+            double testK = k + dk;
+
+            double testB_rsquared = GoodnessOfFit.RSquared(originalXs.Select(t => GetInternalEstimate(t, k, testB, C)), Ys);
+            double testK_rsquared = GoodnessOfFit.RSquared(originalXs.Select(t => GetInternalEstimate(t, testK, b, C)), Ys);
+            double bImprovement = testB_rsquared - currentBestRsquared;
+            double kImprovement = testK_rsquared - currentBestRsquared;
+
+            if(bImprovement > 0 || kImprovement > 0)
+            {
+                if (bImprovement > 0  && kImprovement > 0) // decide between stepping in the k or b direction
+                {
+                    
+                }
+                else // only changing one of k or b improves the regression
+                {
+
+                }
+            }
+            else // we need to backtrack as the last regression step could not improve the parameters
+            {
+
+            }
+
             break;
             currentIteration++;
         }
@@ -194,5 +219,17 @@ class LogCappedRegressionResult : IRegressionResult
             operations.Dequeue();
         }
         operations.Enqueue(isK);
+    }
+
+    static int GetKCount(Queue<bool> operations)
+    {
+        int ks = 0;
+        foreach (bool isK in operations)
+        {
+            if (isK)
+                ks++;
+        }
+
+        return ks;
     }
 }
