@@ -40,6 +40,9 @@ public class InverseLogRegressionResult : IRegressionResult
         ExponentialRegression.ExponentialRegressionResult exponentialRegression = new(expReg, Xs, logYs);
         InnerRegressions.Add(exponentialRegression);
 
+        LogCappedRegressionResult logCappedReg = new(Xs, logYs); // does preprocessing internally!
+        InnerRegressions.Add(logCappedReg);
+
         InnerRegressions.Sort((a, b) => b.GetRsquared().CompareTo(a.GetRsquared())); // sorts regressions in descending order with respect to R²
 
         DrawWithLogReg(Xs, logYs, symbol);
@@ -146,7 +149,7 @@ public class InverseLogRegressionResult : IRegressionResult
     private void DrawWithLogReg(double[] Xs, double[] Ys, Symbol symbol)
     {
         ScottPlot.Plot myPlot = new();
-        Ys = Ys.Select(y => y).ToArray();
+        Ys = Ys.Select(y => y).ToArray(); // let's pretend this line does not exist.
         var symbolScatter = myPlot.Add.Scatter(Xs, Ys);
         ScottPlot.Palettes.Category20 palette = new();
         symbolScatter.Color = palette.Colors[2];
@@ -158,10 +161,12 @@ public class InverseLogRegressionResult : IRegressionResult
         List<double> listLogRegYs = new();
         List<double> listLinRegYs = new();
         List<double> listExpRegYs = new();
+        List<double> listLogCappedRegYs = new();
 
         LogisticRegressionResult logisticRegression = (LogisticRegressionResult)InnerRegressions.Find(regression => regression.GetRegressionResultType() == RegressionResultType.Logistic);
         LinearRegressionResultWithX0 linearRegression = (LinearRegressionResultWithX0)InnerRegressions.Find(regression => regression.GetRegressionResultType() == RegressionResultType.Linear);
         ExponentialRegressionResult exponentialRegression = (ExponentialRegressionResult)InnerRegressions.Find(regression => regression.GetRegressionResultType() == RegressionResultType.Exponential);
+        LogCappedRegressionResult logCappedRegression = (LogCappedRegressionResult)InnerRegressions.Find(regression => regression.GetRegressionResultType() == RegressionResultType.LogisticallyCapped);
 
         for (double d = Xs.First(); d <= Xs.Last(); d += 0.01)
         {
@@ -169,6 +174,7 @@ public class InverseLogRegressionResult : IRegressionResult
             listLogRegYs.Add(logisticRegression.GetEstimate(d + PreprocessingX0)); // logistic regression doesn't store the pre-processing x0
             listLinRegYs.Add(linearRegression.GetEstimate(d));
             listExpRegYs.Add(exponentialRegression.GetEstimate(d));
+            listLogCappedRegYs.Add(logCappedRegression.GetEstimate(d));
         }
 
         double[] graphXs = listXs.ToArray();
@@ -189,6 +195,12 @@ public class InverseLogRegressionResult : IRegressionResult
         expScatter.Color = Colors.Red;
         expScatter.MarkerSize = 1.0f;
         expScatter.Label = "Exponential Regression";
+
+        double[] logCappedYs = listLogCappedRegYs.ToArray();
+        var logCappedScatter = myPlot.Add.Scatter(graphXs, logCappedYs);
+        logCappedScatter.Color = Colors.DarkMagenta;
+        logCappedScatter.MarkerSize = 1.0f;
+        logCappedScatter.Label = "Logistically Capped Regression";
 
         //https://scottplot.net/cookbook/5.0/Annotation/AnnotationCustomize/
         var logRegAnnotation = myPlot.Add.Annotation("LogRegR²=" + logisticRegression.GetRsquared());
@@ -214,9 +226,19 @@ public class InverseLogRegressionResult : IRegressionResult
         expRegAnnotation.Label.BorderWidth = 1;
         expRegAnnotation.OffsetY = 70;
 
+        var logCappedRegAnnotation = myPlot.Add.Annotation("LogCappedRegR²=" + logCappedRegression.GetRsquared());
+        logCappedRegAnnotation.Label.FontSize = 18;
+        logCappedRegAnnotation.Label.BackColor = Colors.Gray.WithAlpha(.3);
+        logCappedRegAnnotation.Label.ForeColor = Colors.Black.WithAlpha(0.8);
+        logCappedRegAnnotation.Label.BorderColor = Colors.Gray.WithAlpha(0.5);
+        logCappedRegAnnotation.Label.BorderWidth = 1;
+        logCappedRegAnnotation.OffsetY = 105;
+
 
         myPlot.Legend.Show();
-        myPlot.SavePng(SaveLocationsConfiguration.GetLogRegressionsSaveFileLocation(symbol), 1100, 600);
+        int width = 630;
+        double aspectRatio_HeightOverWidth = 1100.0 / 600.0;
+        myPlot.SavePng(SaveLocationsConfiguration.GetLogRegressionsSaveFileLocation(symbol), (int)(aspectRatio_HeightOverWidth * width), width);
     }
 
     private LogisticRegressionResult GetLogisticRegression_ExpWalk(double[] Xs, double[] Ys)
@@ -239,16 +261,15 @@ public class InverseLogRegressionResult : IRegressionResult
         {
             currentX0 = firstDateIndex + xDelta0;
 
-            //double[] x = Xs.Select(xx => (xx - currentX0)).ToArray();
-            double[] x = new double[Xs.Length];
+            double[] x = new double[Xs.Length]; //TODO: No need to allocate new memory every time here
             for (int i = 0; i < Xs.Length; i++)
             {
                 x[i] = Xs[i] - currentX0;
             }
 
             var p = Fit.Logarithm(x, Ys);
-            double a = p.Item1;
-            double b = p.Item2;
+            double a = p.A;
+            double b = p.B;
             double rSquared = GoodnessOfFit.RSquared(x.Select(x => a + b * Math.Log(x)), Ys);
 
             if (rSquared > currentBest_rSquared)
@@ -279,7 +300,7 @@ public class InverseLogRegressionResult : IRegressionResult
         }
 
         //Console.WriteLine("Finished Logistic Regression Exp Walk. Iterations: " + iteration);
-        LogisticRegressionResult result = new LogisticRegressionResult(bestRSquared, A: bestB, B: bestA, _x0: firstDateIndex + lastValid_xDelta0, Xs[0]);
+        LogisticRegressionResult result = new(bestRSquared, A: bestB, B: bestA, _x0: firstDateIndex + lastValid_xDelta0, Xs[0]);
         return result;
     }
 

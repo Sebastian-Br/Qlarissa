@@ -15,4 +15,5 @@ public enum RegressionResultType
     LinearWeighted = 5,
     ProjectingCAGR = 6,
     InverseLogistic = 7,
+    LogisticallyCapped = 8,
 }
