@@ -1,13 +1,5 @@
 ﻿using MathNet.Numerics;
 using Qlarissa.Chart.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
-using System.Threading.Tasks;
-using static Plotly.NET.StyleParam.LinearAxisId;
 
 namespace Qlarissa.Chart.Analysis.BaseRegressions;
 
@@ -61,7 +53,7 @@ class LogCappedRegressionResult : IRegressionResult
     /// </summary>
     public double GetEstimate(double t)
     {
-        if (t < Parameters[0])
+        if (t <= Parameters[0])
             return Parameters[3]; // C
 
         //                          t0                   b              k                       t0
@@ -80,16 +72,6 @@ class LogCappedRegressionResult : IRegressionResult
                 + C; // C
 
         return result;
-    }
-
-    private double GetXCoordinateOfMaximum(double b)
-    {
-        return b / Math.E;
-    }
-
-    private double GetYCoordinateOfMaximum(double k, double C)
-    {
-        return (k / Math.E) + C;
     }
 
     private double GivenYmaxAndC_DetermineK(double ymax, double C)
@@ -123,62 +105,50 @@ class LogCappedRegressionResult : IRegressionResult
     }
 
     (double, double, double) Fit(double[] internallyProcessedXs, double[] Ys, double[] originalXs)
-    { // Order: k, b, C
+    {
         if (internallyProcessedXs.Length != Ys.Length)
         {
             throw new InvalidOperationException("Arrays need to be of the same length");
         }
 
-        // hypersuperduperefficient estimation of initial regression parameters
+        // Hypersuperduperefficient estimation of initial regression parameters
         double initialGuessYmax = GetAverageOfLast750Elements(Ys);
         double b = GivenXmax_DetermineB(internallyProcessedXs[^1]);
         double C = GetAverageOfFirst30Elements(Ys);
         double k = GivenYmaxAndC_DetermineK(initialGuessYmax, C);
 
         int currentIteration = 0;
-        int maxIterations = 200000;
+        int maxIterations = 2000;
 
-        double db = 0.001; // initial step sizes for b or k
-        double dk = 0.001;
+        double db = 0.001; // initial step size for b
+        double dk = 0.001; // initial step size for k
 
         double currentBestRsquared = GoodnessOfFit.RSquared(originalXs.Select(t => GetInternalEstimate(t, k, b, C)), Ys);
 
         double recentBestB = b;
         double recentBestK = k;
+        double previousRsquared = currentBestRsquared;
 
-        while(currentIteration < maxIterations)
+        while (currentIteration < maxIterations)
         {
-            double testB = b + db;
-            double testK = k + dk;
-
-            double testB_rsquared = GoodnessOfFit.RSquared(originalXs.Select(t => GetInternalEstimate(t, k, testB, C)), Ys);
-            double testK_rsquared = GoodnessOfFit.RSquared(originalXs.Select(t => GetInternalEstimate(t, testK, b, C)), Ys);
-            double bImprovement = testB_rsquared - currentBestRsquared;
-            double kImprovement = testK_rsquared - currentBestRsquared;
-
-            if(bImprovement > 0 || kImprovement > 0)
-            {
-                if (bImprovement > 0  && kImprovement > 0) // decide between stepping in the k or b direction
-                {
-                    
-                }
-                else // only changing one of k or b improves the regression
-                {
-
-                }
-            }
-            else // we need to backtrack as the last regression step could not improve the parameters
-            {
-
-            }
-
             break;
+            // Try stepping b and k individually 1.0 -> 1.1 -> 1.3 -> 1.6
+            double testK = k + dk;
+            double testB = b + db;
+
+            double testK_rsquared = GoodnessOfFit.RSquared(originalXs.Select(t => GetInternalEstimate(t, testK, testB, C)), Ys);
+            
+            Console.WriteLine($"For b={testK}. dR²= {testK_rsquared - previousRsquared}");
+            previousRsquared = testK_rsquared;
+            dk += 0.01;
+            db -= 0.001;
             currentIteration++;
         }
 
         Rsquared = currentBestRsquared;
         return (k, b, C);
     }
+
 
     double GetAverageOfFirst30Elements(double[] Ys)
     {

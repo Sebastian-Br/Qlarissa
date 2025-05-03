@@ -20,4 +20,6 @@ public class SymbolInfoEx
     public double TargetMeanPrice { get; set; }
 
     public int NumberOfAnalystOpinions { get; set; }
+
+    public double RecommendationMean {  get; set; }
 }

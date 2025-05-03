@@ -22,8 +22,8 @@ def get_stock_data():
             data.index = data.index.strftime('%Y-%m-%d')
             # Get the P/E ratio information
             ticker_info = yf.Ticker(ticker).info
-            #print(ticker_info)
-            #print(jsonify(yf.Ticker(ticker)))
+            print(ticker_info)
+            print(yf.Ticker(ticker))
             # Get/format dividend history
             ticker_dividend_history = yf.Ticker(ticker).dividends
             ticker_dividend_history.index = ticker_dividend_history.index.strftime('%Y-%m-%d')
@@ -61,13 +61,14 @@ def get_stock_data():
                 "TrailingPE": ticker_info.get('trailingPE', '0'),
                 "ForwardPE": ticker_info.get('forwardPE', '0'),
                 "DividendPerShareYearly": ticker_info.get('dividendRate', '0'),
-                "HistoricalData": data_filtered_dict,
                 "DividendHistory": ticker_dividend_history.to_dict(),
                 "TargetMeanPrice": ticker_info.get('targetMeanPrice', '0'),
                 "NumberOfAnalystOpinions": ticker_info.get('numberOfAnalystOpinions', '0'),
                 "InvestorRelationsWebsite": ticker_info.get('irWebsite', '0'),
                 "SharesOutstanding": ticker_info.get('sharesOutstanding', '0'),
-                "RecentFourQuartersIncomeStatements": quarterly_income_statement_dictionary
+                "RecommendationMean": ticker_info.get('recommendationMean', '0'),
+                "RecentFourQuartersIncomeStatements": quarterly_income_statement_dictionary,
+                "HistoricalData": data_filtered_dict
             }
             return jsonify(response)
         else:

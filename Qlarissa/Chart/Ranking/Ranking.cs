@@ -173,9 +173,9 @@ public class Ranking
             throw new NotImplementedException(nameof(symbol.Overview.Currency));
         }
 
-        currentScore = currentScore * Sigmoidal_MarketCap_Weight(marketCapUSDequivalent); // prefer larger/more diversified corporations
-        double maxRsquared = GetMaxRsquared(symbol);
-        currentScore = currentScore * maxRsquared;// * maxRsquared; // prefer assets that are more predictable/stable
+        currentScore *= Sigmoidal_MarketCap_Weight(marketCapUSDequivalent); // prefer larger/more diversified corporations
+        currentScore *= GetMaxRsquared(symbol);// * maxRsquared; // prefer assets that are more predictable/stable
+        currentScore *= GetRecommendationMeanWeight(symbol.SymbolInformationExtended.RecommendationMean);
 
         return currentScore;
     }
@@ -188,6 +188,38 @@ public class Ranking
             (1.0) 
             /
             (1.0 + Math.Exp(-k * (marketCap_inBillionDollars - 12)));
+    }
+
+    private double GetRecommendationMeanWeight(double recommendationMean)
+    {
+        double mean = 1.0;
+        double deviation = 0.2;
+
+        double recommendationMeanForMaxScore = 1.0;
+        double recommendationMeanForMinScore = 6.0;
+
+        double maxScore = mean + deviation; // 1.2
+        double minScore = mean - deviation; // 0.8
+
+        double score;
+
+        if (recommendationMean <= recommendationMeanForMaxScore)
+        {
+            score = maxScore;
+        }
+        else if (recommendationMean >= recommendationMeanForMinScore)
+        {
+            score = minScore;
+        }
+        else
+        {
+            // Linear interpolation
+            double t = (recommendationMean - recommendationMeanForMaxScore) /
+                       (recommendationMeanForMinScore - recommendationMeanForMaxScore);
+            score = maxScore + (minScore - maxScore) * t;
+        }
+
+        return score;
     }
 
     private double Linear_AnalystTarget_Weight(Symbol symbol)

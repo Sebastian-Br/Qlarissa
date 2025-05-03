@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
 namespace Qlarissa.Chart.Api.PYfinance;
 internal class PyFiSymbol
@@ -22,6 +23,8 @@ internal class PyFiSymbol
     public string InvestorRelationsWebsite {  get; set; }
 
     public double TargetMeanPrice { get; set; }
+
+    public double RecommendationMean { get; set; }
 
     public int NumberOfAnalystOpinions { get; set; }
 
@@ -95,6 +98,13 @@ internal class PyFiSymbol
             {
                 throw new MissingMemberException(nameof(TargetMeanPrice));
             }
+        }
+
+        symbolInfoEx.RecommendationMean = RecommendationMean;
+        if (RecommendationMean == 0)
+        {
+            symbolInfoEx.RecommendationMean = 2; // dbg break here until it's clear what to do when the value is 0
+            Console.WriteLine("RecommendationMean for " + Symbol + " is missing!");
         }
 
         Symbol symbol = new(symbolDataPointList.ToArray(), overview, dividendHistory, symbolInfoEx);
