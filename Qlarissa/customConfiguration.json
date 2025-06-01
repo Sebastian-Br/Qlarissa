@@ -198,6 +198,8 @@
     "WDAY": "Workday",
     "PCAR": "Paccar",
     "OR.PA": "L'Oréal",
-    "LHX": "L3Harris Technologies"
+    "LHX": "L3Harris Technologies",
+    "A": "Agilent Technologies",
+    "PAYC":  "Paycom"
   }
 }

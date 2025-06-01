@@ -57,8 +57,8 @@ public class Ranking
         result += ("****************************************\n");
         foreach (var symbol in Symbols)
         {
-            result += ("Rank " + rank + ": " + symbol.ToString() + "\n");
-            result += ("Score: " + GetAggregatedScore(symbol)) + "\n";
+            result += "Rank " + rank + ": " + symbol.ToString() + "\n";
+            result += "Score: " + Math.Round(GetAggregatedScore(symbol), 3) + "\n";
             rank++;
         }
         result += ("****************************************\n");

@@ -37,11 +37,14 @@ internal class PyFiSymbol
 
     public Symbol ToBusinessEntity(CustomConfiguration.CustomConfiguration customConfiguration)
     {
-        SymbolOverview overview = new();
-        overview.Symbol = Symbol;
-        overview.Name = Name;
-        overview.Currency = CurrencyExtensions.ToEnum(Currency);
-        overview.DividendPerShareYearly = DividendPerShareYearly;
+        SymbolOverview overview = new()
+        {
+            Symbol = Symbol,
+            Name = Name,
+            Currency = CurrencyExtensions.ToEnum(Currency),
+            DividendPerShareYearly = DividendPerShareYearly
+        };
+
         if (MarketCapitalization == 0)
         {
             if (customConfiguration.SymbolToMissingMarketCapInBillions.TryGetValue(Symbol, out double marketCapitalizationInBillions))
@@ -60,7 +63,7 @@ internal class PyFiSymbol
         }
 
         overview.InvestorRelationsWebsite = InvestorRelationsWebsite;
-        List <SymbolDataPoint> symbolDataPointList = new();
+        List<SymbolDataPoint> symbolDataPointList = [];
 
         foreach (KeyValuePair<string,PyFiDataPoint> entry in HistoricalData)
         {
@@ -73,7 +76,7 @@ internal class PyFiSymbol
             symbolDataPointList.Add(symbolDataPoint);
         }
 
-        Dictionary<DateOnly, double> dividendHistory = new();
+        Dictionary<DateOnly, double> dividendHistory = [];
 
         foreach (KeyValuePair<string, double> dividendPayout in DividendHistory)
         {
@@ -81,12 +84,15 @@ internal class PyFiSymbol
             dividendHistory.Add(dividendPayoutDate, dividendPayout.Value);
         }
 
-        SymbolInfoEx symbolInfoEx = new();
-        symbolInfoEx.ForwardPE = ForwardPE;
-        symbolInfoEx.TrailingPE = TrailingPE;
-        symbolInfoEx.NumberOfAnalystOpinions = NumberOfAnalystOpinions;
-        symbolInfoEx.TargetMeanPrice = TargetMeanPrice;
-        if(TargetMeanPrice == 0)
+        SymbolInfoEx symbolInfoEx = new()
+        {
+            ForwardPE = ForwardPE,
+            TrailingPE = TrailingPE,
+            NumberOfAnalystOpinions = NumberOfAnalystOpinions,
+            TargetMeanPrice = TargetMeanPrice
+        };
+
+        if (TargetMeanPrice == 0)
         {
             if(customConfiguration.SymbolToMissing1YearForecastMap.TryGetValue(Symbol, out double forecast))
             {
@@ -107,7 +113,7 @@ internal class PyFiSymbol
             Console.WriteLine("RecommendationMean for " + Symbol + " is missing!");
         }
 
-        Symbol symbol = new(symbolDataPointList.ToArray(), overview, dividendHistory, symbolInfoEx);
+        Symbol symbol = new([.. symbolDataPointList], overview, dividendHistory, symbolInfoEx);
         return symbol;
     }
 }

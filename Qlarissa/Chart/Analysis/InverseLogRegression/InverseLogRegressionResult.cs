@@ -4,13 +4,6 @@ using Qlarissa.Chart.Enums;
 using Qlarissa.CustomConfiguration;
 using MathNet.Numerics;
 using ScottPlot;
-using ScottPlot.Plottables;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MathNet.Numerics.LinearRegression;
 
 namespace Qlarissa.Chart.Analysis.InverseLogRegression;
 
@@ -177,26 +170,26 @@ public class InverseLogRegressionResult : IRegressionResult
             listLogCappedRegYs.Add(logCappedRegression.GetEstimate(d));
         }
 
-        double[] graphXs = listXs.ToArray();
-        double[] LogRegYs = listLogRegYs.ToArray();
+        double[] graphXs = [.. listXs];
+        double[] LogRegYs = [.. listLogRegYs];
         var logScatter = myPlot.Add.Scatter(graphXs, LogRegYs);
         logScatter.Color = Colors.Green;
         logScatter.MarkerSize = 1.0f;
         logScatter.Label = "Logistic Regression";
 
-        double[] LinRegYs = listLinRegYs.ToArray();
+        double[] LinRegYs = [.. listLinRegYs];
         var linScatter = myPlot.Add.Scatter(graphXs, LinRegYs);
         linScatter.Color = Colors.Blue;
         linScatter.MarkerSize = 1.0f;
         linScatter.Label = "Linear Regression";
 
-        double[] ExpRegYs = listExpRegYs.ToArray();
+        double[] ExpRegYs = [.. listExpRegYs];
         var expScatter = myPlot.Add.Scatter(graphXs, ExpRegYs);
         expScatter.Color = Colors.Red;
         expScatter.MarkerSize = 1.0f;
         expScatter.Label = "Exponential Regression";
 
-        double[] logCappedYs = listLogCappedRegYs.ToArray();
+        double[] logCappedYs = [.. listLogCappedRegYs];
         var logCappedScatter = myPlot.Add.Scatter(graphXs, logCappedYs);
         logCappedScatter.Color = Colors.DarkMagenta;
         logCappedScatter.MarkerSize = 1.0f;
@@ -280,17 +273,17 @@ public class InverseLogRegressionResult : IRegressionResult
                 bestB = b;
                 bestRSquared = rSquared;
 
-                // Adjust step size for the next iteration using an exponential-walk approach
-                stepSize *= 1.5; // Increase step size exponentially
+                // Adjust step size for the next iteration exponentially
+                stepSize *= 1.5;
                 lastValid_xDelta0 = xDelta0;
             }
             else
             {
                 // Overshoot occurred, restore previous best result and decrease step size
                 xDelta0 = lastValid_xDelta0;
-                stepSize *= 0.5; // Decrease step size
+                stepSize *= 0.5;
 
-                // Prevent step size from becoming too small
+                // Check if step size is sufficiently small & exit loop immediately if so
                 if (Math.Abs(stepSize) < exitStepSize)
                     break;
             }

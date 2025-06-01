@@ -9,7 +9,7 @@ internal class LogisticRegressionResult : IRegressionResult
     /// </summary>
     public LogisticRegressionResult(double rSquared, double A, double B, double _x0, double constantT)
     {
-        Parameters = new();
+        Parameters = [];
         Rsquared = rSquared;
         Parameters.Add(A);
         Parameters.Add(B);
