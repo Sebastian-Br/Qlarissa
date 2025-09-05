@@ -200,6 +200,9 @@
     "OR.PA": "L'Oréal",
     "LHX": "L3Harris Technologies",
     "A": "Agilent Technologies",
-    "PAYC":  "Paycom"
+    "PAYC": "Paycom",
+    "NOW": "ServiceNow",
+    "GIS": "General Mills",
+    "SPXC": "SPX Technologies",
   }
 }
