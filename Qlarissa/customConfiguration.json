@@ -13,11 +13,13 @@
   },
   "SymbolToMissing1YearForecastMap": {
     "SPY": 1.1,
-    "URTH": 1.032
+    "URTH": 1.032,
+    "IYW": 1.2
   },
   "SymbolToMissingMarketCapInBillions": {
     "SPY": 1000000,
-    "URTH": 2000000
+    "URTH": 2000000,
+    "IYW": 100000
   },
   "SymbolsToBeAnalyzed": {
     "ADBE": "Adobe",
@@ -204,5 +206,11 @@
     "NOW": "ServiceNow",
     "GIS": "General Mills",
     "SPXC": "SPX Technologies",
+    "IYW": "iShares U.S. Technology",
+    "MPWR": "Monolithic Power Systems",
+    "HUBS": "HubSpot",
+    "SSNC": "SS&C Technology Holdings",
+    "ENTG": "Entegris",
+    "SPGI": "S&P Global"
   }
 }
