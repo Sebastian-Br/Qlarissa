@@ -45,21 +45,18 @@ internal class PyFiSymbol
             DividendPerShareYearly = DividendPerShareYearly
         };
 
-        if (MarketCapitalization == 0)
+        if (customConfiguration.SymbolToMissingMarketCapInBillions.TryGetValue(Symbol, out double marketCapitalizationInBillions))
         {
-            if (customConfiguration.SymbolToMissingMarketCapInBillions.TryGetValue(Symbol, out double marketCapitalizationInBillions))
-            {
-                Console.WriteLine("Retrieved market cap [billion USD] for " + Symbol + " from the configuration (" + marketCapitalizationInBillions + ")");
-                overview.MarketCapitalization = (long)(marketCapitalizationInBillions * 1e9);
-            }
-            else
-            {
-                throw new MissingMemberException(nameof(MarketCapitalization));
-            }
+            Console.WriteLine("Retrieved market cap [billion USD] for " + Symbol + " from the configuration (" + marketCapitalizationInBillions + ")");
+            overview.MarketCapitalization = (long)(marketCapitalizationInBillions * 1e9);
+        }
+        else if (MarketCapitalization != 0)
+        {
+            overview.MarketCapitalization = MarketCapitalization;
         }
         else
         {
-            overview.MarketCapitalization = MarketCapitalization;
+            throw new MissingMemberException(nameof(MarketCapitalization));
         }
 
         overview.InvestorRelationsWebsite = InvestorRelationsWebsite;
