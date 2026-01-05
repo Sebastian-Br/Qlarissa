@@ -262,7 +262,6 @@ namespace Qlarissa.Chart.ChartAnalysis.GrowthVolatilityAnalysis
                 + "% P(-30%)=" + GetHistoricLikelihoodOfMaximumUnrealizedLoss_GreaterThanOrEqualTo(-30).Round(2) + "% P(-40%)=" + GetHistoricLikelihoodOfMaximumUnrealizedLoss_GreaterThanOrEqualTo(-40).Round(2)
                 + "% P(-50%)=" + GetHistoricLikelihoodOfMaximumUnrealizedLoss_GreaterThanOrEqualTo(-50).Round(2)
                 +"%");
-            myPlot.Axes.Title.Label.OffsetY = -40;
             int numberOfBars = (int)(HighestMinimumPercentage - LowestMinimumPercentage);
             List<ScottPlot.Bar> bars = new();
             for (int i = 0; i < numberOfBars; i++)
@@ -346,8 +345,6 @@ namespace Qlarissa.Chart.ChartAnalysis.GrowthVolatilityAnalysis
             myPlot.Title(Symbol.Overview.ToString() + " Leveraged Overperformance Analysis over " + (int)TimePeriod + " months." +
                 "\nBarrier adjusted by " + AdjustmentPercentagePA + "% p.a." +
                 " Average Annual Non-Leveraged Growth: " + annualizedNonLeveragedPerformance.Round(2) + "%");
-
-            myPlot.Axes.Title.Label.OffsetY = -15;
 
             var barPlot = myPlot.Add.Bars(bars.ToArray());
             barPlot.ValueLabelStyle.FontSize = 12f;
@@ -470,7 +467,6 @@ namespace Qlarissa.Chart.ChartAnalysis.GrowthVolatilityAnalysis
             double averageGrowthInTimePeriod = Subresults.Select(x => x.GrowthPercent).Average();
             myPlot.Title(Symbol.Overview.ToString() + " Annualized Growth Analysis"
                 + "\n Average Growth in " + (int)TimePeriod + " months: " + averageGrowthInTimePeriod.Round(2) + "% - Annualized: " + Annualize(averageGrowthInTimePeriod).Round(2) + "%");
-            myPlot.Axes.Title.Label.OffsetY = -35;
             double minimum = -30;
             double maximum = 50;
             double stepSize = 5.0;
@@ -484,7 +480,7 @@ namespace Qlarissa.Chart.ChartAnalysis.GrowthVolatilityAnalysis
                 );
             initialBar.Label = initialBar.Value.Round(1).ToString();
 
-            initialBar.LabelOffset = 10f;
+            initialBar.LabelOffset = 8f;
             bars.Add(initialBar);
 
             Parallel.ForEach(Partitioner.Create(0, numberOfBars), range =>
@@ -511,7 +507,7 @@ namespace Qlarissa.Chart.ChartAnalysis.GrowthVolatilityAnalysis
                     
                     myBar.Label = myBar.Value.Round(1).ToString();
 
-                    myBar.LabelOffset = 10f;
+                    myBar.LabelOffset = 8f;
                     lock (bars)
                     {
                         bars.Add(myBar);
@@ -524,8 +520,7 @@ namespace Qlarissa.Chart.ChartAnalysis.GrowthVolatilityAnalysis
                 new(numberOfBars, ">" + maximum + "%")
                 );
             lastBar.Label = lastBar.Value.Round(1).ToString();
-
-            lastBar.LabelOffset = 10f;
+            lastBar.LabelOffset = 8f;
             bars.Add(lastBar);
 
             var barPlot = myPlot.Add.Bars(bars.ToArray());
@@ -533,7 +528,7 @@ namespace Qlarissa.Chart.ChartAnalysis.GrowthVolatilityAnalysis
 
             //https://scottplot.net/cookbook/5.0/CustomizingTicks/RotatedTicksLongLabels/
             myPlot.Axes.Bottom.TickGenerator = new ScottPlot.TickGenerators.NumericManual(tickList.ToArray());
-            myPlot.Axes.Bottom.TickLabelStyle.Rotation = 45;
+            myPlot.Axes.Bottom.TickLabelStyle.Rotation = 30;
             myPlot.Axes.Bottom.TickLabelStyle.Alignment = Alignment.MiddleLeft;
 
             /*float largestLabelWidth = 0;
@@ -542,14 +537,15 @@ namespace Qlarissa.Chart.ChartAnalysis.GrowthVolatilityAnalysis
                 PixelSize size = myPlot.Axes.Bottom.TickLabelStyle.Measure(tick.Label);
                 largestLabelWidth = Math.Max(largestLabelWidth, size.Width);
             }
-
+            */
             // ensure axis panels do not get smaller than the largest label
-            myPlot.Axes.Bottom.MinimumSize = largestLabelWidth + 30;
-            myPlot.Axes.Right.MinimumSize = largestLabelWidth;*/
+            myPlot.Axes.Bottom.MinimumSize = 60;
+            //myPlot.Axes.Right.MinimumSize = 60;
 
             myPlot.Axes.Bottom.Label.Text = "Annualized Growth [%] over " + (int)TimePeriod + " month period";
+            myPlot.Axes.Bottom.Label.OffsetY = 5;
             myPlot.Axes.Left.Label.Text = "Likelihood of Growth [%]";
-            myPlot.SavePng(SaveLocationsConfiguration.GetGrowthAnalysisSaveFileLocation(Symbol, this), numberOfBars * 50, 525);
+            myPlot.SavePng(SaveLocationsConfiguration.GetGrowthAnalysisSaveFileLocation(Symbol, this), numberOfBars * 55, 575);
         }
 
         /*
