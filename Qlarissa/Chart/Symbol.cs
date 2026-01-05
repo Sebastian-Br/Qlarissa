@@ -14,7 +14,6 @@ using System.Threading.Tasks;
 using static ScottPlot.Generate;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using DateTime = System.DateTime;
-using Qlarissa.ErrorCorrection;
 
 namespace Qlarissa.Chart;
 
@@ -61,8 +60,6 @@ public class Symbol
     public GrowthVolatilityAnalysis GVA_2Years { get; private set; }
     public GrowthVolatilityAnalysis GVA_1Year { get; private set; }
 
-    public ErrorCorrectionProfileForINVLOGRegression ECforINVLOG { get; private set; }
-
     Dictionary<string,ExcludedTimePeriod> TimePeriodsExcludedFromAnalysis { get; set; }
 
     /// <summary>
@@ -86,18 +83,6 @@ public class Symbol
             GVA_2Years = new(this, Enums.TimePeriod.TwoYears);
             GVA_1Year = new(this, Enums.TimePeriod.OneYear);
             Analyzed = true;
-        }
-    }
-
-    public void QuantifyPredictionErrors()
-    {
-        try
-        {
-            ECforINVLOG = new(this);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.ToString());
         }
     }
 

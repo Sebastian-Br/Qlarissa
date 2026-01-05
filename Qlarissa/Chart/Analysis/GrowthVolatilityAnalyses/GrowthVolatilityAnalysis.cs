@@ -326,7 +326,7 @@ namespace Qlarissa.Chart.ChartAnalysis.GrowthVolatilityAnalysis
                     annualizedNonLeveragedPerformance = result.NonLeveragedAvgAnnualizedPerformancePercentage;
                     myBar.LabelOffset = 36f;
                     myBar.FillColor = Colors.Gray.WithAlpha(0.6);
-                    myBar.BorderColor = Colors.Black.WithAlpha(0.7);
+                    myBar.LineColor = Colors.Black.WithAlpha(0.7);
 
                     lock (bars)
                     {
@@ -363,11 +363,11 @@ namespace Qlarissa.Chart.ChartAnalysis.GrowthVolatilityAnalysis
                 "\n2. Likelihood of Knockout Event [%]" +
                 "\n3. Likelihood of Knockout or Loss [%]" +
                 "\n4. Annualized " + (int)TimePeriod + "-month Performance [%] ");
-            barAnnotation.Label.FontSize = 15;
-            barAnnotation.Label.BackColor = Colors.Blue.WithAlpha(.3);
-            barAnnotation.Label.ForeColor = Colors.Black.WithAlpha(0.9);
-            barAnnotation.Label.BorderColor = Colors.Blue.WithAlpha(0.5);
-            barAnnotation.Label.BorderWidth = 1;
+            barAnnotation.LabelFontSize = 15;
+            barAnnotation.LabelBackgroundColor = Colors.Blue.WithAlpha(.3);
+            barAnnotation.LabelFontColor = Colors.Black.WithAlpha(0.9);
+            barAnnotation.LabelBorderColor = Colors.Blue.WithAlpha(0.5);
+            barAnnotation.LabelBorderWidth = 1;
 
             myPlot.Axes.Bottom.Label.Text = "Leverage";
             myPlot.Axes.Left.Label.Text = "Overperformance vs Underlying Asset [%]";
@@ -536,7 +536,7 @@ namespace Qlarissa.Chart.ChartAnalysis.GrowthVolatilityAnalysis
             myPlot.Axes.Bottom.TickLabelStyle.Rotation = 45;
             myPlot.Axes.Bottom.TickLabelStyle.Alignment = Alignment.MiddleLeft;
 
-            float largestLabelWidth = 0;
+            /*float largestLabelWidth = 0;
             foreach (Tick tick in tickList)
             {
                 PixelSize size = myPlot.Axes.Bottom.TickLabelStyle.Measure(tick.Label);
@@ -545,7 +545,7 @@ namespace Qlarissa.Chart.ChartAnalysis.GrowthVolatilityAnalysis
 
             // ensure axis panels do not get smaller than the largest label
             myPlot.Axes.Bottom.MinimumSize = largestLabelWidth + 30;
-            myPlot.Axes.Right.MinimumSize = largestLabelWidth;
+            myPlot.Axes.Right.MinimumSize = largestLabelWidth;*/
 
             myPlot.Axes.Bottom.Label.Text = "Annualized Growth [%] over " + (int)TimePeriod + " month period";
             myPlot.Axes.Left.Label.Text = "Likelihood of Growth [%]";

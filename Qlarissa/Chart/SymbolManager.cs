@@ -16,7 +16,6 @@ using ScottPlot.AxisPanels;
 using ScottPlot.TickGenerators;
 using MathNet.Numerics;
 using Qlarissa.CustomConfiguration;
-using Qlarissa.ErrorCorrection;
 using Qlarissa.Chart.Enums;
 
 namespace Qlarissa.Chart;
@@ -259,13 +258,13 @@ public class SymbolManager
         }
 
         var chart = myPlot.Add.Scatter(x, y.Select(y => Math.Log(y)).ToArray()); // adds symbol x,y
-        //chart.Color = Colors.DarkSlateGray;
+        chart.Color = Colors.DarkSlateGray;
 
         ScottPlot.Palettes.Category20 palette = new();
         var expRegScatter = myPlot.Add.Scatter(regressionFunctions_Xs.ToArray(), expRegYs.ToArray().Select(y => Math.Log(y)).ToArray());
         expRegScatter.Color = palette.Colors[2];
         expRegScatter.MarkerSize = 0.5f;
-        expRegScatter.Label = "EXP";
+        expRegScatter.LegendText = "EXP";
 
         if ((expRegYs.ToArray().Any(x => x < 0)))
         {
@@ -280,10 +279,8 @@ public class SymbolManager
         var inverseLogScatter = myPlot.Add.Scatter(regressionFunctions_Xs.ToArray(), inverseLogYs.ToArray().Select(y => Math.Log(y)).ToArray());
         inverseLogScatter.Color = Colors.Black;
         inverseLogScatter.MarkerSize = 0.75f;
-        inverseLogScatter.Label = "INVLOG";
+        inverseLogScatter.LegendText = "INVLOG";
 
-        // Use a custom formatter to control the label for each tick mark
-        static string logTickLabels(double y) => Math.Pow(double.E, y).ToString("N0");
         // create a minor tick generator that places log-distributed minor ticks
         ScottPlot.TickGenerators.LogMinorTickGenerator minorTickGen = new();
         ScottPlot.TickGenerators.NumericAutomatic tickGen = new();
@@ -302,7 +299,7 @@ public class SymbolManager
 
         myPlot.ShowLegend();
         myPlot.Legend.Orientation = Orientation.Horizontal;
-        myPlot.Axes.Title.Label.OffsetY = -35;
+        //myPlot.Axes.Title.Label.OffsetY = -35;
 
         var verticalLine1Y = myPlot.Add.VerticalLine(DateOnly.FromDateTime(DateTime.Now.AddYears(1)).ToDouble());
         verticalLine1Y.Text = "+1Y";
@@ -325,7 +322,7 @@ public class SymbolManager
             Size = 8,
             Color = Colors.Purple,
             Shape = MarkerShape.OpenDiamond,
-            Label = _1YE_weighted_Y.Round(2).ToString(),
+            LegendText = _1YE_weighted_Y.Round(2).ToString(),
             LineWidth = 2,
         };
 
@@ -340,111 +337,12 @@ public class SymbolManager
             Size = 8,
             Color = Colors.SaddleBrown,
             Shape = MarkerShape.OpenDiamond,
-            Label = _3YE_weighted_Y.Round(2).ToString(),
+            LegendText = _3YE_weighted_Y.Round(2).ToString(),
             LineWidth = 2,
         };
 
         myPlot.Add.Plottable(marker3YE);
 
         myPlot.SavePng(SaveLocationsConfiguration.GetSymbolChartSaveFileLocation(symbol), 1380, 600);
-    }
-
-    public void CollateINVLOGpredictionErrorDataByBaseRegressionType_AndSaveToCSV_AndDraw()
-    {
-        foreach(Symbol symbol in SymbolDictionary.Values)
-        {
-            Console.WriteLine("Quantifying Prediction Errors for: " + symbol.Overview);
-            symbol.QuantifyPredictionErrors();
-        }
-
-        SavePredictionErrorDataToCSV_ByBaseRegressionType(RegressionResultType.Exponential);
-        SavePredictionErrorDataToCSV_ByBaseRegressionType(RegressionResultType.Linear);
-        SavePredictionErrorDataToCSV_ByBaseRegressionType(RegressionResultType.Logistic);
-
-        DrawINVLOGpredictionErrorData_ForAll_BaseRegressionTypes();
-        DrawINVLOGpredictionErrorData_ByBaseRegression(RegressionResultType.Exponential);
-        DrawINVLOGpredictionErrorData_ByBaseRegression(RegressionResultType.Linear);
-        DrawINVLOGpredictionErrorData_ByBaseRegression(RegressionResultType.Logistic);
-    }
-
-    private void SavePredictionErrorDataToCSV_ByBaseRegressionType(RegressionResultType baseRegression)
-    {
-        StringBuilder csvContent = new StringBuilder();
-        csvContent.Append(ErrorCorrectionForInvLogFrame.GetCsvHeader(baseRegression));
-        foreach (Symbol symbol in SymbolDictionary.Values)
-        {
-            if (symbol.ECforINVLOG is not null)
-            {
-                foreach (ErrorCorrectionForInvLogFrame frame in symbol.ECforINVLOG.Frames)
-                {
-                    if (frame.InnerRegressionType == baseRegression)
-                    {
-                        csvContent.Append(frame.AsCsvRow());
-                    }
-                }
-            }
-        }
-
-        string saveFileLocation = SaveLocationsConfiguration.GetPredictionErrorCSV_SaveFileLocation_ForINVLOG_ByBaseRegressionType(baseRegression);
-        Console.WriteLine("Saving ML training data to " + saveFileLocation);
-        File.WriteAllText(saveFileLocation, csvContent.ToString());
-    }
-
-    private void DrawINVLOGpredictionErrorData_ForAll_BaseRegressionTypes()
-    {
-        ScottPlot.Plot myPlot = new();
-        myPlot.Title("Combined Error Heatmap (all Symbols) by R² and Slope at the end of training period." +
-            "\nBlue = Overestimation. Red = Underestimation. Green = Good Estimate.");
-
-        myPlot.Axes.Title.Label.OffsetY = -25;
-
-        foreach (Symbol symbol in SymbolDictionary.Values)
-        {
-            if (symbol.ECforINVLOG is not null)
-            {
-                foreach (ErrorCorrectionForInvLogFrame frame in symbol.ECforINVLOG.Frames)
-                {
-                    InvLogFrameAsHeatmapPoint heatmapPoint = new(frame);
-                    myPlot.Add.Marker(x: heatmapPoint.X_RSquared, y: heatmapPoint.Y_Slope, size: heatmapPoint.MarkerSize, color: heatmapPoint.Z_Color);
-                }
-            }
-        }
-
-        myPlot.Axes.Bottom.Label.Text = "R²";
-        myPlot.Axes.Left.Label.Text = "Slope";
-        string saveFileLocation = SaveLocationsConfiguration.GetPredictionErrorPNG_SaveFileLocation_ForINVLOG_AllRegressionTypes();
-        Console.WriteLine("Saving Heatmap to " + saveFileLocation);
-        myPlot.SavePng(saveFileLocation, 800, 800 - (int)myPlot.Axes.Title.Label.OffsetY);
-    }
-
-    private void DrawINVLOGpredictionErrorData_ByBaseRegression(RegressionResultType baseRegression)
-    {
-        ScottPlot.Plot myPlot = new();
-        myPlot.Title("Error Heatmap (all Symbols) by R² and Slope at the end of training period." +
-            "\nFor Base Regression type: " + baseRegression +
-            "\nBlue = Overestimation. Red = Underestimation. Green = Good Estimate.");
-
-        myPlot.Axes.Title.Label.OffsetY = -40;
-
-        foreach (Symbol symbol in SymbolDictionary.Values)
-        {
-            if (symbol.ECforINVLOG is not null)
-            {
-                foreach (ErrorCorrectionForInvLogFrame frame in symbol.ECforINVLOG.Frames)
-                {
-                    if(frame.InnerRegressionType == baseRegression)
-                    {
-                        InvLogFrameAsHeatmapPoint heatmapPoint = new(frame);
-                        myPlot.Add.Marker(x: heatmapPoint.X_RSquared, y: heatmapPoint.Y_Slope, size: heatmapPoint.MarkerSize, color: heatmapPoint.Z_Color);
-                    }
-                }
-            }
-        }
-
-        myPlot.Axes.Bottom.Label.Text = "R²";
-        myPlot.Axes.Left.Label.Text = "Slope";
-        string saveFileLocation = SaveLocationsConfiguration.GetPredictionErrorPNG_SaveFileLocation_ForINVLOG_ByBaseRegressionType(baseRegression);
-        Console.WriteLine("Saving Heatmap to " + saveFileLocation);
-        myPlot.SavePng(saveFileLocation, 800, 800 - (int)myPlot.Axes.Title.Label.OffsetY);
     }
 }

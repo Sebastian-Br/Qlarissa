@@ -175,60 +175,60 @@ public class InverseLogRegressionResult : IRegressionResult
         var logScatter = myPlot.Add.Scatter(graphXs, LogRegYs);
         logScatter.Color = Colors.Green;
         logScatter.MarkerSize = 1.0f;
-        logScatter.Label = "Logistic Regression";
+        logScatter.LegendText = "Logistic Regression";
 
         double[] LinRegYs = [.. listLinRegYs];
         var linScatter = myPlot.Add.Scatter(graphXs, LinRegYs);
         linScatter.Color = Colors.Blue;
         linScatter.MarkerSize = 1.0f;
-        linScatter.Label = "Linear Regression";
+        linScatter.LegendText = "Linear Regression";
 
         double[] ExpRegYs = [.. listExpRegYs];
         var expScatter = myPlot.Add.Scatter(graphXs, ExpRegYs);
         expScatter.Color = Colors.Red;
         expScatter.MarkerSize = 1.0f;
-        expScatter.Label = "Exponential Regression";
+        expScatter.LegendText = "Exponential Regression";
 
         double[] logCappedYs = [.. listLogCappedRegYs];
         var logCappedScatter = myPlot.Add.Scatter(graphXs, logCappedYs);
         logCappedScatter.Color = Colors.DarkMagenta;
         logCappedScatter.MarkerSize = 1.0f;
-        logCappedScatter.Label = "Logistically Capped Regression";
+        logCappedScatter.LegendText = "Logistically Capped Regression";
 
         //https://scottplot.net/cookbook/5.0/Annotation/AnnotationCustomize/
         var logRegAnnotation = myPlot.Add.Annotation("LogRegR²=" + logisticRegression.GetRsquared());
-        logRegAnnotation.Label.FontSize = 18;
-        logRegAnnotation.Label.BackColor = Colors.Gray.WithAlpha(.3);
-        logRegAnnotation.Label.ForeColor = Colors.Black.WithAlpha(0.8);
-        logRegAnnotation.Label.BorderColor = Colors.Gray.WithAlpha(0.5);
-        logRegAnnotation.Label.BorderWidth = 1;
+        logRegAnnotation.LabelFontSize = 18;
+        logRegAnnotation.LabelBackgroundColor = Colors.Gray.WithAlpha(.3);
+        logRegAnnotation.LabelFontColor = Colors.Black.WithAlpha(0.8);
+        logRegAnnotation.LabelBorderColor = Colors.Gray.WithAlpha(0.5);
+        logRegAnnotation.LabelBorderWidth = 1;
 
         var linRegAnnotation = myPlot.Add.Annotation("LinRegR²=" + linearRegression.GetRsquared());
-        linRegAnnotation.Label.FontSize = 18;
-        linRegAnnotation.Label.BackColor = Colors.Gray.WithAlpha(.3);
-        linRegAnnotation.Label.ForeColor = Colors.Black.WithAlpha(0.8);
-        linRegAnnotation.Label.BorderColor = Colors.Gray.WithAlpha(0.5);
-        linRegAnnotation.Label.BorderWidth = 1;
+        linRegAnnotation.LabelFontSize = 18;
+        linRegAnnotation.LabelBackgroundColor = Colors.Gray.WithAlpha(.3);
+        linRegAnnotation.LabelFontColor = Colors.Black.WithAlpha(0.8);
+        linRegAnnotation.LabelBorderColor = Colors.Gray.WithAlpha(0.5);
+        linRegAnnotation.LabelBorderWidth = 1;
         linRegAnnotation.OffsetY = 35;
 
         var expRegAnnotation = myPlot.Add.Annotation("ExpRegR²=" + exponentialRegression.GetRsquared());
-        expRegAnnotation.Label.FontSize = 18;
-        expRegAnnotation.Label.BackColor = Colors.Gray.WithAlpha(.3);
-        expRegAnnotation.Label.ForeColor = Colors.Black.WithAlpha(0.8);
-        expRegAnnotation.Label.BorderColor = Colors.Gray.WithAlpha(0.5);
-        expRegAnnotation.Label.BorderWidth = 1;
+        expRegAnnotation.LabelFontSize = 18;
+        expRegAnnotation.LabelBackgroundColor = Colors.Gray.WithAlpha(.3);
+        expRegAnnotation.LabelFontColor = Colors.Black.WithAlpha(0.8);
+        expRegAnnotation.LabelBorderColor = Colors.Gray.WithAlpha(0.5);
+        expRegAnnotation.LabelBorderWidth = 1;
         expRegAnnotation.OffsetY = 70;
 
         var logCappedRegAnnotation = myPlot.Add.Annotation("LogCappedRegR²=" + logCappedRegression.GetRsquared());
-        logCappedRegAnnotation.Label.FontSize = 18;
-        logCappedRegAnnotation.Label.BackColor = Colors.Gray.WithAlpha(.3);
-        logCappedRegAnnotation.Label.ForeColor = Colors.Black.WithAlpha(0.8);
-        logCappedRegAnnotation.Label.BorderColor = Colors.Gray.WithAlpha(0.5);
-        logCappedRegAnnotation.Label.BorderWidth = 1;
+        logCappedRegAnnotation.LabelFontSize = 18;
+        logCappedRegAnnotation.LabelBackgroundColor = Colors.Gray.WithAlpha(.3);
+        logCappedRegAnnotation.LabelFontColor = Colors.Black.WithAlpha(0.8);
+        logCappedRegAnnotation.LabelBorderColor = Colors.Gray.WithAlpha(0.5);
+        logCappedRegAnnotation.LabelBorderWidth = 1;
         logCappedRegAnnotation.OffsetY = 105;
 
 
-        myPlot.Legend.Show();
+        myPlot.ShowLegend();
         int width = 630;
         double aspectRatio_HeightOverWidth = 1100.0 / 600.0;
         myPlot.SavePng(SaveLocationsConfiguration.GetLogRegressionsSaveFileLocation(symbol), (int)(aspectRatio_HeightOverWidth * width), width);
@@ -305,48 +305,6 @@ public class InverseLogRegressionResult : IRegressionResult
     int TrainingPeriodDays { get; set; }
 
     double SlopeAtEndOfTrainingPeriod { get; set; }
-
-    public MLModel_INVLOG_LogBase.ModelInput GetMLModelInput_LogBaseRegression()
-    {
-        MLModel_INVLOG_LogBase.ModelInput modelInput = new();
-        modelInput.EstimateDeviationPercentage = 0;
-        modelInput.RSquared = (float)GetRsquared();
-        modelInput.TrainingPeriodDays = TrainingPeriodDays;
-        modelInput.SlopeOfOuterFunctionAtEndOfTrainingPeriod = (float)SlopeAtEndOfTrainingPeriod;
-        List<double> baseModelParameters = GetEffectiveInnerRegression().GetParameters();
-        modelInput.P0 = (float)baseModelParameters[0];
-        modelInput.P1 = (float)baseModelParameters[1];
-        modelInput.P2 = (float)baseModelParameters[2];
-        return modelInput;
-    }
-
-    public MLModel_INVLOG_ExpBase.ModelInput GetMLModelInput_ExpBaseRegression()
-    {
-        MLModel_INVLOG_ExpBase.ModelInput modelInput = new();
-        modelInput.EstimateDeviationPercentage = 0;
-        modelInput.RSquared = (float)GetRsquared();
-        modelInput.TrainingPeriodDays = TrainingPeriodDays;
-        modelInput.SlopeOfOuterFunctionAtEndOfTrainingPeriod = (float)SlopeAtEndOfTrainingPeriod;
-        List<double> baseModelParameters = GetEffectiveInnerRegression().GetParameters();
-        modelInput.P0 = (float)baseModelParameters[0];
-        modelInput.P1 = (float)baseModelParameters[1];
-        modelInput.P2 = (float)baseModelParameters[2];
-        return modelInput;
-    }
-
-    public MLModel_INVLOG_LinBase.ModelInput GetMLModelInput_LinearBaseRegression()
-    {
-        MLModel_INVLOG_LinBase.ModelInput modelInput = new();
-        modelInput.EstimateDeviationPercentage = 0;
-        modelInput.RSquared = (float)GetRsquared();
-        modelInput.TrainingPeriodDays = TrainingPeriodDays;
-        modelInput.SlopeOfOuterFunctionAtEndOfTrainingPeriod = (float)SlopeAtEndOfTrainingPeriod;
-        List<double> baseModelParameters = GetEffectiveInnerRegression().GetParameters();
-        modelInput.P0 = (float)baseModelParameters[0];
-        modelInput.P1 = (float)baseModelParameters[1];
-        modelInput.P2 = (float)baseModelParameters[2];
-        return modelInput;
-    }
 
     double GetSlopeAtDate(DateOnly date)
     {
