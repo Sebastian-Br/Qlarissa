@@ -127,7 +127,7 @@ public class Ranking
         }
 
         double baseScore = (weighted1YearEquivalentForecastPercent + analystForecastPercentage) / 2.0;
-        double currentScore = baseScore * 10.0;
+        double currentScore = 50 + baseScore * 10.0;
 
         double marketCap = symbol.Overview.MarketCapitalization;
         double marketCapUSDequivalent;
@@ -138,15 +138,15 @@ public class Ranking
         }
         else if (symbol.Overview.Currency == Enums.Currency.EUR)
         {
-            marketCapUSDequivalent = marketCap * 1.05; // TODO: Get foreign exchange values automatically
+            marketCapUSDequivalent = marketCap * 1.15; // TODO: Get foreign exchange values automatically
         }
         else if (symbol.Overview.Currency == Enums.Currency.GBP)
         {
-            marketCapUSDequivalent = marketCap * 1.26;
+            marketCapUSDequivalent = marketCap * 1.33;
         }
         else if (symbol.Overview.Currency == Enums.Currency.AUD)
         {
-            marketCapUSDequivalent = marketCap * 0.63;
+            marketCapUSDequivalent = marketCap * 0.65;
         }
         else if (symbol.Overview.Currency == Enums.Currency.CAD)
         {
@@ -158,7 +158,7 @@ public class Ranking
         }
         else if (symbol.Overview.Currency == Enums.Currency.CHF)
         {
-            marketCapUSDequivalent = marketCap * 1.1;
+            marketCapUSDequivalent = marketCap * 1.23;
         }
         else if (symbol.Overview.Currency == Enums.Currency.JPY)
         {
@@ -166,7 +166,7 @@ public class Ranking
         }
         else if (symbol.Overview.Currency == Enums.Currency.SGD)
         {
-            marketCapUSDequivalent = marketCap * 0.73;
+            marketCapUSDequivalent = marketCap * 0.76;
         }
         else
         {
@@ -193,13 +193,13 @@ public class Ranking
     private double GetRecommendationMeanWeight(double recommendationMean)
     {
         double mean = 1.0;
-        double deviation = 0.2;
+        double deviation = 0.25;
 
         double recommendationMeanForMaxScore = 1.0;
-        double recommendationMeanForMinScore = 6.0;
+        double recommendationMeanForMinScore = 5.0;
 
-        double maxScore = mean + deviation; // 1.2
-        double minScore = mean - deviation; // 0.8
+        double maxScore = mean + deviation; // 1.25
+        double minScore = mean - deviation; // 0.75
 
         double score;
 

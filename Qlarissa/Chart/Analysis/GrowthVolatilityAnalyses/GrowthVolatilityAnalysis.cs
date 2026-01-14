@@ -249,7 +249,7 @@ namespace Qlarissa.Chart.ChartAnalysis.GrowthVolatilityAnalysis
         public void Draw()
         {
             DrawMaxLossGraph();
-            DrawLeveragedOverperformanceGraph();
+            // DrawLeveragedOverperformanceGraph(); -- disabled - concurrency bug because Plot instances are being accessed from different threads
             DrawGrowthAnalysis();
         }
 

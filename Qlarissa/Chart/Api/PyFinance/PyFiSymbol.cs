@@ -24,14 +24,15 @@ internal class PyFiSymbol
 
     public double TargetMeanPrice { get; set; }
 
-    public double RecommendationMean { get; set; }
+    public double ComputedRecommendationMean { get; set; }
 
     public int NumberOfAnalystOpinions { get; set; }
 
-    public long SharesOutstanding { get; set; }
+    //public long SharesOutstanding { get; set; }
 
     public Dictionary<string, PyFiDataPoint> HistoricalData { get; set; }
-    public Dictionary<string, IncomeStatement> RecentFourQuartersIncomeStatements { get; set; }
+
+    //public Dictionary<string, IncomeStatement> RecentFourQuartersIncomeStatements { get; set; }
 
     public Dictionary<string, double> DividendHistory { get; set; }
 
@@ -103,11 +104,11 @@ internal class PyFiSymbol
             }
         }
 
-        symbolInfoEx.RecommendationMean = RecommendationMean;
-        if (RecommendationMean == 0)
+        symbolInfoEx.RecommendationMean = ComputedRecommendationMean;
+        if (ComputedRecommendationMean == 0)
         {
-            symbolInfoEx.RecommendationMean = 2; // dbg break here until it's clear what to do when the value is 0
-            Console.WriteLine("RecommendationMean for " + Symbol + " is missing!");
+            symbolInfoEx.RecommendationMean = 1.0;
+            Console.WriteLine("RecommendationMean for " + Symbol + " is missing and was set to 1.0!");
         }
 
         Symbol symbol = new([.. symbolDataPointList], overview, dividendHistory, symbolInfoEx);

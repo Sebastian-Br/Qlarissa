@@ -22,7 +22,7 @@ def get_stock_data():
             data.index = data.index.strftime('%Y-%m-%d')
             # Get the P/E ratio information
             ticker_info = yf.Ticker(ticker).info
-            print(ticker_info)
+            print(yf.Ticker(ticker).recommendations_summary)
             print(yf.Ticker(ticker))
             # Get/format dividend history
             ticker_dividend_history = yf.Ticker(ticker).dividends
@@ -39,9 +39,9 @@ def get_stock_data():
             #print(data_filtered.to_dict(orient='index'))
             #earnings_history = yf.Ticker(ticker).earnings_history
             #earnings_history.index = earnings_history.index.strftime('%Y-%m-%d')
-            quarterly_income_statement_df = yf.Ticker(ticker).quarterly_income_stmt
-            tmp = quarterly_income_statement_df.to_dict(orient='dict')
-            quarterly_income_statement_dictionary = {str(date): tmp[date] for date in sorted(tmp)}
+            #quarterly_income_statement_df = yf.Ticker(ticker).quarterly_income_stmt
+            #tmp = quarterly_income_statement_df.to_dict(orient='dict')
+            #quarterly_income_statement_dictionary = {str(date): tmp[date] for date in sorted(tmp)}
             #print(quarterly_income_statement_dictionary)
             #earnings.index = earnings.index.strftime('%Y-%m-%d')
             #print(earnings)
@@ -65,10 +65,11 @@ def get_stock_data():
                 "TargetMeanPrice": ticker_info.get('targetMeanPrice', '0'),
                 "NumberOfAnalystOpinions": ticker_info.get('numberOfAnalystOpinions', '0'),
                 "InvestorRelationsWebsite": ticker_info.get('irWebsite', '0'),
-                "SharesOutstanding": ticker_info.get('sharesOutstanding', '0'),
+                #"SharesOutstanding": ticker_info.get('sharesOutstanding', '0'),
                 "RecommendationMean": ticker_info.get('recommendationMean', '0'),
-                "RecentFourQuartersIncomeStatements": quarterly_income_statement_dictionary,
-                "HistoricalData": data_filtered_dict
+                #"RecentFourQuartersIncomeStatements": quarterly_income_statement_dictionary,
+                "HistoricalData": data_filtered_dict,
+                "ComputedRecommendationMean": compute_recommendation_mean_last_2m(yf.Ticker(ticker).recommendations_summary),
             }
             return jsonify(response)
         else:
@@ -91,6 +92,34 @@ def GetPEData(symbol):
     df['PE'] = df['PE'].astype(float)
     print(df['PE'].mean())
     return df['PE'].mean()
+
+def compute_recommendation_mean_last_2m(df: pd.DataFrame) -> float | None:
+    if df.empty:
+        return 0 # BE handles this case and re assigns a sensible value. This is for ETFs.
+    weights = {
+        "strongBuy": 1.0,
+        "buy": 2.0,
+        "hold": 3.0,
+        "sell": 4.0,
+        "strongSell": 5.0,
+    }
+
+    cols = list(weights.keys())
+
+    recent = df[df["period"].isin(["0m", "-1m"])]
+
+    total_ratings = recent[cols].sum().sum()
+    if total_ratings == 0:
+        return None
+
+    weighted_sum = (
+        recent[cols]
+        .mul(pd.Series(weights))
+        .sum()
+        .sum()
+    )
+
+    return weighted_sum / total_ratings
 
 if __name__ == '__main__':
     app.run(debug=True)
