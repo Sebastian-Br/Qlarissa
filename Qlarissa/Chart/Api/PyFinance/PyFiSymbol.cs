@@ -74,6 +74,33 @@ internal class PyFiSymbol
             symbolDataPointList.Add(symbolDataPoint);
         }
 
+        for(int i = 0; i < symbolDataPointList.Count; i++)
+        {
+            if(double.IsNaN(symbolDataPointList[i].MediumPrice))
+            {
+                if(i > 0)
+                {
+                    symbolDataPointList[i].MediumPrice = symbolDataPointList[i - 1].MediumPrice;
+                }
+            }
+
+            if (double.IsNaN(symbolDataPointList[i].LowPrice))
+            {
+                if (i > 0)
+                {
+                    symbolDataPointList[i].LowPrice = symbolDataPointList[i - 1].LowPrice;
+                }
+            }
+
+            if (double.IsNaN(symbolDataPointList[i].HighPrice))
+            {
+                if (i > 0)
+                {
+                    symbolDataPointList[i].HighPrice = symbolDataPointList[i - 1].HighPrice;
+                }
+            }
+        }
+
         Dictionary<DateOnly, double> dividendHistory = [];
 
         foreach (KeyValuePair<string, double> dividendPayout in DividendHistory)

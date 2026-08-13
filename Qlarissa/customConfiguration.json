@@ -14,12 +14,16 @@
   "SymbolToMissing1YearForecastMap": {
     "SPY": 1.1,
     "URTH": 1.032,
-    "IYW": 1.2
+    "IYW": 1.2,
+    "QDVE.DE": 1.2,
+    "IGV": 1.15
   },
   "SymbolToMissingMarketCapInBillions": {
     "SPY": 1000000,
     "URTH": 2000000,
-    "IYW": 100000
+    "IYW": 100000,
+    "QDVE.DE":  100000,
+    "IGV": 10000
   },
   "SymbolsToBeAnalyzed": {
     "ADBE": "Adobe",
@@ -27,7 +31,6 @@
     "HON": "Honeywell",
     "BTI": "British American Tobacco",
     "VRSN": "VeriSign",
-    "AFX.DE": "Carl Zeiss",
     "UDR": "UDR",
     "CME": "CME Group",
     "D": "Dominion Energy",
@@ -168,7 +171,7 @@
     "BRK-B": "Berkshire Hathaway",
     "LIN": "Linde",
     "LISP.SW": "Lindt",
-    "ROG.SW": "Roche",
+    "RHHBY": "Roche",
     "NVS": "Novartis",
     "D05.SI": "DBS Group",
     "JPM": "JP Morgan",
@@ -214,6 +217,18 @@
     "ANET": "Arista Networks",
     "SPGI": "S&P Global",
     "FISV": "Fiserv",
-    "WKL.AS": "Wolters Kluwer"
+    "WKL.AS": "Wolters Kluwer",
+    "WM": "Waste Management",
+    "IGV": "iShares Expanded Tech-Software Sector ETF",
+    "NFLX": "Netflix",
+    "HD": "Home Depot",
+    "ADP": "Automatic Data Processing",
+    "NDAQ": "Nasdaq Inc.",
+    "PG": "Procter & Gamble",
+    "LMT": "Lockheed Martin",
+    "RTX": "Raytheon Technologies",
+    "BSX": "Boston Scientific",
+    "QDVE.DE": "iShares S&P 500 Information Technology Sector UCITS ETF",
+    "8001.T": "Itochu"
   }
 }
