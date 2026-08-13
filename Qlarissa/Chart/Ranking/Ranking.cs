@@ -46,24 +46,36 @@ public class Ranking
 
     public string RankByAggregateScore_AsText()
     {
-        string result = "";
+        StringBuilder result = new("", 300);
         Symbols = [.. SymbolManager.RetrieveSymbols()];
+        List<SymbolWithAggregatedScore> symbolsWithScores = new();
 
-        Symbols.Sort((x, y) => GetAggregatedScore(y).CompareTo(GetAggregatedScore(x)));
+        foreach (Symbol symbol in Symbols)
+        {
+            symbolsWithScores.Add(new SymbolWithAggregatedScore(symbol, GetAggregatedScore(symbol)));
+        }
+
+        symbolsWithScores.Sort((x, y) => y.AggregatedScore.CompareTo(x.AggregatedScore));
 
         int rank = 1;
-        result += ("****************************************\n");
-        result += ("Symbols Ranked by Aggregate Score\n");
-        result += ("****************************************\n");
-        foreach (var symbol in Symbols)
+
+        foreach (var symbolWithScore in symbolsWithScores)
         {
-            result += "Rank " + rank + ": " + symbol.ToString() + "\n";
-            result += "Score: " + Math.Round(GetAggregatedScore(symbol), 3) + "\n";
+            symbolWithScore.Rank = rank;
             rank++;
         }
-        result += ("****************************************\n");
 
-        return result;
+        result.AppendLine("****************************************");
+        result.AppendLine("Symbols Ranked by Aggregate Score");
+        result.AppendLine("****************************************");
+        foreach (var symbolWithScore in symbolsWithScores)
+        {
+            result.AppendLine("Rank " + symbolWithScore.Rank + ": " + symbolWithScore.Symbol.ToString());
+            result.AppendLine("Score: " + Math.Round(symbolWithScore.AggregatedScore, 3));
+        }
+        result.AppendLine("****************************************");
+
+        return result.ToString();
     }
 
     public string RankBy3YearForecast_AsText()

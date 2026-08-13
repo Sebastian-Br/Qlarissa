@@ -17,10 +17,6 @@ namespace Qlarissa.CustomConfiguration
 
         private static string VolatilityAnalysisDirectory = BaseDirectory + "VolatilityAnalysis/";
 
-        private static string ErrorAnalysisDirectory = BaseDirectory + "ErrorCorrection/";
-
-        private static string _MachineLearningDataDirectory = ErrorAnalysisDirectory + "_MachineLearning/";
-
         public static string GetSymbolChartSaveFileLocation(Symbol symbol)
         {
             string Directory = ChartsDirectory + symbol.Overview.Symbol + "/";
@@ -58,94 +54,6 @@ namespace Qlarissa.CustomConfiguration
             string Directory = VolatilityAnalysisDirectory + symbol.Overview.Symbol + "/";
             CreateDirectoryIfNotExists(Directory);
             string FileName = symbol.Overview.Symbol + "_MaxLoss" + (int)gva.TimePeriod + ".png";
-            return Directory + FileName;
-        }
-
-        public static string GetErrorAnalysisCombinedHeatmapSaveFileLocation(Symbol symbol)
-        {
-            string Directory = ErrorAnalysisDirectory + symbol.Overview.Symbol + "/";
-            CreateDirectoryIfNotExists(Directory);
-            string FileName = symbol.Overview.Symbol + "_Combined_ErrorHeatmap" + ".png";
-            return Directory + FileName;
-        }
-
-        public static string GetErrorAnalysis_ExpBaseRegression_HeatmapSaveFileLocation(Symbol symbol)
-        {
-            string Directory = ErrorAnalysisDirectory + symbol.Overview.Symbol + "/";
-            CreateDirectoryIfNotExists(Directory);
-            string FileName = symbol.Overview.Symbol + "_ExpBaseReg_ErrorHeatmap" + ".png";
-            return Directory + FileName;
-        }
-
-        public static string GetErrorAnalysis_LinBaseRegression_HeatmapSaveFileLocation(Symbol symbol)
-        {
-            string Directory = ErrorAnalysisDirectory + symbol.Overview.Symbol + "/";
-            CreateDirectoryIfNotExists(Directory);
-            string FileName = symbol.Overview.Symbol + "_LinBaseReg_ErrorHeatmap" + ".png";
-            return Directory + FileName;
-        }
-
-        public static string GetErrorAnalysis_LogBaseRegression_HeatmapSaveFileLocation(Symbol symbol)
-        {
-            string Directory = ErrorAnalysisDirectory + symbol.Overview.Symbol + "/";
-            CreateDirectoryIfNotExists(Directory);
-            string FileName = symbol.Overview.Symbol + "_LogBaseReg_ErrorHeatmap" + ".png";
-            return Directory + FileName;
-        }
-
-        public static string GetPredictionErrorCSV_SaveFileLocation_ForINVLOG_ByBaseRegressionType(RegressionResultType BaseRegression)
-        {
-            string Directory = _MachineLearningDataDirectory;
-            CreateDirectoryIfNotExists(Directory);
-            string FileName;
-
-            switch (BaseRegression)
-            {
-                case RegressionResultType.Logistic:
-                    FileName = "PredictionErrorsFor_INVLOG_Log_Base.csv";
-                    break;
-                case RegressionResultType.Linear:
-                    FileName = "PredictionErrorsFor_INVLOG_Lin_Base.csv";
-                    break;
-                case RegressionResultType.Exponential:
-                    FileName = "PredictionErrorsFor_INVLOG_Exp_Base.csv";
-                    break;
-                default:
-                    throw new NotImplementedException("Unknown Base Regression Type for INVLOG: " + BaseRegression);
-            }
-
-            return Directory + FileName;
-        }
-
-        public static string GetPredictionErrorPNG_SaveFileLocation_ForINVLOG_ByBaseRegressionType(RegressionResultType BaseRegression)
-        {
-            string Directory = _MachineLearningDataDirectory;
-            CreateDirectoryIfNotExists(Directory);
-            string FileName;
-
-            switch (BaseRegression)
-            {
-                case RegressionResultType.Logistic:
-                    FileName = "PredictionErrorsFor_INVLOG_Log_Base.png";
-                    break;
-                case RegressionResultType.Linear:
-                    FileName = "PredictionErrorsFor_INVLOG_Lin_Base.png";
-                    break;
-                case RegressionResultType.Exponential:
-                    FileName = "PredictionErrorsFor_INVLOG_Exp_Base.png";
-                    break;
-                default:
-                    throw new NotImplementedException("Unknown Base Regression Type for INVLOG: " + BaseRegression);
-            }
-
-            return Directory + FileName;
-        }
-
-        public static string GetPredictionErrorPNG_SaveFileLocation_ForINVLOG_AllRegressionTypes()
-        {
-            string Directory = _MachineLearningDataDirectory;
-            CreateDirectoryIfNotExists(Directory);
-            string FileName = "PredictionErrorsFor_INVLOG_AllBases.png";
             return Directory + FileName;
         }
 
