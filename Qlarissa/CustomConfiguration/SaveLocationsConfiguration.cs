@@ -17,6 +17,15 @@ namespace Qlarissa.CustomConfiguration
 
         private static string VolatilityAnalysisDirectory = BaseDirectory + "VolatilityAnalysis/";
 
+        private static string ReportsDirectory = BaseDirectory + "Reports/";
+
+        public static string GetReportSaveFileLocation()
+        {
+            CreateDirectoryIfNotExists(ReportsDirectory);
+            string FileName = "Report-" + DateTime.Now.ToString("yyyyMMddTHHmm") + ".pdf";
+            return ReportsDirectory + FileName;
+        }
+
         public static string GetSymbolChartSaveFileLocation(Symbol symbol)
         {
             string Directory = ChartsDirectory + symbol.Overview.Symbol + "/";

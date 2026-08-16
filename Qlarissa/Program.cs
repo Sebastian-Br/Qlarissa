@@ -1,9 +1,10 @@
-﻿using Qlarissa.Chart;
-using Qlarissa.Menu;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
+using Qlarissa.Chart;
+using Qlarissa.Menu;
+using QuestPDF.Infrastructure;
 
 
 namespace Qlarissa;
@@ -18,7 +19,7 @@ internal class Program
         customConfiguration.Print();
 
         SymbolManager symbolManager = new(baseConfiguration, customConfiguration);
-
+        QuestPDF.Settings.License = LicenseType.Community;
         IMenu menu = new StartMenu(symbolManager);
         string input;
 

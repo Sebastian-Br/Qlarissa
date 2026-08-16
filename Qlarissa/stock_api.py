@@ -24,6 +24,7 @@ def get_stock_data():
             ticker_info = yf.Ticker(ticker).info
             print(yf.Ticker(ticker).recommendations_summary)
             print(yf.Ticker(ticker))
+            print(ticker_info)
             # Get/format dividend history
             ticker_dividend_history = yf.Ticker(ticker).dividends
             ticker_dividend_history.index = ticker_dividend_history.index.strftime('%Y-%m-%d')
@@ -70,6 +71,7 @@ def get_stock_data():
                 #"RecentFourQuartersIncomeStatements": quarterly_income_statement_dictionary,
                 "HistoricalData": data_filtered_dict,
                 "ComputedRecommendationMean": compute_recommendation_mean_last_2m(yf.Ticker(ticker).recommendations_summary),
+                "Description": ticker_info.get('longBusinessSummary', '0'),
             }
             return jsonify(response)
         else:

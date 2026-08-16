@@ -36,6 +36,8 @@ internal class PyFiSymbol
 
     public Dictionary<string, double> DividendHistory { get; set; }
 
+    public string Description { get; set; }
+
     public Symbol ToBusinessEntity(CustomConfiguration.CustomConfiguration customConfiguration)
     {
         SymbolOverview overview = new()
@@ -43,7 +45,8 @@ internal class PyFiSymbol
             Symbol = Symbol,
             Name = Name,
             Currency = CurrencyExtensions.ToEnum(Currency),
-            DividendPerShareYearly = DividendPerShareYearly
+            DividendPerShareYearly = DividendPerShareYearly,
+            Description = Description
         };
 
         if (customConfiguration.SymbolToMissingMarketCapInBillions.TryGetValue(Symbol, out double marketCapitalizationInBillions))

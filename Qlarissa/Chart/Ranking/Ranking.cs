@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Qlarissa.Reports;
 
 namespace Qlarissa.Chart.Ranking;
 
@@ -14,9 +15,12 @@ public class Ranking
     {
         Symbols = new();
         SymbolManager = manager;
+        ReportCreationManager = new ReportCreationManager();
     }
 
     SymbolManager SymbolManager { get; set; }
+
+    ReportCreationManager ReportCreationManager { get; set; }
 
     public string RankBy1YearForecast_AsText()
     {
@@ -74,6 +78,8 @@ public class Ranking
             result.AppendLine("Score: " + Math.Round(symbolWithScore.AggregatedScore, 3));
         }
         result.AppendLine("****************************************");
+
+        ReportCreationManager.GenerateReport(symbolsWithScores);
 
         return result.ToString();
     }

@@ -231,8 +231,10 @@ public class SymbolManager
 
         ScottPlot.Plot myPlot = new();
         myPlot.Axes.SetLimitsX(AxisLimits.HorizontalOnly(startYear, endYear));
+        myPlot.DataBackground.Color = Colors.LightGray;
+        myPlot.FigureBackground.Color = Colors.LightGray;
 
-        foreach(ExcludedTimePeriod excludedTimePeriod in symbol.GetTimePeriodsExcludedFromAnalysis().Values)
+        foreach (ExcludedTimePeriod excludedTimePeriod in symbol.GetTimePeriodsExcludedFromAnalysis().Values)
         {
             if(excludedTimePeriod.StartDate == null)
             {
