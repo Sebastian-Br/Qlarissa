@@ -13,5 +13,7 @@ internal class ReportCreationManager
     {
         var report = new Report(symbolsWithScores);
         report.GeneratePdf(SaveLocationsConfiguration.GetReportSaveFileLocation());
+        var longReport = new LongReport(symbolsWithScores);
+        longReport.GeneratePdf(SaveLocationsConfiguration.GetLongReportSaveFileLocation());
     }
 }

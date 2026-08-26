@@ -26,6 +26,13 @@ namespace Qlarissa.CustomConfiguration
             return ReportsDirectory + FileName;
         }
 
+        public static string GetLongReportSaveFileLocation()
+        {
+            CreateDirectoryIfNotExists(ReportsDirectory);
+            string FileName = "LongReport-" + DateTime.Now.ToString("yyyyMMddTHHmm") + ".pdf";
+            return ReportsDirectory + FileName;
+        }
+
         public static string GetSymbolChartSaveFileLocation(Symbol symbol)
         {
             string Directory = ChartsDirectory + symbol.Overview.Symbol + "/";
